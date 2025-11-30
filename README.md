@@ -1,2 +1,2 @@
 # bet
-gly.fish Capital secrets.
+gly.fish Capital .

@@ -1,0 +1,5 @@
+from lib.plots.comp.line import (curve, comparison, stack, twinx, twinx_comparison, scatter, comparison_stack)
+from lib.plots.comp.bar import (bar, twinx_bar_line, twinx_bar_line_comparison, positive_negative_bar, hist)
+from lib.plots.comp.func import (fpoints, fcurve, fscatter, fbar, fcurve_scatter_comparison)
+from lib.plots.comp.surface import (contour, contour_hist)
+from lib.plots.comp.axis import (PlotType)
