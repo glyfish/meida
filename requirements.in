@@ -1,0 +1,24 @@
+-e ../navi
+jupyterlab
+jupyter
+matplotlib
+matplotlib-label-lines
+pandas
+fastapi
+statsmodels
+SQLAlchemy
+ipython
+ipykernel
+alembic
+backtrader
+beautifulsoup4
+coloredlogs
+cycler
+debugpy
+gitdb
+GitPython
+markdown-it-py
+python-language-server[all]
+shortuuid
+tabulate
+psycopg2
