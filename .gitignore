@@ -14,4 +14,3 @@ logs/*
 *.bak
 .ipynb_checkpoints
 _minted*
-keys.yml

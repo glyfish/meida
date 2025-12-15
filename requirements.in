@@ -5,6 +5,7 @@ matplotlib
 matplotlib-label-lines
 pandas
 fastapi
+python-dotenv
 statsmodels
 SQLAlchemy
 ipython
