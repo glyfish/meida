@@ -4,7 +4,7 @@ jupyter
 matplotlib
 matplotlib-label-lines
 pandas
-fastapi
+mcp
 python-dotenv
 statsmodels
 SQLAlchemy

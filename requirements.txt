@@ -8,14 +8,14 @@
     # via -r requirements.in
 alembic==1.17.2
     # via -r requirements.in
-annotated-doc==0.0.4
-    # via fastapi
 annotated-types==0.7.0
     # via pydantic
 anyio==4.12.0
     # via
     #   httpx
     #   jupyter-server
+    #   mcp
+    #   sse-starlette
     #   starlette
 appnope==0.1.4
     # via ipykernel
@@ -53,9 +53,13 @@ certifi==2025.11.12
     #   httpx
     #   requests
 cffi==2.0.0
-    # via argon2-cffi-bindings
+    # via
+    #   argon2-cffi-bindings
+    #   cryptography
 charset-normalizer==3.4.4
     # via requests
+click==8.3.1
+    # via uvicorn
 coloredlogs==15.0.1
     # via -r requirements.in
 comm==0.2.3
@@ -64,6 +68,8 @@ comm==0.2.3
     #   ipywidgets
 contourpy==1.3.3
     # via matplotlib
+cryptography==46.0.3
+    # via pyjwt
 cycler==0.12.1
     # via
     #   -r requirements.in
@@ -80,8 +86,6 @@ dill==0.4.0
     # via pylint
 executing==2.2.1
     # via stack-data
-fastapi==0.124.4
-    # via -r requirements.in
 fastjsonschema==2.21.2
     # via nbformat
 fonttools==4.61.1
@@ -97,11 +101,18 @@ gitdb==4.0.12
 gitpython==3.1.45
     # via -r requirements.in
 h11==0.16.0
-    # via httpcore
+    # via
+    #   httpcore
+    #   uvicorn
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
-    # via jupyterlab
+    # via
+    #   jupyterlab
+    #   mcp
+    #   navi
+httpx-sse==0.4.3
+    # via mcp
 humanfriendly==10.0
     # via coloredlogs
 idna==3.11
@@ -148,6 +159,7 @@ jsonschema[format-nongpl]==4.25.1
     # via
     #   jupyter-events
     #   jupyterlab-server
+    #   mcp
     #   nbformat
 jsonschema-specifications==2025.9.1
     # via jsonschema
@@ -224,6 +236,8 @@ mccabe==0.7.0
     # via
     #   pylint
     #   python-language-server
+mcp==1.25.0
+    # via -r requirements.in
 mdurl==0.1.2
     # via markdown-it-py
 mistune==3.1.4
@@ -316,9 +330,14 @@ pycodestyle==2.14.0
 pycparser==2.23
     # via cffi
 pydantic==2.12.5
-    # via fastapi
+    # via
+    #   mcp
+    #   navi
+    #   pydantic-settings
 pydantic-core==2.41.5
     # via pydantic
+pydantic-settings==2.12.0
+    # via mcp
 pydocstyle==6.3.0
     # via python-language-server
 pyflakes==3.4.0
@@ -329,6 +348,8 @@ pygments==2.19.2
     #   ipython-pygments-lexers
     #   jupyter-console
     #   nbconvert
+pyjwt[crypto]==2.10.1
+    # via mcp
 pylint==4.0.4
     # via python-language-server
 pyparsing==3.2.5
@@ -343,12 +364,15 @@ python-dotenv==1.2.1
     # via
     #   -r requirements.in
     #   navi
+    #   pydantic-settings
 python-json-logger==4.0.0
     # via jupyter-events
 python-jsonrpc-server==0.4.0
     # via python-language-server
 python-language-server[all]==0.26.1
     # via -r requirements.in
+python-multipart==0.0.21
+    # via mcp
 pytoolconfig[global]==1.3.1
     # via rope
 pytz==2025.2
@@ -404,10 +428,14 @@ sqlalchemy==2.0.45
     # via
     #   -r requirements.in
     #   alembic
+sse-starlette==3.0.4
+    # via mcp
 stack-data==0.6.3
     # via ipython
 starlette==0.50.0
-    # via fastapi
+    # via
+    #   mcp
+    #   sse-starlette
 statsmodels==0.14.6
     # via -r requirements.in
 tabulate==0.9.0
@@ -448,8 +476,8 @@ typing-extensions==4.15.0
     #   alembic
     #   anyio
     #   beautifulsoup4
-    #   fastapi
     #   ipython
+    #   mcp
     #   pydantic
     #   pydantic-core
     #   referencing
@@ -457,7 +485,10 @@ typing-extensions==4.15.0
     #   starlette
     #   typing-inspection
 typing-inspection==0.4.2
-    # via pydantic
+    # via
+    #   mcp
+    #   pydantic
+    #   pydantic-settings
 tzdata==2025.3
     # via
     #   arrow
@@ -468,6 +499,8 @@ uri-template==1.3.0
     # via jsonschema
 urllib3==2.6.2
     # via requests
+uvicorn==0.40.0
+    # via mcp
 wcwidth==0.2.14
     # via prompt-toolkit
 webcolors==25.10.0
