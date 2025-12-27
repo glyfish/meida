@@ -17,6 +17,8 @@ if not logger.handlers:
 server = FastMCP(
     name="mcp-server",
     instructions="Access curated Federal Reserve Economic Data (FRED) tools.",
+    host="0.0.0.0",
+    port=8080,
 )
 
 
@@ -148,9 +150,9 @@ async def list_release_series(release_id: int, limit: int | None = 50) -> Mappin
 
 
 def run() -> None:
-    """Start the MCP server over stdio (default transport)."""
-    logger.info("Starting meida MCP server (transport=stdio)")
-    server.run(transport="stdio")
+    """Start the MCP server over SSE transport."""
+    logger.info("Starting meida MCP server on port %s (transport=sse)", server.settings.port)
+    server.run(transport="sse")
 
 
 if __name__ == "__main__":
