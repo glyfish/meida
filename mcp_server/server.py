@@ -44,7 +44,7 @@ def _serialize(payload: Any) -> Mapping[str, Any]:
 )
 async def list_category_children(category_id: int) -> Mapping[str, Any]:
     async def handler(client: FredClient) -> Any:
-        return await client.get_category_children(category_id)
+        return await client._get('/category/children', {'category_id': category_id})
 
     return await _call_fred(handler)
 
