@@ -1,0 +1,84 @@
+from typing import Any
+import yaml
+import time
+import json
+
+from lib.mcp_client import MCPClient, MCPClientConfig
+
+MCP_URL = 'http://localhost:8080/sse'
+config = MCPClientConfig(url=MCP_URL)
+
+async def call_tool(tool_name: str, arguments: dict[str, Any] | None = None):
+    async with MCPClient(config) as client:
+        return await client.call_tool(tool_name, arguments or {})
+
+
+async def children_of_categories(categories: list[Any]):
+    for category in categories:
+        category_id = category["id"]
+        category_name = category["name"]
+        args = {"category_id": category_id}
+        result = await call_tool("fred.category_children", args)
+        children = result.structuredContent['result']['categories']  # type: ignore
+        return children
+
+
+async def explore_categories(root_id: int = 0, depth: int = 2):
+    async with MCPClient(config) as client:
+        queue = [(root_id, 0)]
+        while queue:
+            category_id, level = queue.pop(0)
+            indent = "  " * level
+            print(f"{indent}- category {category_id}")
+            if level >= depth:
+                continue
+            response = await client.call_tool("fred.category_children", {"category_id": category_id})
+            payload = response.structuredContent or {}
+            for child in payload.get("categories", []):
+                queue.append((child["id"], level + 1))
+
+
+async def find_leaf_categories(
+    root_id: int = 0,
+    root_name: str = "Root",
+    output_path: str = "leaf_categories.yaml",
+) -> None:
+    leaves: list[dict[str, object]] = []
+    queue: list[tuple[int, list[dict[str, object]]]] = [
+        (root_id, [{"id": root_id, "name": root_name}])
+    ]
+
+    async with MCPClient(config) as client:
+        while queue:
+            time.sleep(2.0)  # Be kind to the FRED server
+            category_id, path = queue.pop(0)
+
+            response = await client.call_tool(
+                "fred.category_children", {"category_id": category_id}
+            )
+            payload = response.structuredContent or {}
+            children = payload["result"].get("categories", [])
+
+            if not children:
+                leaves.append(
+                    {
+                        "leaf_id": category_id,
+                        "leaf_name": path[-1]["name"],
+                        "path": path,
+                    }
+                )
+                print(f"Found Leaf category {path[-1]['name']}")
+                continue
+
+            for child in children:
+                queue.append(
+                    (
+                        child["id"],
+                        path + [{"id": child["id"], "name": child["name"]}],
+                    )
+                )
+
+    with open(output_path, "w", encoding="utf-8") as fh:
+        payload = json.loads(json.dumps(leaves))
+        yaml.safe_dump(payload, fh, sort_keys=False, allow_unicode=True)
+    print(f"Wrote {len(leaves)} leaf categories (with names) to {output_path}")
