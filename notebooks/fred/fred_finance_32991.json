@@ -1,0 +1,1678 @@
+- leaf_id: 32145
+  leaf_name: Foreign Exchange Intervention
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32145
+    name: Foreign Exchange Intervention
+- leaf_id: 34009
+  leaf_name: AMERIBOR Benchmark Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 34009
+    name: AMERIBOR Benchmark Rates
+- leaf_id: 33058
+  leaf_name: Automobile Loan Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 33058
+    name: Automobile Loan Rates
+- leaf_id: 51
+  leaf_name: Bankers Acceptance Rate
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 51
+    name: Bankers Acceptance Rate
+- leaf_id: 121
+  leaf_name: Certificates of Deposit
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 121
+    name: Certificates of Deposit
+- leaf_id: 120
+  leaf_name: Commercial Paper
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 120
+    name: Commercial Paper
+- leaf_id: 32348
+  leaf_name: Corporate Bonds
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 32348
+    name: Corporate Bonds
+- leaf_id: 33059
+  leaf_name: Credit Card Loan Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 33059
+    name: Credit Card Loan Rates
+- leaf_id: 34005
+  leaf_name: EONIA Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 34005
+    name: EONIA Rates
+- leaf_id: 34007
+  leaf_name: Euro Short-Term Rate
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 34007
+    name: Euro Short-Term Rate
+- leaf_id: 32298
+  leaf_name: Eurodollar Deposits
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 32298
+    name: Eurodollar Deposits
+- leaf_id: 118
+  leaf_name: FRB Rates - discount, fed funds, primary credit
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 118
+    name: FRB Rates - discount, fed funds, primary credit
+- leaf_id: 33056
+  leaf_name: Interest Checking Accounts
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 33056
+    name: Interest Checking Accounts
+- leaf_id: 33446
+  leaf_name: Interest Rate Spreads
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 33446
+    name: Interest Rate Spreads
+- leaf_id: 32299
+  leaf_name: Interest Rate Swaps
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 32299
+    name: Interest Rate Swaps
+- leaf_id: 32995
+  leaf_name: Long-Term Securities
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 32995
+    name: Long-Term Securities
+- leaf_id: 34242
+  leaf_name: Monetary Policy
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 34242
+    name: Monetary Policy
+- leaf_id: 33055
+  leaf_name: Money Market Accounts
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 33055
+    name: Money Market Accounts
+- leaf_id: 114
+  leaf_name: Mortgage Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 114
+    name: Mortgage Rates
+- leaf_id: 33057
+  leaf_name: Personal Loan Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 33057
+    name: Personal Loan Rates
+- leaf_id: 117
+  leaf_name: Prime Bank Loan Rate
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 117
+    name: Prime Bank Loan Rate
+- leaf_id: 33491
+  leaf_name: Saving Accounts
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 33491
+    name: Saving Accounts
+- leaf_id: 34003
+  leaf_name: SONIA Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 34003
+    name: SONIA Rates
+- leaf_id: 116
+  leaf_name: Treasury Bills
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 116
+    name: Treasury Bills
+- leaf_id: 115
+  leaf_name: Treasury Constant Maturity
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 115
+    name: Treasury Constant Maturity
+- leaf_id: 82
+  leaf_name: Treasury Inflation-Indexed Securities
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 22
+    name: Interest Rates
+  - id: 82
+    name: Treasury Inflation-Indexed Securities
+- leaf_id: 94
+  leaf_name: Daily Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 94
+    name: Daily Rates
+- leaf_id: 95
+  leaf_name: Monthly Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 95
+    name: Monthly Rates
+- leaf_id: 32219
+  leaf_name: Annual Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 32219
+    name: Annual Rates
+- leaf_id: 105
+  leaf_name: Trade-Weighted Indexes
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 105
+    name: Trade-Weighted Indexes
+- leaf_id: 124
+  leaf_name: Monetary Base
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 124
+    name: Monetary Base
+- leaf_id: 123
+  leaf_name: Reserves
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 123
+    name: Reserves
+- leaf_id: 25
+  leaf_name: M1 and Components
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 25
+    name: M1 and Components
+- leaf_id: 29
+  leaf_name: M2 and Components
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 29
+    name: M2 and Components
+- leaf_id: 96
+  leaf_name: M2 Minus Small Time Deposits
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 96
+    name: M2 Minus Small Time Deposits
+- leaf_id: 28
+  leaf_name: M3 and Components
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 28
+    name: M3 and Components
+- leaf_id: 30
+  leaf_name: MZM
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 30
+    name: MZM
+- leaf_id: 26
+  leaf_name: Memorandum Items
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 26
+    name: Memorandum Items
+- leaf_id: 32242
+  leaf_name: Money Velocity
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 32242
+    name: Money Velocity
+- leaf_id: 122
+  leaf_name: Borrowings
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 122
+    name: Borrowings
+- leaf_id: 32215
+  leaf_name: Factors Affecting Reserve Balances
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 32215
+    name: Factors Affecting Reserve Balances
+- leaf_id: 32218
+  leaf_name: Securities, Loans, & Other Assets & Liabilities Held by Fed
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 24
+    name: Monetary Data
+  - id: 32218
+    name: Securities, Loans, & Other Assets & Liabilities Held by Fed
+- leaf_id: 33119
+  leaf_name: Consumer Financial Condition Indexes
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 46
+    name: Financial Indicators
+  - id: 33119
+    name: Consumer Financial Condition Indexes
+- leaf_id: 32457
+  leaf_name: Financial Activity Measures
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 46
+    name: Financial Indicators
+  - id: 32457
+    name: Financial Activity Measures
+- leaf_id: 32255
+  leaf_name: Stock Market Indexes
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 46
+    name: Financial Indicators
+  - id: 32255
+    name: Stock Market Indexes
+- leaf_id: 32425
+  leaf_name: Volatility Indexes
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 46
+    name: Financial Indicators
+  - id: 32425
+    name: Volatility Indexes
+- leaf_id: 34078
+  leaf_name: Banking Indexes
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 34078
+    name: Banking Indexes
+- leaf_id: 101
+  leaf_name: Consumer Credit
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 101
+    name: Consumer Credit
+- leaf_id: 32440
+  leaf_name: Delinquencies and Delinquency Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 32440
+    name: Delinquencies and Delinquency Rates
+- leaf_id: 33121
+  leaf_name: Failures and Assistance Transactions
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 33121
+    name: Failures and Assistance Transactions
+- leaf_id: 33445
+  leaf_name: Mortgage Debt Outstanding
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 33445
+    name: Mortgage Debt Outstanding
+- leaf_id: 32439
+  leaf_name: Net Charge-Offs and Charge-Off Rates
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 32439
+    name: Net Charge-Offs and Charge-Off Rates
+- leaf_id: 99
+  leaf_name: Securities & Investments
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 99
+    name: Securities & Investments
+- leaf_id: 34111
+  leaf_name: Senior Credit Officer Opinion Survey
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 34111
+    name: Senior Credit Officer Opinion Survey
+- leaf_id: 32239
+  leaf_name: Senior Loan Officer Survey
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 32239
+    name: Senior Loan Officer Survey
+- leaf_id: 32996
+  leaf_name: Commercial Paper
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32996
+    name: Commercial Paper
+- leaf_id: 33439
+  leaf_name: Commercial and Industrial Loans Backed by Small Business Association
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 33439
+    name: Commercial and Industrial Loans Backed by Small Business Association
+- leaf_id: 33440
+  leaf_name: Commercial and Industrial Loans Made Under Participation or Syndication
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 33440
+    name: Commercial and Industrial Loans Made Under Participation or Syndication
+- leaf_id: 287
+  leaf_name: Australia
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 287
+    name: Australia
+- leaf_id: 286
+  leaf_name: Austria
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 286
+    name: Austria
+- leaf_id: 285
+  leaf_name: Belgium
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 285
+    name: Belgium
+- leaf_id: 284
+  leaf_name: Brazil
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 284
+    name: Brazil
+- leaf_id: 283
+  leaf_name: Canada
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 283
+    name: Canada
+- leaf_id: 282
+  leaf_name: China
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 282
+    name: China
+- leaf_id: 281
+  leaf_name: Denmark
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 281
+    name: Denmark
+- leaf_id: 280
+  leaf_name: Euro
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 280
+    name: Euro
+- leaf_id: 279
+  leaf_name: Finland
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 279
+    name: Finland
+- leaf_id: 278
+  leaf_name: France
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 278
+    name: France
+- leaf_id: 277
+  leaf_name: Germany
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 277
+    name: Germany
+- leaf_id: 274
+  leaf_name: Greece
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 274
+    name: Greece
+- leaf_id: 273
+  leaf_name: Hong Kong
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 273
+    name: Hong Kong
+- leaf_id: 272
+  leaf_name: India
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 272
+    name: India
+- leaf_id: 271
+  leaf_name: Ireland
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 271
+    name: Ireland
+- leaf_id: 276
+  leaf_name: Italy
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 276
+    name: Italy
+- leaf_id: 275
+  leaf_name: Japan
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 275
+    name: Japan
+- leaf_id: 270
+  leaf_name: Malaysia
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 270
+    name: Malaysia
+- leaf_id: 269
+  leaf_name: Mexico
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 269
+    name: Mexico
+- leaf_id: 268
+  leaf_name: Netherlands
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 268
+    name: Netherlands
+- leaf_id: 266
+  leaf_name: New Zealand
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 266
+    name: New Zealand
+- leaf_id: 265
+  leaf_name: Norway
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 265
+    name: Norway
+- leaf_id: 264
+  leaf_name: Portugal
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 264
+    name: Portugal
+- leaf_id: 263
+  leaf_name: Singapore
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 263
+    name: Singapore
+- leaf_id: 262
+  leaf_name: South Africa
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 262
+    name: South Africa
+- leaf_id: 261
+  leaf_name: South Korea
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 261
+    name: South Korea
+- leaf_id: 260
+  leaf_name: Spain
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 260
+    name: Spain
+- leaf_id: 259
+  leaf_name: Sri Lanka
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 259
+    name: Sri Lanka
+- leaf_id: 258
+  leaf_name: Sweden
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 258
+    name: Sweden
+- leaf_id: 257
+  leaf_name: Switzerland
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 257
+    name: Switzerland
+- leaf_id: 267
+  leaf_name: Taiwan
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 267
+    name: Taiwan
+- leaf_id: 254
+  leaf_name: Thailand
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 254
+    name: Thailand
+- leaf_id: 191
+  leaf_name: United Kingdom
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 191
+    name: United Kingdom
+- leaf_id: 192
+  leaf_name: Venezuela
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 15
+    name: Exchange Rates
+  - id: 158
+    name: By Country
+  - id: 192
+    name: Venezuela
+- leaf_id: 32413
+  leaf_name: BofA Merrill Lynch Total Bond Return Index Values
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 46
+    name: Financial Indicators
+  - id: 32414
+    name: Bond Market Indexes
+  - id: 32413
+    name: BofA Merrill Lynch Total Bond Return Index Values
+- leaf_id: 33078
+  leaf_name: All Commercial Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 100
+    name: Commercial Banking
+  - id: 33078
+    name: All Commercial Banks
+- leaf_id: 33079
+  leaf_name: Domestically Chartered Commercial Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 100
+    name: Commercial Banking
+  - id: 33079
+    name: Domestically Chartered Commercial Banks
+- leaf_id: 33080
+  leaf_name: Foreign-Related Institutions
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 100
+    name: Commercial Banking
+  - id: 33080
+    name: Foreign-Related Institutions
+- leaf_id: 33081
+  leaf_name: Large Domestically Chartered Commercial Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 100
+    name: Commercial Banking
+  - id: 33081
+    name: Large Domestically Chartered Commercial Banks
+- leaf_id: 33082
+  leaf_name: Small Domestically Chartered Commercial Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 100
+    name: Commercial Banking
+  - id: 33082
+    name: Small Domestically Chartered Commercial Banks
+- leaf_id: 93
+  leaf_name: United States
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 93
+    name: United States
+- leaf_id: 84
+  leaf_name: New England Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 84
+    name: New England Census Division
+- leaf_id: 85
+  leaf_name: Middle Atlantic Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 85
+    name: Middle Atlantic Census Division
+- leaf_id: 86
+  leaf_name: East North Central Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 86
+    name: East North Central Census Division
+- leaf_id: 87
+  leaf_name: West North Central Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 87
+    name: West North Central Census Division
+- leaf_id: 88
+  leaf_name: South Atlantic Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 88
+    name: South Atlantic Census Division
+- leaf_id: 89
+  leaf_name: East South Central Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 89
+    name: East South Central Census Division
+- leaf_id: 90
+  leaf_name: West South Central Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 90
+    name: West South Central Census Division
+- leaf_id: 91
+  leaf_name: Mountain Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 91
+    name: Mountain Census Division
+- leaf_id: 92
+  leaf_name: Pacific Census Division
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 83
+    name: Condition of Banks
+  - id: 92
+    name: Pacific Census Division
+- leaf_id: 72
+  leaf_name: 8th District
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 72
+    name: 8th District
+- leaf_id: 65
+  leaf_name: Arkansas
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 65
+    name: Arkansas
+- leaf_id: 66
+  leaf_name: Illinois
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 66
+    name: Illinois
+- leaf_id: 67
+  leaf_name: Indiana
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 67
+    name: Indiana
+- leaf_id: 68
+  leaf_name: Kentucky
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 68
+    name: Kentucky
+- leaf_id: 69
+  leaf_name: Mississippi
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 69
+    name: Mississippi
+- leaf_id: 70
+  leaf_name: Missouri
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 70
+    name: Missouri
+- leaf_id: 71
+  leaf_name: Tennessee
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 23
+    name: Banking
+  - id: 64
+    name: 8th District Banking Performance
+  - id: 71
+    name: Tennessee
+- leaf_id: 32407
+  leaf_name: All Commercial Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32406
+    name: Commercial and Industrial Loans by Time that Pricing Terms Were Set and
+      by Commitment
+  - id: 32407
+    name: All Commercial Banks
+- leaf_id: 32408
+  leaf_name: Domestic Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32406
+    name: Commercial and Industrial Loans by Time that Pricing Terms Were Set and
+      by Commitment
+  - id: 32408
+    name: Domestic Banks
+- leaf_id: 32409
+  leaf_name: Foreign Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32406
+    name: Commercial and Industrial Loans by Time that Pricing Terms Were Set and
+      by Commitment
+  - id: 32409
+    name: Foreign Banks
+- leaf_id: 32410
+  leaf_name: Large Domestic Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32406
+    name: Commercial and Industrial Loans by Time that Pricing Terms Were Set and
+      by Commitment
+  - id: 32410
+    name: Large Domestic Banks
+- leaf_id: 32411
+  leaf_name: Small Domestic Banks
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32406
+    name: Commercial and Industrial Loans by Time that Pricing Terms Were Set and
+      by Commitment
+  - id: 32411
+    name: Small Domestic Banks
+- leaf_id: 32412
+  leaf_name: Summary Statistics
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32406
+    name: Commercial and Industrial Loans by Time that Pricing Terms Were Set and
+      by Commitment
+  - id: 32412
+    name: Summary Statistics
+- leaf_id: 32362
+  leaf_name: All Commercial and Industrial Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32362
+    name: All Commercial and Industrial Loans
+- leaf_id: 32369
+  leaf_name: Base Rate of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32369
+    name: Base Rate of Loans
+- leaf_id: 32364
+  leaf_name: Daily Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32364
+    name: Daily Repricing/Maturity Interval
+- leaf_id: 32367
+  leaf_name: More Than 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32367
+    name: More Than 365 Days Repricing/Maturity Interval
+- leaf_id: 32368
+  leaf_name: Size of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32368
+    name: Size of Loans
+- leaf_id: 32366
+  leaf_name: 31 to 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32366
+    name: 31 to 365 Days Repricing/Maturity Interval
+- leaf_id: 32365
+  leaf_name: 2 to 30 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32365
+    name: 2 to 30 Days Repricing/Maturity Interval
+- leaf_id: 32363
+  leaf_name: Zero Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32361
+    name: Commercial and Industrial Loans Made by All Commercial Banks
+  - id: 32363
+    name: Zero Repricing/Maturity Interval
+- leaf_id: 32371
+  leaf_name: All Commercial and Industrial Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32371
+    name: All Commercial and Industrial Loans
+- leaf_id: 32375
+  leaf_name: Base Rate of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32375
+    name: Base Rate of Loans
+- leaf_id: 32372
+  leaf_name: Daily Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32372
+    name: Daily Repricing/Maturity Interval
+- leaf_id: 32373
+  leaf_name: More Than 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32373
+    name: More Than 365 Days Repricing/Maturity Interval
+- leaf_id: 32374
+  leaf_name: Size of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32374
+    name: Size of Loans
+- leaf_id: 32376
+  leaf_name: 31 to 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32376
+    name: 31 to 365 Days Repricing/Maturity Interval
+- leaf_id: 32377
+  leaf_name: 2 to 30 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32377
+    name: 2 to 30 Days Repricing/Maturity Interval
+- leaf_id: 32378
+  leaf_name: Zero Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32370
+    name: Commercial and Industrial Loans Made by Domestic Banks
+  - id: 32378
+    name: Zero Repricing/Maturity Interval
+- leaf_id: 32380
+  leaf_name: All Commercial and Industrial Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32380
+    name: All Commercial and Industrial Loans
+- leaf_id: 32381
+  leaf_name: Base Rate of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32381
+    name: Base Rate of Loans
+- leaf_id: 32382
+  leaf_name: Daily Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32382
+    name: Daily Repricing/Maturity Interval
+- leaf_id: 32383
+  leaf_name: More Than 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32383
+    name: More Than 365 Days Repricing/Maturity Interval
+- leaf_id: 32384
+  leaf_name: Size of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32384
+    name: Size of Loans
+- leaf_id: 32385
+  leaf_name: 31 to 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32385
+    name: 31 to 365 Days Repricing/Maturity Interval
+- leaf_id: 32386
+  leaf_name: 2 to 30 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32386
+    name: 2 to 30 Days Repricing/Maturity Interval
+- leaf_id: 32387
+  leaf_name: Zero Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32379
+    name: Commercial and Industrial Loans Made by Large Domestic Banks
+  - id: 32387
+    name: Zero Repricing/Maturity Interval
+- leaf_id: 32389
+  leaf_name: All Commercial and Industrial Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32389
+    name: All Commercial and Industrial Loans
+- leaf_id: 32390
+  leaf_name: Base Rate of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32390
+    name: Base Rate of Loans
+- leaf_id: 32391
+  leaf_name: Daily Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32391
+    name: Daily Repricing/Maturity Interval
+- leaf_id: 32392
+  leaf_name: More Than 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32392
+    name: More Than 365 Days Repricing/Maturity Interval
+- leaf_id: 32393
+  leaf_name: Size of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32393
+    name: Size of Loans
+- leaf_id: 32394
+  leaf_name: 31 to 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32394
+    name: 31 to 365 Days Repricing/Maturity Interval
+- leaf_id: 32395
+  leaf_name: 2 to 30 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32395
+    name: 2 to 30 Days Repricing/Maturity Interval
+- leaf_id: 32396
+  leaf_name: Zero Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32388
+    name: Commercial and Industrial Loans Made by Small Domestic Banks
+  - id: 32396
+    name: Zero Repricing/Maturity Interval
+- leaf_id: 32398
+  leaf_name: All Commercial and Industrial Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32398
+    name: All Commercial and Industrial Loans
+- leaf_id: 32399
+  leaf_name: Base Rate of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32399
+    name: Base Rate of Loans
+- leaf_id: 32400
+  leaf_name: Daily Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32400
+    name: Daily Repricing/Maturity Interval
+- leaf_id: 32401
+  leaf_name: More Than 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32401
+    name: More Than 365 Days Repricing/Maturity Interval
+- leaf_id: 32402
+  leaf_name: Size of Loans
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32402
+    name: Size of Loans
+- leaf_id: 32403
+  leaf_name: 31 to 365 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32403
+    name: 31 to 365 Days Repricing/Maturity Interval
+- leaf_id: 32404
+  leaf_name: 2 to 30 Days Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32404
+    name: 2 to 30 Days Repricing/Maturity Interval
+- leaf_id: 32405
+  leaf_name: Zero Repricing/Maturity Interval
+  path:
+  - id: 32991
+    name: Money, Banking, & Finance
+  - id: 32360
+    name: Business Lending
+  - id: 32397
+    name: Commercial and Industrial Loans Made by U.S. Branches and Agencies of Foreign
+      Banks
+  - id: 32405
+    name: Zero Repricing/Maturity Interval
