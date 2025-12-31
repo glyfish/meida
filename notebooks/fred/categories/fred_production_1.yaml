@@ -1,0 +1,221 @@
+- leaf_id: 32262
+  leaf_name: Business Cycle Expansions & Contractions
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32262
+    name: Business Cycle Expansions & Contractions
+- leaf_id: 33936
+  leaf_name: Business Surveys
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33936
+    name: Business Surveys
+- leaf_id: 32436
+  leaf_name: Construction
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32436
+    name: Construction
+- leaf_id: 33940
+  leaf_name: Emissions
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33940
+    name: Emissions
+- leaf_id: 33490
+  leaf_name: Finance Companies
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33490
+    name: Finance Companies
+- leaf_id: 32216
+  leaf_name: Health Insurance
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32216
+    name: Health Insurance
+- leaf_id: 33959
+  leaf_name: Patents
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33959
+    name: Patents
+- leaf_id: 6
+  leaf_name: Retail Trade
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 6
+    name: Retail Trade
+- leaf_id: 33441
+  leaf_name: Services
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33441
+    name: Services
+- leaf_id: 33492
+  leaf_name: Technology
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33492
+    name: Technology
+- leaf_id: 33203
+  leaf_name: Wholesale Trade
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33203
+    name: Wholesale Trade
+- leaf_id: 33957
+  leaf_name: Consumer Expenditures
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33955
+    name: Expenditures
+  - id: 33957
+    name: Consumer Expenditures
+- leaf_id: 32300
+  leaf_name: Housing Units Authorized by Building Permits
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 97
+    name: Housing
+  - id: 32300
+    name: Housing Units Authorized by Building Permits
+- leaf_id: 32301
+  leaf_name: Housing Units Authorized, But Not Yet Started
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 97
+    name: Housing
+  - id: 32301
+    name: Housing Units Authorized, But Not Yet Started
+- leaf_id: 32302
+  leaf_name: Housing Starts
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 97
+    name: Housing
+  - id: 32302
+    name: Housing Starts
+- leaf_id: 32303
+  leaf_name: Housing Units Under Construction
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 97
+    name: Housing
+  - id: 32303
+    name: Housing Units Under Construction
+- leaf_id: 32304
+  leaf_name: Housing Units Completed
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 97
+    name: Housing
+  - id: 32304
+    name: Housing Units Completed
+- leaf_id: 32426
+  leaf_name: New Residential Sales
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 97
+    name: Housing
+  - id: 32426
+    name: New Residential Sales
+- leaf_id: 33949
+  leaf_name: Manufactured Housing
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 97
+    name: Housing
+  - id: 33949
+    name: Manufactured Housing
+- leaf_id: 33938
+  leaf_name: Automotive Production Seasonal Factor
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 3
+    name: Industrial Production & Capacity Utilization
+  - id: 33938
+    name: Automotive Production Seasonal Factor
+- leaf_id: 32432
+  leaf_name: Inventories
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32429
+    name: Manufacturing
+  - id: 32432
+    name: Inventories
+- leaf_id: 32431
+  leaf_name: New Orders
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32429
+    name: Manufacturing
+  - id: 32431
+    name: New Orders
+- leaf_id: 32433
+  leaf_name: Inventory to Shipments
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32429
+    name: Manufacturing
+  - id: 32433
+    name: Inventory to Shipments
+- leaf_id: 32435
+  leaf_name: Unfilled Orders
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32429
+    name: Manufacturing
+  - id: 32435
+    name: Unfilled Orders
+- leaf_id: 32434
+  leaf_name: Unfilled Orders to Shipments
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32429
+    name: Manufacturing
+  - id: 32434
+    name: Unfilled Orders to Shipments
+- leaf_id: 32430
+  leaf_name: Shipments
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 32429
+    name: Manufacturing
+  - id: 32430
+    name: Shipments
+- leaf_id: 32993
+  leaf_name: Motor Vehicles
+  path:
+  - id: 1
+    name: Production & Business Activity
+  - id: 33202
+    name: Transportation
+  - id: 32993
+    name: Motor Vehicles

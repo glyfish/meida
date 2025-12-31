@@ -1,0 +1,665 @@
+- leaf_id: 32250
+  leaf_name: ADP Employment
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32250
+    name: ADP Employment
+- leaf_id: 33500
+  leaf_name: Education
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 33500
+    name: Education
+- leaf_id: 33001
+  leaf_name: Income Distribution
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 33001
+    name: Income Distribution
+- leaf_id: 33509
+  leaf_name: Labor Market Conditions
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 33509
+    name: Labor Market Conditions
+- leaf_id: 33831
+  leaf_name: Minimum Wage
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 33831
+    name: Minimum Wage
+- leaf_id: 32240
+  leaf_name: Weekly Initial Claims
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32240
+    name: Weekly Initial Claims
+- leaf_id: 33731
+  leaf_name: Tax Data
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 33731
+    name: Tax Data
+- leaf_id: 32442
+  leaf_name: Civilian Labor Force
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32442
+    name: Civilian Labor Force
+- leaf_id: 32443
+  leaf_name: Civilian Labor Force Participation Rate
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32443
+    name: Civilian Labor Force Participation Rate
+- leaf_id: 32444
+  leaf_name: Employment
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32444
+    name: Employment
+- leaf_id: 32445
+  leaf_name: Employment Population Ratio
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32445
+    name: Employment Population Ratio
+- leaf_id: 32446
+  leaf_name: Unemployment Level
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32446
+    name: Unemployment Level
+- leaf_id: 32447
+  leaf_name: Unemployment Rate
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32447
+    name: Unemployment Rate
+- leaf_id: 32448
+  leaf_name: Not in Labor Force
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32448
+    name: Not in Labor Force
+- leaf_id: 32449
+  leaf_name: Labor Force Participation Rate
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32449
+    name: Labor Force Participation Rate
+- leaf_id: 32450
+  leaf_name: Multiple Jobholders
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32450
+    name: Multiple Jobholders
+- leaf_id: 32451
+  leaf_name: Duration of Unemployment
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32451
+    name: Duration of Unemployment
+- leaf_id: 32452
+  leaf_name: Losers and Leavers
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32452
+    name: Losers and Leavers
+- leaf_id: 33501
+  leaf_name: Earnings
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 33501
+    name: Earnings
+- leaf_id: 32453
+  leaf_name: Entrants and Reentrants
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 32453
+    name: Entrants and Reentrants
+- leaf_id: 33502
+  leaf_name: Labor Force Status Flows
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 12
+    name: Current Population Survey (Household Survey)
+  - id: 33502
+    name: Labor Force Status Flows
+- leaf_id: 32305
+  leaf_name: Total Nonfarm
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32305
+    name: Total Nonfarm
+- leaf_id: 32306
+  leaf_name: Total Private
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32306
+    name: Total Private
+- leaf_id: 32307
+  leaf_name: Goods-Producing
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32307
+    name: Goods-Producing
+- leaf_id: 32326
+  leaf_name: Service-Providing
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32326
+    name: Service-Providing
+- leaf_id: 32308
+  leaf_name: Private Service-Providing
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32308
+    name: Private Service-Providing
+- leaf_id: 32309
+  leaf_name: Mining and Logging
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32309
+    name: Mining and Logging
+- leaf_id: 32310
+  leaf_name: Construction
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32310
+    name: Construction
+- leaf_id: 32311
+  leaf_name: Manufacturing
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32311
+    name: Manufacturing
+- leaf_id: 32312
+  leaf_name: Durable Goods
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32312
+    name: Durable Goods
+- leaf_id: 32313
+  leaf_name: Nondurable Goods
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32313
+    name: Nondurable Goods
+- leaf_id: 32314
+  leaf_name: Trade, Transportation, and Utilities
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32314
+    name: Trade, Transportation, and Utilities
+- leaf_id: 32315
+  leaf_name: Wholesale Trade
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32315
+    name: Wholesale Trade
+- leaf_id: 32316
+  leaf_name: Retail Trade
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32316
+    name: Retail Trade
+- leaf_id: 32317
+  leaf_name: Transportation and Warehousing
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32317
+    name: Transportation and Warehousing
+- leaf_id: 32318
+  leaf_name: Utilities
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32318
+    name: Utilities
+- leaf_id: 32319
+  leaf_name: Information
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32319
+    name: Information
+- leaf_id: 32320
+  leaf_name: Financial Activities
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32320
+    name: Financial Activities
+- leaf_id: 32321
+  leaf_name: Professional and Business Services
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32321
+    name: Professional and Business Services
+- leaf_id: 32322
+  leaf_name: Education and Health Services
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32322
+    name: Education and Health Services
+- leaf_id: 32323
+  leaf_name: Leisure and Hospitality
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32323
+    name: Leisure and Hospitality
+- leaf_id: 32324
+  leaf_name: Other Services
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32324
+    name: Other Services
+- leaf_id: 32325
+  leaf_name: Government
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 11
+    name: Current Employment Statistics (Establishment Survey)
+  - id: 32325
+    name: Government
+- leaf_id: 32243
+  leaf_name: Job Openings (Levels and Rates)
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32241
+    name: Job Openings and Labor Turnover (JOLTS)
+  - id: 32243
+    name: Job Openings (Levels and Rates)
+- leaf_id: 32245
+  leaf_name: Hires (Levels and Rates)
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32241
+    name: Job Openings and Labor Turnover (JOLTS)
+  - id: 32245
+    name: Hires (Levels and Rates)
+- leaf_id: 32246
+  leaf_name: Total Separations (Levels and Rates)
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32241
+    name: Job Openings and Labor Turnover (JOLTS)
+  - id: 32246
+    name: Total Separations (Levels and Rates)
+- leaf_id: 32247
+  leaf_name: Quits (Levels and Rates)
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32241
+    name: Job Openings and Labor Turnover (JOLTS)
+  - id: 32247
+    name: Quits (Levels and Rates)
+- leaf_id: 32248
+  leaf_name: Layoffs and Discharges (Levels and Rates)
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32241
+    name: Job Openings and Labor Turnover (JOLTS)
+  - id: 32248
+    name: Layoffs and Discharges (Levels and Rates)
+- leaf_id: 32249
+  leaf_name: Other Separations (Levels and Rates)
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 32241
+    name: Job Openings and Labor Turnover (JOLTS)
+  - id: 32249
+    name: Other Separations (Levels and Rates)
+- leaf_id: 33735
+  leaf_name: Poverty Measures
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 104
+    name: Population
+  - id: 33735
+    name: Poverty Measures
+- leaf_id: 33514
+  leaf_name: Supplemental Nutrition Assistance Program
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 104
+    name: Population
+  - id: 33514
+    name: Supplemental Nutrition Assistance Program
+- leaf_id: 33961
+  leaf_name: Agriculture, Forestry, Fishing and Hunting
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33961
+    name: Agriculture, Forestry, Fishing and Hunting
+- leaf_id: 33963
+  leaf_name: Mining
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33963
+    name: Mining
+- leaf_id: 33965
+  leaf_name: Utilities
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33965
+    name: Utilities
+- leaf_id: 33967
+  leaf_name: Construction
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33967
+    name: Construction
+- leaf_id: 33969
+  leaf_name: Wholesale Trade
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33969
+    name: Wholesale Trade
+- leaf_id: 33972
+  leaf_name: Retail Trade
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33972
+    name: Retail Trade
+- leaf_id: 33974
+  leaf_name: Transportation and Warehousing
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33974
+    name: Transportation and Warehousing
+- leaf_id: 33976
+  leaf_name: Information
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33976
+    name: Information
+- leaf_id: 33978
+  leaf_name: Finance and Insurance
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33978
+    name: Finance and Insurance
+- leaf_id: 33980
+  leaf_name: Real Estate and Rental and Leasing
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33980
+    name: Real Estate and Rental and Leasing
+- leaf_id: 33982
+  leaf_name: Professional, Scientific, and Technical Services
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33982
+    name: Professional, Scientific, and Technical Services
+- leaf_id: 33984
+  leaf_name: Management of Companies and Enterprises
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33984
+    name: Management of Companies and Enterprises
+- leaf_id: 33986
+  leaf_name: Administrative and Support and Waste Management and Remediation Services
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33986
+    name: Administrative and Support and Waste Management and Remediation Services
+- leaf_id: 33988
+  leaf_name: Educational Services
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33988
+    name: Educational Services
+- leaf_id: 33990
+  leaf_name: Health Care and Social Assistance
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33990
+    name: Health Care and Social Assistance
+- leaf_id: 33992
+  leaf_name: Arts, Entertainment, and Recreation
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33992
+    name: Arts, Entertainment, and Recreation
+- leaf_id: 33994
+  leaf_name: Accommodation and Food Services
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33994
+    name: Accommodation and Food Services
+- leaf_id: 33996
+  leaf_name: Other Services (except Public Administration)
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33996
+    name: Other Services (except Public Administration)
+- leaf_id: 33998
+  leaf_name: Government
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 33998
+    name: Government
+- leaf_id: 32350
+  leaf_name: Business
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 32350
+    name: Business
+- leaf_id: 32351
+  leaf_name: Nonfarm Business
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 32351
+    name: Nonfarm Business
+- leaf_id: 32354
+  leaf_name: Nonfinancial Corporations
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 32354
+    name: Nonfinancial Corporations
+- leaf_id: 32352
+  leaf_name: Durable Goods
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 32349
+    name: Manufacturing
+  - id: 32352
+    name: Durable Goods
+- leaf_id: 32353
+  leaf_name: Nondurable Goods
+  path:
+  - id: 10
+    name: Population, Employment, & Labor Markets
+  - id: 2
+    name: Productivity & Costs
+  - id: 32349
+    name: Manufacturing
+  - id: 32353
+    name: Nondurable Goods

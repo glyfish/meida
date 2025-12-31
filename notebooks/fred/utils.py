@@ -20,7 +20,7 @@ async def children_of_categories(categories: list[Any]):
         args = {"category_id": category_id}
         result = await call_tool("fred.category_children", args)
         children = result.structuredContent['result']['categories']  # type: ignore
-        return children
+        print(f"Category {category_id}, {category_name} has {len(children)} children")
 
 
 async def explore_categories(root_id: int = 0, depth: int = 2):
