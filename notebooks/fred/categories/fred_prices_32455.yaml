@@ -1,0 +1,1025 @@
+- leaf_id: 32217
+  leaf_name: Commodities
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32217
+    name: Commodities
+- leaf_id: 33913
+  leaf_name: Cryptocurrencies
+  path:
+  - id: 32455
+    name: Prices
+  - id: 33913
+    name: Cryptocurrencies
+- leaf_id: 4
+  leaf_name: Employment Cost Index
+  path:
+  - id: 32455
+    name: Prices
+  - id: 4
+    name: Employment Cost Index
+- leaf_id: 33717
+  leaf_name: Health Care Indexes
+  path:
+  - id: 32455
+    name: Prices
+  - id: 33717
+    name: Health Care Indexes
+- leaf_id: 32261
+  leaf_name: House Price Indexes
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32261
+    name: House Price Indexes
+- leaf_id: 32415
+  leaf_name: Food and Beverages
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32415
+    name: Food and Beverages
+- leaf_id: 32416
+  leaf_name: Housing
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32416
+    name: Housing
+- leaf_id: 32417
+  leaf_name: Apparel
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32417
+    name: Apparel
+- leaf_id: 32418
+  leaf_name: Transportation
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32418
+    name: Transportation
+- leaf_id: 32419
+  leaf_name: Medical Care
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32419
+    name: Medical Care
+- leaf_id: 32420
+  leaf_name: Recreation
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32420
+    name: Recreation
+- leaf_id: 32421
+  leaf_name: Education and Communication
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32421
+    name: Education and Communication
+- leaf_id: 32422
+  leaf_name: Other Goods and Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32422
+    name: Other Goods and Services
+- leaf_id: 32423
+  leaf_name: Commodity and Services Groups
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32423
+    name: Commodity and Services Groups
+- leaf_id: 32424
+  leaf_name: Special Indexes
+  path:
+  - id: 32455
+    name: Prices
+  - id: 9
+    name: Consumer Price Indexes (CPI and PCE)
+  - id: 32424
+    name: Special Indexes
+- leaf_id: 32231
+  leaf_name: Services Price Indexes
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32231
+    name: Services Price Indexes
+- leaf_id: 33564
+  leaf_name: Accommodation Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33564
+    name: Accommodation Services
+- leaf_id: 33548
+  leaf_name: Advertising Space and Time Sales
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33548
+    name: Advertising Space and Time Sales
+- leaf_id: 33533
+  leaf_name: Chemicals and Allied Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33533
+    name: Chemicals and Allied Products
+- leaf_id: 33560
+  leaf_name: Cleaning and Building Maintenance Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33560
+    name: Cleaning and Building Maintenance Services
+- leaf_id: 33573
+  leaf_name: Construction
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33573
+    name: Construction
+- leaf_id: 33572
+  leaf_name: Contract Work on Textile Products, Apparel, and Leather
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33572
+    name: Contract Work on Textile Products, Apparel, and Leather
+- leaf_id: 33551
+  leaf_name: Credit Intermediation Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33551
+    name: Credit Intermediation Services
+- leaf_id: 33550
+  leaf_name: Data Processing and Related Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33550
+    name: Data Processing and Related Services
+- leaf_id: 33574
+  leaf_name: Durability of Product
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33574
+    name: Durability of Product
+- leaf_id: 33563
+  leaf_name: Educational Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33563
+    name: Educational Services
+- leaf_id: 33557
+  leaf_name: Employment Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33557
+    name: Employment Services
+- leaf_id: 33567
+  leaf_name: Entertainment Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33567
+    name: Entertainment Services
+- leaf_id: 33528
+  leaf_name: Farm Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33528
+    name: Farm Products
+- leaf_id: 33575
+  leaf_name: Final Demand
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33575
+    name: Final Demand
+- leaf_id: 33565
+  leaf_name: Food and Beverage for Immediate Consumption Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33565
+    name: Food and Beverage for Immediate Consumption Services
+- leaf_id: 33532
+  leaf_name: Fuels and Related Products and Power
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33532
+    name: Fuels and Related Products and Power
+- leaf_id: 33539
+  leaf_name: Furniture and Household Durables
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33539
+    name: Furniture and Household Durables
+- leaf_id: 33561
+  leaf_name: Health Care Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33561
+    name: Health Care Services
+- leaf_id: 33531
+  leaf_name: Hides, Skins, Leather, and Related Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33531
+    name: Hides, Skins, Leather, and Related Products
+- leaf_id: 33582
+  leaf_name: Inputs to Industries
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33582
+    name: Inputs to Industries
+- leaf_id: 33553
+  leaf_name: Insurance and Annuities
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33553
+    name: Insurance and Annuities
+- leaf_id: 33577
+  leaf_name: Intermediate Demand By Commodity Type
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33577
+    name: Intermediate Demand By Commodity Type
+- leaf_id: 33576
+  leaf_name: Intermediate Demand By Production Flow
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33576
+    name: Intermediate Demand By Production Flow
+- leaf_id: 33552
+  leaf_name: Investment Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33552
+    name: Investment Services
+- leaf_id: 33535
+  leaf_name: Lumber and Wood Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33535
+    name: Lumber and Wood Products
+- leaf_id: 33538
+  leaf_name: Machinery and Equipment
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33538
+    name: Machinery and Equipment
+- leaf_id: 33570
+  leaf_name: Metal Treatment Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33570
+    name: Metal Treatment Services
+- leaf_id: 33537
+  leaf_name: Metals and Metal Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33537
+    name: Metals and Metal Products
+- leaf_id: 33571
+  leaf_name: Mining Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33571
+    name: Mining Services
+- leaf_id: 33542
+  leaf_name: Miscellaneous Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33542
+    name: Miscellaneous Products
+- leaf_id: 33547
+  leaf_name: Network Compensation from Broadcast and Cable Television and Radio
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33547
+    name: Network Compensation from Broadcast and Cable Television and Radio
+- leaf_id: 33540
+  leaf_name: Nonmetallic Mineral Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33540
+    name: Nonmetallic Mineral Products
+- leaf_id: 33529
+  leaf_name: Processed Foods and Feeds
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33529
+    name: Processed Foods and Feeds
+- leaf_id: 33556
+  leaf_name: Professional Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33556
+    name: Professional Services
+- leaf_id: 33545
+  leaf_name: Publishing Sales, Excluding Software
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33545
+    name: Publishing Sales, Excluding Software
+- leaf_id: 33536
+  leaf_name: Pulp, Paper, and Allied Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33536
+    name: Pulp, Paper, and Allied Products
+- leaf_id: 33554
+  leaf_name: Real Estate Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33554
+    name: Real Estate Services
+- leaf_id: 33555
+  leaf_name: Rental and Leasing of Goods
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33555
+    name: Rental and Leasing of Goods
+- leaf_id: 33566
+  leaf_name: Repair and Maintenance Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33566
+    name: Repair and Maintenance Services
+- leaf_id: 33569
+  leaf_name: Retail Trade Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33569
+    name: Retail Trade Services
+- leaf_id: 33534
+  leaf_name: Rubber and Plastic Products
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33534
+    name: Rubber and Plastic Products
+- leaf_id: 33559
+  leaf_name: Selected Security Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33559
+    name: Selected Security Services
+- leaf_id: 33546
+  leaf_name: Software Publishing
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33546
+    name: Software Publishing
+- leaf_id: 33580
+  leaf_name: Special Indexes
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33580
+    name: Special Indexes
+- leaf_id: 33581
+  leaf_name: Stage of Processing
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33581
+    name: Stage of Processing
+- leaf_id: 33549
+  leaf_name: Telecommunication, Cable, and Internet User Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33549
+    name: Telecommunication, Cable, and Internet User Services
+- leaf_id: 33530
+  leaf_name: Textile Products and Apparel
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33530
+    name: Textile Products and Apparel
+- leaf_id: 33541
+  leaf_name: Transportation Equipment
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33541
+    name: Transportation Equipment
+- leaf_id: 33543
+  leaf_name: Transportation Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33543
+    name: Transportation Services
+- leaf_id: 33558
+  leaf_name: Travel Arrangement Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33558
+    name: Travel Arrangement Services
+- leaf_id: 33544
+  leaf_name: Warehousing, Storage, and Related Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33544
+    name: Warehousing, Storage, and Related Services
+- leaf_id: 33562
+  leaf_name: Waste Collection and Remediation Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33562
+    name: Waste Collection and Remediation Services
+- leaf_id: 33568
+  leaf_name: Wholesale Trade Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33583
+    name: Commodity Based
+  - id: 33568
+    name: Wholesale Trade Services
+- leaf_id: 33586
+  leaf_name: Accommodation and Food Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33586
+    name: Accommodation and Food Services
+- leaf_id: 33588
+  leaf_name: Administrative and Support and Waste Management and Remediation Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33588
+    name: Administrative and Support and Waste Management and Remediation Services
+- leaf_id: 33585
+  leaf_name: Agriculture, Forestry, Fishing and Hunting
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33585
+    name: Agriculture, Forestry, Fishing and Hunting
+- leaf_id: 33587
+  leaf_name: Arts, Entertainment, and Recreation
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33587
+    name: Arts, Entertainment, and Recreation
+- leaf_id: 33589
+  leaf_name: Construction
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33589
+    name: Construction
+- leaf_id: 33591
+  leaf_name: Educational Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33591
+    name: Educational Services
+- leaf_id: 33590
+  leaf_name: Finance and Insurance
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33590
+    name: Finance and Insurance
+- leaf_id: 33593
+  leaf_name: Health Care and Social Assistance
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33593
+    name: Health Care and Social Assistance
+- leaf_id: 33592
+  leaf_name: Information
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33592
+    name: Information
+- leaf_id: 33597
+  leaf_name: Manufacturing
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33597
+    name: Manufacturing
+- leaf_id: 33596
+  leaf_name: Mining, Quarrying, and Oil and Gas Extraction
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33596
+    name: Mining, Quarrying, and Oil and Gas Extraction
+- leaf_id: 33594
+  leaf_name: Other Services (except Public Administration)
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33594
+    name: Other Services (except Public Administration)
+- leaf_id: 33599
+  leaf_name: Professional, Scientific, and Technical Services
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33599
+    name: Professional, Scientific, and Technical Services
+- leaf_id: 33595
+  leaf_name: Public Administration
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33595
+    name: Public Administration
+- leaf_id: 33598
+  leaf_name: Real Estate and Rental and Leasing
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33598
+    name: Real Estate and Rental and Leasing
+- leaf_id: 33600
+  leaf_name: Retail Trade
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33600
+    name: Retail Trade
+- leaf_id: 33601
+  leaf_name: Transportation and Warehousing
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33601
+    name: Transportation and Warehousing
+- leaf_id: 33602
+  leaf_name: Utilities
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33602
+    name: Utilities
+- leaf_id: 33603
+  leaf_name: Wholesale Trade
+  path:
+  - id: 32455
+    name: Prices
+  - id: 31
+    name: Producer Price Indexes (PPI)
+  - id: 33584
+    name: Industry Based
+  - id: 33603
+    name: Wholesale Trade
+- leaf_id: 32223
+  leaf_name: End Use Classification System
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32221
+    name: Import Price Indexes
+  - id: 32223
+    name: End Use Classification System
+- leaf_id: 32229
+  leaf_name: By Harmonized System
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32221
+    name: Import Price Indexes
+  - id: 32229
+    name: By Harmonized System
+- leaf_id: 32226
+  leaf_name: By NAICS
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32221
+    name: Import Price Indexes
+  - id: 32226
+    name: By NAICS
+- leaf_id: 32230
+  leaf_name: By Locality of Origin
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32221
+    name: Import Price Indexes
+  - id: 32230
+    name: By Locality of Origin
+- leaf_id: 33907
+  leaf_name: Standard International Trade Classification
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32221
+    name: Import Price Indexes
+  - id: 33907
+    name: Standard International Trade Classification
+- leaf_id: 32225
+  leaf_name: End Use Classification System
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32224
+    name: Export Price Indexes
+  - id: 32225
+    name: End Use Classification System
+- leaf_id: 32227
+  leaf_name: By NAICS
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32224
+    name: Export Price Indexes
+  - id: 32227
+    name: By NAICS
+- leaf_id: 32228
+  leaf_name: By Harmonized System
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32224
+    name: Export Price Indexes
+  - id: 32228
+    name: By Harmonized System
+- leaf_id: 33905
+  leaf_name: Standard International Trade Classification
+  path:
+  - id: 32455
+    name: Prices
+  - id: 32220
+    name: Trade Indexes
+  - id: 32224
+    name: Export Price Indexes
+  - id: 33905
+    name: Standard International Trade Classification

@@ -1,0 +1,851 @@
+- leaf_id: 5
+  leaf_name: Federal Government Debt
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 5
+    name: Federal Government Debt
+- leaf_id: 33122
+  leaf_name: Gross Domestic Income
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33122
+    name: Gross Domestic Income
+- leaf_id: 33719
+  leaf_name: Health Care Spending
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33719
+    name: Health Care Spending
+- leaf_id: 33054
+  leaf_name: Imputations
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33054
+    name: Imputations
+- leaf_id: 21
+  leaf_name: Price Indexes & Deflators
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 21
+    name: Price Indexes & Deflators
+- leaf_id: 33021
+  leaf_name: Quantity Indexes
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33021
+    name: Quantity Indexes
+- leaf_id: 33401
+  leaf_name: Effect of ARRA on Selected NIPA Estimates
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33401
+    name: Effect of ARRA on Selected NIPA Estimates
+- leaf_id: 32258
+  leaf_name: B.101 Balance Sheet of Households and Nonprofit Organizations
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 32258
+    name: B.101 Balance Sheet of Households and Nonprofit Organizations
+- leaf_id: 32259
+  leaf_name: B.103 Balance Sheet of Nonfinancial Corporate Business
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 32259
+    name: B.103 Balance Sheet of Nonfinancial Corporate Business
+- leaf_id: 32260
+  leaf_name: B.104 Balance Sheet of Nonfinancial Noncorporate Business
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 32260
+    name: B.104 Balance Sheet of Nonfinancial Noncorporate Business
+- leaf_id: 32256
+  leaf_name: D.3 Credit Market Debt Outstanding by Sector
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 32256
+    name: D.3 Credit Market Debt Outstanding by Sector
+- leaf_id: 32257
+  leaf_name: L.1 Credit Market Debt Outstanding
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 32257
+    name: L.1 Credit Market Debt Outstanding
+- leaf_id: 33722
+  leaf_name: L.203 Net Interbank Transactions
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33722
+    name: L.203 Net Interbank Transactions
+- leaf_id: 33726
+  leaf_name: L.208 Debt Securities
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33726
+    name: L.208 Debt Securities
+- leaf_id: 33729
+  leaf_name: L.214 Loans
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33729
+    name: L.214 Loans
+- leaf_id: 33204
+  leaf_name: S.1 Total Economy - Current Account
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33204
+    name: S.1 Total Economy - Current Account
+- leaf_id: 33205
+  leaf_name: S.2 Selected Aggregates for Total Economy and Sectors
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33205
+    name: S.2 Selected Aggregates for Total Economy and Sectors
+- leaf_id: 33240
+  leaf_name: S.3 Households and Nonprofit Institutions Serving Households
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33240
+    name: S.3 Households and Nonprofit Institutions Serving Households
+- leaf_id: 33241
+  leaf_name: S.4 Nonfinancial Noncorporate Business
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33241
+    name: S.4 Nonfinancial Noncorporate Business
+- leaf_id: 33242
+  leaf_name: S.5 Nonfinancial Corporate Business
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33242
+    name: S.5 Nonfinancial Corporate Business
+- leaf_id: 33243
+  leaf_name: S.6 Financial Business
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33243
+    name: S.6 Financial Business
+- leaf_id: 33244
+  leaf_name: S.7 Federal Government
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33244
+    name: S.7 Federal Government
+- leaf_id: 33245
+  leaf_name: S.8 State and Local Governments
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33245
+    name: S.8 State and Local Governments
+- leaf_id: 33246
+  leaf_name: S.9 Rest of the World
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 32251
+    name: Flow of Funds
+  - id: 33246
+    name: S.9 Rest of the World
+- leaf_id: 16
+  leaf_name: Exports
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 13
+    name: U.S. Trade & International Transactions
+  - id: 16
+    name: Exports
+- leaf_id: 17
+  leaf_name: Imports
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 13
+    name: U.S. Trade & International Transactions
+  - id: 17
+    name: Imports
+- leaf_id: 3000
+  leaf_name: Income Payments & Receipts
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 13
+    name: U.S. Trade & International Transactions
+  - id: 3000
+    name: Income Payments & Receipts
+- leaf_id: 33705
+  leaf_name: International Investment Position
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 13
+    name: U.S. Trade & International Transactions
+  - id: 33705
+    name: International Investment Position
+- leaf_id: 125
+  leaf_name: Trade Balance
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 13
+    name: U.S. Trade & International Transactions
+  - id: 125
+    name: Trade Balance
+- leaf_id: 127
+  leaf_name: U.S. International Finance
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 13
+    name: U.S. Trade & International Transactions
+  - id: 127
+    name: U.S. International Finance
+- leaf_id: 33042
+  leaf_name: Capital Transfers Paid
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33042
+    name: Capital Transfers Paid
+- leaf_id: 33043
+  leaf_name: Capital Transfers Received
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33043
+    name: Capital Transfers Received
+- leaf_id: 33040
+  leaf_name: Consumptions of Fixed Capital
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33040
+    name: Consumptions of Fixed Capital
+- leaf_id: 33041
+  leaf_name: Corporate Capital Consumption
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33041
+    name: Corporate Capital Consumption
+- leaf_id: 33037
+  leaf_name: Domestic Investments
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33037
+    name: Domestic Investments
+- leaf_id: 33038
+  leaf_name: Inventories
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33038
+    name: Inventories
+- leaf_id: 33044
+  leaf_name: Noncorporate Business
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33044
+    name: Noncorporate Business
+- leaf_id: 33039
+  leaf_name: Private Fixed Investments
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 112
+    name: Domestic Capital Account (Saving & Investment)
+  - id: 33039
+    name: Private Fixed Investments
+- leaf_id: 33018
+  leaf_name: Exports
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 108
+    name: Foreign Transactions
+  - id: 33018
+    name: Exports
+- leaf_id: 33019
+  leaf_name: Imports
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 108
+    name: Foreign Transactions
+  - id: 33019
+    name: Imports
+- leaf_id: 33699
+  leaf_name: Net Stocks
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33697
+    name: Fixed Assets
+  - id: 33699
+    name: Net Stocks
+- leaf_id: 33701
+  leaf_name: Depreciation
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33697
+    name: Fixed Assets
+  - id: 33701
+    name: Depreciation
+- leaf_id: 33703
+  leaf_name: Fixed Investment
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33697
+    name: Fixed Assets
+  - id: 33703
+    name: Fixed Investment
+- leaf_id: 33020
+  leaf_name: Shares of GDP
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 106
+    name: GDP/GNP
+  - id: 33020
+    name: Shares of GDP
+- leaf_id: 33022
+  leaf_name: Gov't Consumption Expenditures
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 107
+    name: Gov't Receipts, Expenditures & Investment
+  - id: 33022
+    name: Gov't Consumption Expenditures
+- leaf_id: 33024
+  leaf_name: Gov't Current Expenditures
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 107
+    name: Gov't Receipts, Expenditures & Investment
+  - id: 33024
+    name: Gov't Current Expenditures
+- leaf_id: 33025
+  leaf_name: Gov't Current Transfer Receipts
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 107
+    name: Gov't Receipts, Expenditures & Investment
+  - id: 33025
+    name: Gov't Current Transfer Receipts
+- leaf_id: 33027
+  leaf_name: Gov't Fixed Investment
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 107
+    name: Gov't Receipts, Expenditures & Investment
+  - id: 33027
+    name: Gov't Fixed Investment
+- leaf_id: 33023
+  leaf_name: Gov't Investment
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 107
+    name: Gov't Receipts, Expenditures & Investment
+  - id: 33023
+    name: Gov't Investment
+- leaf_id: 33026
+  leaf_name: Gov't Social Benefits
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 107
+    name: Gov't Receipts, Expenditures & Investment
+  - id: 33026
+    name: Gov't Social Benefits
+- leaf_id: 33883
+  leaf_name: Administrative and Waste Management Services
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33883
+    name: Administrative and Waste Management Services
+- leaf_id: 33859
+  leaf_name: Agriculture, Forestry, Fishing, and Hunting
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33859
+    name: Agriculture, Forestry, Fishing, and Hunting
+- leaf_id: 33887
+  leaf_name: Arts, Entertainment, Recreation, Accommodation, and Food Services
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33887
+    name: Arts, Entertainment, Recreation, Accommodation, and Food Services
+- leaf_id: 33046
+  leaf_name: Auto Output
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33046
+    name: Auto Output
+- leaf_id: 33865
+  leaf_name: Construction
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33865
+    name: Construction
+- leaf_id: 33885
+  leaf_name: Educational Services, Health Care, and Social Assistance
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33885
+    name: Educational Services, Health Care, and Social Assistance
+- leaf_id: 33047
+  leaf_name: Farm Output
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33047
+    name: Farm Output
+- leaf_id: 33877
+  leaf_name: Finance, Insurance, Real Estate, Rental, and Leasing
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33877
+    name: Finance, Insurance, Real Estate, Rental, and Leasing
+- leaf_id: 33050
+  leaf_name: Full-time Equivalent Employees
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33050
+    name: Full-time Equivalent Employees
+- leaf_id: 33049
+  leaf_name: Full-time & Part-time Employees
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33049
+    name: Full-time & Part-time Employees
+- leaf_id: 33889
+  leaf_name: Government
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33889
+    name: Government
+- leaf_id: 33048
+  leaf_name: Households
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33048
+    name: Households
+- leaf_id: 33053
+  leaf_name: Imputed Interest
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33053
+    name: Imputed Interest
+- leaf_id: 33875
+  leaf_name: Information
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33875
+    name: Information
+- leaf_id: 33881
+  leaf_name: Management Of Companies and Enterprises
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33881
+    name: Management Of Companies and Enterprises
+- leaf_id: 33867
+  leaf_name: Manufacturing
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33867
+    name: Manufacturing
+- leaf_id: 33861
+  leaf_name: Mining
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33861
+    name: Mining
+- leaf_id: 33052
+  leaf_name: Persons Engaged in Production
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33052
+    name: Persons Engaged in Production
+- leaf_id: 33879
+  leaf_name: Professional and Business Services
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33879
+    name: Professional and Business Services
+- leaf_id: 33871
+  leaf_name: Retail Trade
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33871
+    name: Retail Trade
+- leaf_id: 33051
+  leaf_name: Self-employed Persons
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33051
+    name: Self-employed Persons
+- leaf_id: 33873
+  leaf_name: Transportation and Warehousing
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33873
+    name: Transportation and Warehousing
+- leaf_id: 33863
+  leaf_name: Utilities
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33863
+    name: Utilities
+- leaf_id: 33869
+  leaf_name: Wholesale Trade
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 33045
+    name: Industry
+  - id: 33869
+    name: Wholesale Trade
+- leaf_id: 33029
+  leaf_name: Compensation of Employees
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 110
+    name: Personal Income & Outlays
+  - id: 33029
+    name: Compensation of Employees
+- leaf_id: 33031
+  leaf_name: Employer Contributions
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 110
+    name: Personal Income & Outlays
+  - id: 33031
+    name: Employer Contributions
+- leaf_id: 33028
+  leaf_name: Personal Consumption Expenditures
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 110
+    name: Personal Income & Outlays
+  - id: 33028
+    name: Personal Consumption Expenditures
+- leaf_id: 33032
+  leaf_name: Personal Current Taxes
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 110
+    name: Personal Income & Outlays
+  - id: 33032
+    name: Personal Current Taxes
+- leaf_id: 33030
+  leaf_name: Wage and Salary Accruals
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 110
+    name: Personal Income & Outlays
+  - id: 33030
+    name: Wage and Salary Accruals
+- leaf_id: 33035
+  leaf_name: Corporate Dividends
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 109
+    name: Private Enterprise Income
+  - id: 33035
+    name: Corporate Dividends
+- leaf_id: 33033
+  leaf_name: Corporate Profits
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 109
+    name: Private Enterprise Income
+  - id: 33033
+    name: Corporate Profits
+- leaf_id: 33036
+  leaf_name: Proprietorship
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 109
+    name: Private Enterprise Income
+  - id: 33036
+    name: Proprietorship
+- leaf_id: 33034
+  leaf_name: Taxes on Corporate Income
+  path:
+  - id: 32992
+    name: National Accounts
+  - id: 18
+    name: National Income & Product Accounts
+  - id: 109
+    name: Private Enterprise Income
+  - id: 33034
+    name: Taxes on Corporate Income
