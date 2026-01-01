@@ -1,0 +1,56 @@
+- leaf_id: 32062
+  leaf_name: Far West
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32062
+    name: Far West
+- leaf_id: 32063
+  leaf_name: Great Lakes
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32063
+    name: Great Lakes
+- leaf_id: 32064
+  leaf_name: Mideast
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32064
+    name: Mideast
+- leaf_id: 32065
+  leaf_name: New England
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32065
+    name: New England
+- leaf_id: 32066
+  leaf_name: Plains
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32066
+    name: Plains
+- leaf_id: 32067
+  leaf_name: Rocky Mountain
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32067
+    name: Rocky Mountain
+- leaf_id: 32068
+  leaf_name: Southeast
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32068
+    name: Southeast
+- leaf_id: 32069
+  leaf_name: Southwest
+  path:
+  - id: 32061
+    name: BEA Regions
+  - id: 32069
+    name: Southwest

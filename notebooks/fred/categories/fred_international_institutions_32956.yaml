@@ -1,0 +1,182 @@
+- leaf_id: 33903
+  leaf_name: Advanced Economies
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33903
+    name: Advanced Economies
+- leaf_id: 33127
+  leaf_name: Association of Southeast Asian Nations (ASEAN)
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33127
+    name: Association of Southeast Asian Nations (ASEAN)
+- leaf_id: 33126
+  leaf_name: Bureau of Labor Statistics Asian Newly Industrialized Countries
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33126
+    name: Bureau of Labor Statistics Asian Newly Industrialized Countries
+- leaf_id: 33124
+  leaf_name: Bureau of Labor Statistics Industrialized Countries
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33124
+    name: Bureau of Labor Statistics Industrialized Countries
+- leaf_id: 33128
+  leaf_name: Bureau of Labor Statistics Latin America
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33128
+    name: Bureau of Labor Statistics Latin America
+- leaf_id: 33125
+  leaf_name: Bureau of Labor Statistics Pacific Rim
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33125
+    name: Bureau of Labor Statistics Pacific Rim
+- leaf_id: 33901
+  leaf_name: Emerging Markets
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33901
+    name: Emerging Markets
+- leaf_id: 32947
+  leaf_name: Euro Area
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32947
+    name: Euro Area
+- leaf_id: 33002
+  leaf_name: European Economic Area
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33002
+    name: European Economic Area
+- leaf_id: 32948
+  leaf_name: European Union
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32948
+    name: European Union
+- leaf_id: 32958
+  leaf_name: Four Big European Countries
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32958
+    name: Four Big European Countries
+- leaf_id: 32959
+  leaf_name: Group of Seven (G7)
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32959
+    name: Group of Seven (G7)
+- leaf_id: 33083
+  leaf_name: Group of Twenty Finance Ministers and Central Bank Governors (G20)
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33083
+    name: Group of Twenty Finance Ministers and Central Bank Governors (G20)
+- leaf_id: 33239
+  leaf_name: International Monetary Fund
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33239
+    name: International Monetary Fund
+- leaf_id: 33711
+  leaf_name: International Organizations
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33711
+    name: International Organizations
+- leaf_id: 32957
+  leaf_name: Major 5 Asia
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32957
+    name: Major 5 Asia
+- leaf_id: 32960
+  leaf_name: NAFTA
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32960
+    name: NAFTA
+- leaf_id: 33086
+  leaf_name: Non-OECD
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33086
+    name: Non-OECD
+- leaf_id: 33085
+  leaf_name: OECD Non-member Economies
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33085
+    name: OECD Non-member Economies
+- leaf_id: 32962
+  leaf_name: OECD Total
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32962
+    name: OECD Total
+- leaf_id: 32961
+  leaf_name: OECD + Non-member Economies
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 32961
+    name: OECD + Non-member Economies
+- leaf_id: 33087
+  leaf_name: OECD - Europe
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33087
+    name: OECD - Europe
+- leaf_id: 33713
+  leaf_name: Unidentified Countries
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33713
+    name: Unidentified Countries
+- leaf_id: 33909
+  leaf_name: Advance Technology Products
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33909
+    name: Advance Technology Products
+- leaf_id: 33911
+  leaf_name: NICS
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33911
+    name: NICS
+- leaf_id: 33953
+  leaf_name: USMCA
+  path:
+  - id: 32956
+    name: Institutions
+  - id: 33953
+    name: USMCA

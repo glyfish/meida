@@ -1,0 +1,99 @@
+- leaf_id: 32049
+  leaf_name: East North Central
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32044
+    name: Midwest
+  - id: 32048
+    name: Census Divisions
+  - id: 32049
+    name: East North Central
+- leaf_id: 32050
+  leaf_name: West North Central
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32044
+    name: Midwest
+  - id: 32048
+    name: Census Divisions
+  - id: 32050
+    name: West North Central
+- leaf_id: 32052
+  leaf_name: Middle Atlantic
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32045
+    name: Northeast
+  - id: 32051
+    name: Census Divisions
+  - id: 32052
+    name: Middle Atlantic
+- leaf_id: 32053
+  leaf_name: New England
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32045
+    name: Northeast
+  - id: 32051
+    name: Census Divisions
+  - id: 32053
+    name: New England
+- leaf_id: 32055
+  leaf_name: East South Central
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32046
+    name: South
+  - id: 32054
+    name: Census Divisions
+  - id: 32055
+    name: East South Central
+- leaf_id: 32056
+  leaf_name: South Atlantic
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32046
+    name: South
+  - id: 32054
+    name: Census Divisions
+  - id: 32056
+    name: South Atlantic
+- leaf_id: 32057
+  leaf_name: West South Central
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32046
+    name: South
+  - id: 32054
+    name: Census Divisions
+  - id: 32057
+    name: West South Central
+- leaf_id: 32059
+  leaf_name: Mountain
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32047
+    name: West
+  - id: 32058
+    name: Census Divisions
+  - id: 32059
+    name: Mountain
+- leaf_id: 32060
+  leaf_name: Pacific
+  path:
+  - id: 32043
+    name: Census Regions
+  - id: 32047
+    name: West
+  - id: 32058
+    name: Census Divisions
+  - id: 32060
+    name: Pacific

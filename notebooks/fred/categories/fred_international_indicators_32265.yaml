@@ -1,0 +1,1068 @@
+- leaf_id: 33247
+  leaf_name: Consumer Price Index
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33247
+    name: Consumer Price Index
+- leaf_id: 33195
+  leaf_name: Business Lending
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33195
+    name: Business Lending
+- leaf_id: 33191
+  leaf_name: Financial Institutions
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33191
+    name: Financial Institutions
+- leaf_id: 32954
+  leaf_name: Financial Stress Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32954
+    name: Financial Stress Indicators
+- leaf_id: 32949
+  leaf_name: Interest Rates
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32949
+    name: Interest Rates
+- leaf_id: 32952
+  leaf_name: Reserves & Monetary Base
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32952
+    name: Reserves & Monetary Base
+- leaf_id: 33210
+  leaf_name: Exchange Rate
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33210
+    name: Exchange Rate
+- leaf_id: 32951
+  leaf_name: Balance of Payments
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 32951
+    name: Balance of Payments
+- leaf_id: 32291
+  leaf_name: GDP
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 32291
+    name: GDP
+- leaf_id: 33196
+  leaf_name: GNP
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33196
+    name: GNP
+- leaf_id: 33097
+  leaf_name: International Trade and Transactions
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33097
+    name: International Trade and Transactions
+- leaf_id: 32458
+  leaf_name: Government Debt
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 32458
+    name: Government Debt
+- leaf_id: 33526
+  leaf_name: Education
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33526
+    name: Education
+- leaf_id: 32283
+  leaf_name: Employment
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32283
+    name: Employment
+- leaf_id: 33218
+  leaf_name: Employment Population Ratio
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33218
+    name: Employment Population Ratio
+- leaf_id: 33525
+  leaf_name: Income Distribution
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33525
+    name: Income Distribution
+- leaf_id: 33215
+  leaf_name: Job Openings and Labor Turnover
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33215
+    name: Job Openings and Labor Turnover
+- leaf_id: 32285
+  leaf_name: Labor Force
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32285
+    name: Labor Force
+- leaf_id: 33217
+  leaf_name: Labor Force Participation Rate
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33217
+    name: Labor Force Participation Rate
+- leaf_id: 33213
+  leaf_name: Labor Compensation
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33213
+    name: Labor Compensation
+- leaf_id: 33212
+  leaf_name: Productivity & Costs
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33212
+    name: Productivity & Costs
+- leaf_id: 32284
+  leaf_name: Unemployment
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32284
+    name: Unemployment
+- leaf_id: 33214
+  leaf_name: Unemployment Level
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33214
+    name: Unemployment Level
+- leaf_id: 33219
+  leaf_name: Unemployment Rate
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33219
+    name: Unemployment Rate
+- leaf_id: 33829
+  leaf_name: Migration
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 33829
+    name: Migration
+- leaf_id: 33527
+  leaf_name: Cell Phone Usage
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33527
+    name: Cell Phone Usage
+- leaf_id: 33092
+  leaf_name: Construction
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33092
+    name: Construction
+- leaf_id: 33090
+  leaf_name: Industrial Production & Capacity Utilization
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33090
+    name: Industrial Production & Capacity Utilization
+- leaf_id: 33192
+  leaf_name: Insurance
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33192
+    name: Insurance
+- leaf_id: 33499
+  leaf_name: Internet Users
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33499
+    name: Internet Users
+- leaf_id: 32953
+  leaf_name: Real Estate
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 32953
+    name: Real Estate
+- leaf_id: 33088
+  leaf_name: Retail Sales
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33088
+    name: Retail Sales
+- leaf_id: 33209
+  leaf_name: Business Tendency Surveys
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33209
+    name: Business Tendency Surveys
+- leaf_id: 33222
+  leaf_name: Housing
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33222
+    name: Housing
+- leaf_id: 33229
+  leaf_name: Wholesale
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33229
+    name: Wholesale
+- leaf_id: 33827
+  leaf_name: Ease of Doing Business
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 33827
+    name: Ease of Doing Business
+- leaf_id: 32427
+  leaf_name: Producer Price Indexes
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32427
+    name: Producer Price Indexes
+- leaf_id: 33129
+  leaf_name: Trade Indexes
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 33129
+    name: Trade Indexes
+- leaf_id: 33226
+  leaf_name: Wholesale
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 33226
+    name: Wholesale
+- leaf_id: 33503
+  leaf_name: House Prices
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 33503
+    name: House Prices
+- leaf_id: 33186
+  leaf_name: Condition of Banks
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33185
+    name: Banking
+  - id: 33186
+    name: Condition of Banks
+- leaf_id: 33187
+  leaf_name: Bond Market Data
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33187
+    name: Bond Market Data
+- leaf_id: 33211
+  leaf_name: Financial Activity Measures
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33211
+    name: Financial Activity Measures
+- leaf_id: 33497
+  leaf_name: Money Market Instruments
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33497
+    name: Money Market Instruments
+- leaf_id: 33194
+  leaf_name: Stock Market Data
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33194
+    name: Stock Market Data
+- leaf_id: 33220
+  leaf_name: M3 and Components
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33220
+    name: M3 and Components
+- leaf_id: 33221
+  leaf_name: M1 and Components
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33221
+    name: M1 and Components
+- leaf_id: 33223
+  leaf_name: Reserves
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33223
+    name: Reserves
+- leaf_id: 33227
+  leaf_name: M2 and Components
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33227
+    name: M2 and Components
+- leaf_id: 33234
+  leaf_name: Monetary Base
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33234
+    name: Monetary Base
+- leaf_id: 33207
+  leaf_name: Trade Balance
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33206
+    name: Trade & International Transactions
+  - id: 33207
+    name: Trade Balance
+- leaf_id: 33208
+  leaf_name: International Finance
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33206
+    name: Trade & International Transactions
+  - id: 33208
+    name: International Finance
+- leaf_id: 33224
+  leaf_name: Exports
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33206
+    name: Trade & International Transactions
+  - id: 33224
+    name: Exports
+- leaf_id: 33225
+  leaf_name: Imports
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33206
+    name: Trade & International Transactions
+  - id: 33225
+    name: Imports
+- leaf_id: 33233
+  leaf_name: Govt Receipts, Expenditures & Investment
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33232
+    name: National Income & Product Accounts
+  - id: 33233
+    name: Govt Receipts, Expenditures & Investment
+- leaf_id: 33237
+  leaf_name: Price Indexes & Deflators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33232
+    name: National Income & Product Accounts
+  - id: 33237
+    name: Price Indexes & Deflators
+- leaf_id: 33238
+  leaf_name: Personal Income & Outlays
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32997
+    name: National Accounts
+  - id: 33232
+    name: National Income & Product Accounts
+  - id: 33238
+    name: Personal Income & Outlays
+- leaf_id: 33739
+  leaf_name: Birth Rate
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32292
+    name: Population
+  - id: 33739
+    name: Birth Rate
+- leaf_id: 33512
+  leaf_name: Fertility Rate
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32292
+    name: Population
+  - id: 33512
+    name: Fertility Rate
+- leaf_id: 33510
+  leaf_name: Infant Mortality
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32292
+    name: Population
+  - id: 33510
+    name: Infant Mortality
+- leaf_id: 33513
+  leaf_name: Life Expectancy
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32292
+    name: Population
+  - id: 33513
+    name: Life Expectancy
+- leaf_id: 33511
+  leaf_name: Literacy Rate
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32292
+    name: Population
+  - id: 33511
+    name: Literacy Rate
+- leaf_id: 33498
+  leaf_name: Migration
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32999
+    name: Population, Employment, & Labor Markets
+  - id: 32292
+    name: Population
+  - id: 33498
+    name: Migration
+- leaf_id: 33228
+  leaf_name: Inventories
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32294
+    name: Production & Business Activity
+  - id: 32437
+    name: Manufacturing
+  - id: 33228
+    name: Inventories
+- leaf_id: 33006
+  leaf_name: Alcoholic Beverages and Tobacco
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33006
+    name: Alcoholic Beverages and Tobacco
+- leaf_id: 33004
+  leaf_name: All Items
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33004
+    name: All Items
+- leaf_id: 33007
+  leaf_name: Clothing and Footwear
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33007
+    name: Clothing and Footwear
+- leaf_id: 33012
+  leaf_name: Communications
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33012
+    name: Communications
+- leaf_id: 33014
+  leaf_name: Education
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33014
+    name: Education
+- leaf_id: 33005
+  leaf_name: Food and Non-Alcoholic Beverages
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33005
+    name: Food and Non-Alcoholic Beverages
+- leaf_id: 33010
+  leaf_name: Health
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33010
+    name: Health
+- leaf_id: 33009
+  leaf_name: Household Equipment
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33009
+    name: Household Equipment
+- leaf_id: 33008
+  leaf_name: Housing
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33008
+    name: Housing
+- leaf_id: 33015
+  leaf_name: Hotels and Restaurants
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33015
+    name: Hotels and Restaurants
+- leaf_id: 33016
+  leaf_name: Miscellaneous Goods and Services
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33016
+    name: Miscellaneous Goods and Services
+- leaf_id: 33013
+  leaf_name: Recreation and Culture
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33013
+    name: Recreation and Culture
+- leaf_id: 33017
+  leaf_name: Special Indexes
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33017
+    name: Special Indexes
+- leaf_id: 33011
+  leaf_name: Transport
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 32998
+    name: Prices
+  - id: 32266
+    name: Consumer Price Indexes
+  - id: 33011
+    name: Transport
+- leaf_id: 33494
+  leaf_name: Financial Sector
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33493
+    name: Securities
+  - id: 33494
+    name: Financial Sector
+- leaf_id: 33496
+  leaf_name: Government
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33493
+    name: Securities
+  - id: 33496
+    name: Government
+- leaf_id: 33495
+  leaf_name: Non-Financial Corporations
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33493
+    name: Securities
+  - id: 33495
+    name: Non-Financial Corporations
+- leaf_id: 33398
+  leaf_name: EC Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33261
+    name: Consumer opinion surveys
+  - id: 33262
+    name: Economic Situation
+  - id: 33263
+    name: Future tendency
+  - id: 33398
+    name: EC Indicator
+- leaf_id: 33399
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33261
+    name: Consumer opinion surveys
+  - id: 33268
+    name: Consumer prices (inflation)
+  - id: 33269
+    name: Future tendency
+  - id: 33399
+    name: EC and National Indicators
+- leaf_id: 33382
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33274
+    name: Business tendency surveys (construction)
+  - id: 33275
+    name: Confidence Indicators
+  - id: 33276
+    name: Composite Indicators
+  - id: 33382
+    name: EC and National Indicators
+- leaf_id: 33384
+  leaf_name: EC Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33274
+    name: Business tendency surveys (construction)
+  - id: 33295
+    name: Order books
+  - id: 33296
+    name: Level
+  - id: 33384
+    name: EC Indicator
+- leaf_id: 33383
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33274
+    name: Business tendency surveys (construction)
+  - id: 33313
+    name: Employment
+  - id: 33314
+    name: Future tendency
+  - id: 33383
+    name: EC and National Indicators
+- leaf_id: 33385
+  leaf_name: EC Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33274
+    name: Business tendency surveys (construction)
+  - id: 33319
+    name: Selling prices
+  - id: 33320
+    name: Future tendency
+  - id: 33385
+    name: EC Indicator
+- leaf_id: 33381
+  leaf_name: EC Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33274
+    name: Business tendency surveys (construction)
+  - id: 33325
+    name: Business situation - Activity
+  - id: 33326
+    name: Present
+  - id: 33381
+    name: EC Indicator
+- leaf_id: 33396
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33281
+    name: Business tendency surveys (services)
+  - id: 33282
+    name: Confidence Indicators
+  - id: 33283
+    name: Composite Indicators
+  - id: 33396
+    name: EC and National Indicators
+- leaf_id: 33393
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33288
+    name: Business tendency surveys (manufacturing)
+  - id: 33289
+    name: Confidence Indicators
+  - id: 33290
+    name: Composite Indicators
+  - id: 33393
+    name: EC and National Indicators
+- leaf_id: 33394
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33288
+    name: Business tendency surveys (manufacturing)
+  - id: 33301
+    name: Finished goods stocks
+  - id: 33302
+    name: Level
+  - id: 33394
+    name: EC and National Indicators
+- leaf_id: 33395
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33288
+    name: Business tendency surveys (manufacturing)
+  - id: 33307
+    name: Order books
+  - id: 33308
+    name: Level
+  - id: 33395
+    name: EC and National Indicators
+- leaf_id: 33392
+  leaf_name: National Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33288
+    name: Business tendency surveys (manufacturing)
+  - id: 33331
+    name: Business situation
+  - id: 33332
+    name: Current
+  - id: 33392
+    name: National Indicator
+- leaf_id: 33390
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33344
+    name: Business tendency surveys (retail trade)
+  - id: 33345
+    name: Employment
+  - id: 33346
+    name: Future tendency
+  - id: 33390
+    name: EC and National Indicators
+- leaf_id: 33387
+  leaf_name: EC Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33344
+    name: Business tendency surveys (retail trade)
+  - id: 33351
+    name: Business situation - Activity
+  - id: 33352
+    name: Present
+  - id: 33387
+    name: EC Indicator
+- leaf_id: 33388
+  leaf_name: EC Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33344
+    name: Business tendency surveys (retail trade)
+  - id: 33351
+    name: Business situation - Activity
+  - id: 33363
+    name: Future tendency
+  - id: 33388
+    name: EC Indicator
+- leaf_id: 33391
+  leaf_name: EC Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33344
+    name: Business tendency surveys (retail trade)
+  - id: 33357
+    name: Volume of stocks
+  - id: 33358
+    name: Level
+  - id: 33391
+    name: EC Indicator
+- leaf_id: 33389
+  leaf_name: EC and National Indicators
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33344
+    name: Business tendency surveys (retail trade)
+  - id: 33375
+    name: Confidence Indicators
+  - id: 33376
+    name: Composite Indicators
+  - id: 33389
+    name: EC and National Indicators
+- leaf_id: 33386
+  leaf_name: National Indicator
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33368
+    name: Business tendency surveys (non-manufacturing)
+  - id: 33369
+    name: Employment
+  - id: 33370
+    name: Future Tendency
+  - id: 33386
+    name: National Indicator
+- leaf_id: 33260
+  leaf_name: Total
+  path:
+  - id: 32265
+    name: Indicators
+  - id: 33254
+    name: Work Started
+  - id: 33255
+    name: Construction
+  - id: 33256
+    name: Buildings
+  - id: 33257
+    name: Total Work Started
+  - id: 33258
+    name: Construction
+  - id: 33259
+    name: Buildings
+  - id: 33260
+    name: Total
