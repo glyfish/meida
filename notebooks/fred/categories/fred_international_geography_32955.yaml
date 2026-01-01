@@ -1,0 +1,211 @@
+- leaf_id: 32459
+  leaf_name: World
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32459
+    name: World
+- leaf_id: 32968
+  leaf_name: Eastern Africa
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32963
+    name: Africa
+  - id: 32968
+    name: Eastern Africa
+- leaf_id: 32969
+  leaf_name: Middle Africa
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32963
+    name: Africa
+  - id: 32969
+    name: Middle Africa
+- leaf_id: 32970
+  leaf_name: Northern Africa
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32963
+    name: Africa
+  - id: 32970
+    name: Northern Africa
+- leaf_id: 32971
+  leaf_name: Southern Africa
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32963
+    name: Africa
+  - id: 32971
+    name: Southern Africa
+- leaf_id: 32972
+  leaf_name: Western Africa
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32963
+    name: Africa
+  - id: 32972
+    name: Western Africa
+- leaf_id: 32974
+  leaf_name: Northern America
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32964
+    name: Americas
+  - id: 32974
+    name: Northern America
+- leaf_id: 32975
+  leaf_name: Central Asia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32965
+    name: Asia
+  - id: 32975
+    name: Central Asia
+- leaf_id: 32976
+  leaf_name: Eastern Asia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32965
+    name: Asia
+  - id: 32976
+    name: Eastern Asia
+- leaf_id: 32977
+  leaf_name: Southern Asia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32965
+    name: Asia
+  - id: 32977
+    name: Southern Asia
+- leaf_id: 32978
+  leaf_name: South-Eastern Asia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32965
+    name: Asia
+  - id: 32978
+    name: South-Eastern Asia
+- leaf_id: 32979
+  leaf_name: Western Asia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32965
+    name: Asia
+  - id: 32979
+    name: Western Asia
+- leaf_id: 32980
+  leaf_name: Eastern Europe
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32966
+    name: Europe
+  - id: 32980
+    name: Eastern Europe
+- leaf_id: 32981
+  leaf_name: Northern Europe
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32966
+    name: Europe
+  - id: 32981
+    name: Northern Europe
+- leaf_id: 32982
+  leaf_name: Southern Europe
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32966
+    name: Europe
+  - id: 32982
+    name: Southern Europe
+- leaf_id: 32983
+  leaf_name: Western Europe
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32966
+    name: Europe
+  - id: 32983
+    name: Western Europe
+- leaf_id: 32984
+  leaf_name: Australia and New Zealand
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32967
+    name: Oceania
+  - id: 32984
+    name: Australia and New Zealand
+- leaf_id: 32985
+  leaf_name: Melanesia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32967
+    name: Oceania
+  - id: 32985
+    name: Melanesia
+- leaf_id: 32986
+  leaf_name: Micronesia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32967
+    name: Oceania
+  - id: 32986
+    name: Micronesia
+- leaf_id: 32987
+  leaf_name: Polynesia
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32967
+    name: Oceania
+  - id: 32987
+    name: Polynesia
+- leaf_id: 32988
+  leaf_name: Caribbean
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32964
+    name: Americas
+  - id: 32973
+    name: Latin America and the Caribbean
+  - id: 32988
+    name: Caribbean
+- leaf_id: 32989
+  leaf_name: Central America
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32964
+    name: Americas
+  - id: 32973
+    name: Latin America and the Caribbean
+  - id: 32989
+    name: Central America
+- leaf_id: 32990
+  leaf_name: South America
+  path:
+  - id: 32955
+    name: Geography
+  - id: 32964
+    name: Americas
+  - id: 32973
+    name: Latin America and the Caribbean
+  - id: 32990
+    name: South America

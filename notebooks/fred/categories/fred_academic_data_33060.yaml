@@ -1,0 +1,511 @@
+- leaf_id: 33951
+  leaf_name: Daily Federal Funds Rate, 1928-54
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33951
+    name: Daily Federal Funds Rate, 1928-54
+- leaf_id: 33825
+  leaf_name: Data on the nominal term structure model from Kim and Wright
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33825
+    name: Data on the nominal term structure model from Kim and Wright
+- leaf_id: 33891
+  leaf_name: Historical Federal Reserve Data
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33891
+    name: Historical Federal Reserve Data
+- leaf_id: 33120
+  leaf_name: Recession Probabilities
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33120
+    name: Recession Probabilities
+- leaf_id: 33123
+  leaf_name: Weekly U.S. and State Bond Prices, 1855-1865
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33123
+    name: Weekly U.S. and State Bond Prices, 1855-1865
+- leaf_id: 33201
+  leaf_name: Economic Policy Uncertainty
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33201
+    name: Economic Policy Uncertainty
+- leaf_id: 33442
+  leaf_name: Sticky Wages and Comovement
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33442
+    name: Sticky Wages and Comovement
+- leaf_id: 33934
+  leaf_name: New England Textile Industry, 1815-1860
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33934
+    name: New England Textile Industry, 1815-1860
+- leaf_id: 34000
+  leaf_name: The Effects of the 1930s HOLC "Redlining" Maps
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 34000
+    name: The Effects of the 1930s HOLC "Redlining" Maps
+- leaf_id: 34309
+  leaf_name: U.S. Survey of Working Arrangements and Attitudes
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 34309
+    name: U.S. Survey of Working Arrangements and Attitudes
+- leaf_id: 33835
+  leaf_name: Section 1. General Statistics of All Banks in the United States
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33833
+    name: Banking and Monetary Statistics, 1914-1941
+  - id: 33835
+    name: Section 1. General Statistics of All Banks in the United States
+- leaf_id: 33837
+  leaf_name: Section 2. Assets and Liabilities of All Member Banks
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33833
+    name: Banking and Monetary Statistics, 1914-1941
+  - id: 33837
+    name: Section 2. Assets and Liabilities of All Member Banks
+- leaf_id: 33062
+  leaf_name: Production of Commodities
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33062
+    name: Production of Commodities
+- leaf_id: 33063
+  leaf_name: Construction
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33063
+    name: Construction
+- leaf_id: 33064
+  leaf_name: Transportation and Public Utilities
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33064
+    name: Transportation and Public Utilities
+- leaf_id: 33065
+  leaf_name: Prices
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33065
+    name: Prices
+- leaf_id: 33066
+  leaf_name: Stocks of Commodities
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33066
+    name: Stocks of Commodities
+- leaf_id: 33067
+  leaf_name: Distribution of Commodities
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33067
+    name: Distribution of Commodities
+- leaf_id: 33068
+  leaf_name: Foreign Trade
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33068
+    name: Foreign Trade
+- leaf_id: 33069
+  leaf_name: Income and Employment
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33069
+    name: Income and Employment
+- leaf_id: 33070
+  leaf_name: Financial Status of Business
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33070
+    name: Financial Status of Business
+- leaf_id: 33071
+  leaf_name: Savings and Investment
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33071
+    name: Savings and Investment
+- leaf_id: 33072
+  leaf_name: Security Markets
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33072
+    name: Security Markets
+- leaf_id: 33073
+  leaf_name: Volume of Transactions
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33073
+    name: Volume of Transactions
+- leaf_id: 33074
+  leaf_name: Interest Rates
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33074
+    name: Interest Rates
+- leaf_id: 33075
+  leaf_name: Money and Banking
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33075
+    name: Money and Banking
+- leaf_id: 33076
+  leaf_name: Government and Finance
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33076
+    name: Government and Finance
+- leaf_id: 33077
+  leaf_name: Leading Indicators
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33061
+    name: NBER Macrohistory Database
+  - id: 33077
+    name: Leading Indicators
+- leaf_id: 33107
+  leaf_name: Component Shares of GDP per Capita (Constant Prices)
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33107
+    name: Component Shares of GDP per Capita (Constant Prices)
+- leaf_id: 33106
+  leaf_name: Component Shares of GDP per Capita (Current Prices)
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33106
+    name: Component Shares of GDP per Capita (Current Prices)
+- leaf_id: 33102
+  leaf_name: Exchange Rates
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33102
+    name: Exchange Rates
+- leaf_id: 33110
+  leaf_name: GDP per Capita (Current Prices)
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33110
+    name: GDP per Capita (Current Prices)
+- leaf_id: 33112
+  leaf_name: Gross Domestic Income, Adjustments for Changes in Terms of Trade
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33112
+    name: Gross Domestic Income, Adjustments for Changes in Terms of Trade
+- leaf_id: 33105
+  leaf_name: Openness
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33105
+    name: Openness
+- leaf_id: 33101
+  leaf_name: Population
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33101
+    name: Population
+- leaf_id: 33104
+  leaf_name: Price Levels of GDP, Consumption, Government, and Investment
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33104
+    name: Price Levels of GDP, Consumption, Government, and Investment
+- leaf_id: 33103
+  leaf_name: Purchasing Power Parity
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33103
+    name: Purchasing Power Parity
+- leaf_id: 33118
+  leaf_name: Purchasing Power Parity Converted GDP
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33118
+    name: Purchasing Power Parity Converted GDP
+- leaf_id: 33108
+  leaf_name: Ratio of GNP to GDP
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33108
+    name: Ratio of GNP to GDP
+- leaf_id: 33111
+  leaf_name: Real GDP per Capita (Constant Prices)
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33111
+    name: Real GDP per Capita (Constant Prices)
+- leaf_id: 33109
+  leaf_name: Real GDP per Capita Relative to U.S.
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33109
+    name: Real GDP per Capita Relative to U.S.
+- leaf_id: 33113
+  leaf_name: Real GDP per Equivalent Adult
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33113
+    name: Real GDP per Equivalent Adult
+- leaf_id: 33117
+  leaf_name: Real GDP per Hour Worked by Employees
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33117
+    name: Real GDP per Hour Worked by Employees
+- leaf_id: 33115
+  leaf_name: Real GDP per Person Engaged
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33115
+    name: Real GDP per Person Engaged
+- leaf_id: 33116
+  leaf_name: Real GDP per Person Counted in Total Employment
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33116
+    name: Real GDP per Person Counted in Total Employment
+- leaf_id: 33114
+  leaf_name: Real GDP per Worker
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33100
+    name: Penn World Table 7.1
+  - id: 33114
+    name: Real GDP per Worker
+- leaf_id: 33403
+  leaf_name: Real GDP, Employment and Population Levels
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33402
+    name: Penn World Table 9.0
+  - id: 33403
+    name: Real GDP, Employment and Population Levels
+- leaf_id: 33404
+  leaf_name: Current Price GDP, Capital and Total Factor Productivity
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33402
+    name: Penn World Table 9.0
+  - id: 33404
+    name: Current Price GDP, Capital and Total Factor Productivity
+- leaf_id: 33405
+  leaf_name: National Accounts-Based Variables
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33402
+    name: Penn World Table 9.0
+  - id: 33405
+    name: National Accounts-Based Variables
+- leaf_id: 33406
+  leaf_name: Exchange Rates and GDP Price Levels
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33402
+    name: Penn World Table 9.0
+  - id: 33406
+    name: Exchange Rates and GDP Price Levels
+- leaf_id: 33407
+  leaf_name: Shares in Output-side Real GDP at Current Purchasing Power Parities
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33402
+    name: Penn World Table 9.0
+  - id: 33407
+    name: Shares in Output-side Real GDP at Current Purchasing Power Parities
+- leaf_id: 33408
+  leaf_name: Price Levels, Expenditure Categories and Capital
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33402
+    name: Penn World Table 9.0
+  - id: 33408
+    name: Price Levels, Expenditure Categories and Capital
+- leaf_id: 33845
+  leaf_name: National Accounts
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33839
+    name: A Millennium of Macroeconomic Data for the UK
+  - id: 33845
+    name: National Accounts
+- leaf_id: 33843
+  leaf_name: Labour, Capital and Productivity
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33839
+    name: A Millennium of Macroeconomic Data for the UK
+  - id: 33843
+    name: Labour, Capital and Productivity
+- leaf_id: 33847
+  leaf_name: Wages and Prices
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33839
+    name: A Millennium of Macroeconomic Data for the UK
+  - id: 33847
+    name: Wages and Prices
+- leaf_id: 33849
+  leaf_name: Financial Markets
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33839
+    name: A Millennium of Macroeconomic Data for the UK
+  - id: 33849
+    name: Financial Markets
+- leaf_id: 33851
+  leaf_name: Money and Credit
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33839
+    name: A Millennium of Macroeconomic Data for the UK
+  - id: 33851
+    name: Money and Credit
+- leaf_id: 33853
+  leaf_name: Fiscal
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33839
+    name: A Millennium of Macroeconomic Data for the UK
+  - id: 33853
+    name: Fiscal
+- leaf_id: 33855
+  leaf_name: Trade
+  path:
+  - id: 33060
+    name: Academic Data
+  - id: 33839
+    name: A Millennium of Macroeconomic Data for the UK
+  - id: 33855
+    name: Trade

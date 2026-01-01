@@ -1,0 +1,165 @@
+- leaf_id: 33195
+  leaf_name: Business Lending
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33195
+    name: Business Lending
+- leaf_id: 33191
+  leaf_name: Financial Institutions
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33191
+    name: Financial Institutions
+- leaf_id: 32954
+  leaf_name: Financial Stress Indicators
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32954
+    name: Financial Stress Indicators
+- leaf_id: 32949
+  leaf_name: Interest Rates
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32949
+    name: Interest Rates
+- leaf_id: 32952
+  leaf_name: Reserves & Monetary Base
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32952
+    name: Reserves & Monetary Base
+- leaf_id: 33210
+  leaf_name: Exchange Rate
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33210
+    name: Exchange Rate
+- leaf_id: 33186
+  leaf_name: Condition of Banks
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33185
+    name: Banking
+  - id: 33186
+    name: Condition of Banks
+- leaf_id: 33187
+  leaf_name: Bond Market Data
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33187
+    name: Bond Market Data
+- leaf_id: 33211
+  leaf_name: Financial Activity Measures
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33211
+    name: Financial Activity Measures
+- leaf_id: 33497
+  leaf_name: Money Market Instruments
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33497
+    name: Money Market Instruments
+- leaf_id: 33194
+  leaf_name: Stock Market Data
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33194
+    name: Stock Market Data
+- leaf_id: 33220
+  leaf_name: M3 and Components
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33220
+    name: M3 and Components
+- leaf_id: 33221
+  leaf_name: M1 and Components
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33221
+    name: M1 and Components
+- leaf_id: 33223
+  leaf_name: Reserves
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33223
+    name: Reserves
+- leaf_id: 33227
+  leaf_name: M2 and Components
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33227
+    name: M2 and Components
+- leaf_id: 33234
+  leaf_name: Monetary Base
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 32950
+    name: Monetary Data
+  - id: 33234
+    name: Monetary Base
+- leaf_id: 33494
+  leaf_name: Financial Sector
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33493
+    name: Securities
+  - id: 33494
+    name: Financial Sector
+- leaf_id: 33496
+  leaf_name: Government
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33493
+    name: Securities
+  - id: 33496
+    name: Government
+- leaf_id: 33495
+  leaf_name: Non-Financial Corporations
+  path:
+  - id: 33000
+    name: Money, Banking, & Finance
+  - id: 33099
+    name: Financial Indicators
+  - id: 33493
+    name: Securities
+  - id: 33495
+    name: Non-Financial Corporations

@@ -1,0 +1,111 @@
+- leaf_id: 32860
+  leaf_name: Population Size Class A (over 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32860
+    name: Population Size Class A (over 1,500,000)
+- leaf_id: 32861
+  leaf_name: Population Size Class B/C (between 50,000 and 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32861
+    name: Population Size Class B/C (between 50,000 and 1,500,000)
+- leaf_id: 32862
+  leaf_name: Population Size Class D (under 50,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32862
+    name: Population Size Class D (under 50,000)
+- leaf_id: 32854
+  leaf_name: Population Size Class A (over 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32851
+    name: Midwest Urban
+  - id: 32854
+    name: Population Size Class A (over 1,500,000)
+- leaf_id: 32855
+  leaf_name: Population Size Class B/C (between 50,000 and 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32851
+    name: Midwest Urban
+  - id: 32855
+    name: Population Size Class B/C (between 50,000 and 1,500,000)
+- leaf_id: 32856
+  leaf_name: Population Size Class D (under 50,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32851
+    name: Midwest Urban
+  - id: 32856
+    name: Population Size Class D (under 50,000)
+- leaf_id: 32857
+  leaf_name: Population Size Class A (over 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32850
+    name: Northeast Urban
+  - id: 32857
+    name: Population Size Class A (over 1,500,000)
+- leaf_id: 32858
+  leaf_name: Population Size Class B/C (between 50,000 and 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32850
+    name: Northeast Urban
+  - id: 32858
+    name: Population Size Class B/C (between 50,000 and 1,500,000)
+- leaf_id: 32863
+  leaf_name: Population Size Class A (over 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32852
+    name: South Urban
+  - id: 32863
+    name: Population Size Class A (over 1,500,000)
+- leaf_id: 32865
+  leaf_name: Population Size Class B/C (between 50,000 and 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32852
+    name: South Urban
+  - id: 32865
+    name: Population Size Class B/C (between 50,000 and 1,500,000)
+- leaf_id: 32867
+  leaf_name: Population Size Class D (under 50,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32852
+    name: South Urban
+  - id: 32867
+    name: Population Size Class D (under 50,000)
+- leaf_id: 32864
+  leaf_name: Population Size Class A (over 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32853
+    name: West Urban
+  - id: 32864
+    name: Population Size Class A (over 1,500,000)
+- leaf_id: 32866
+  leaf_name: Population Size Class B/C (between 50,000 and 1,500,000)
+  path:
+  - id: 32849
+    name: BLS Regions
+  - id: 32853
+    name: West Urban
+  - id: 32866
+    name: Population Size Class B/C (between 50,000 and 1,500,000)
