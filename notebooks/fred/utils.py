@@ -4,13 +4,28 @@ import time
 import json
 
 from lib.mcp_client import MCPClient, MCPClientConfig
+from lib.utils import print_json_vertical
+from lib.env import get_mcp_url
 
-MCP_URL = 'http://localhost:8080/sse'
+MCP_URL = get_mcp_url()
 config = MCPClientConfig(url=MCP_URL)
 
 async def call_tool(tool_name: str, arguments: dict[str, Any] | None = None):
     async with MCPClient(config) as client:
         return await client.call_tool(tool_name, arguments or {})
+
+
+async def list_mcp_tools():
+    async with MCPClient(config) as client:
+        tools = await client.list_tools()
+        for tool in tools:
+            print(f"{tool.name}: {tool.description}")
+
+
+async def show_tool_schema(tool_name: str):
+    async with MCPClient(config) as client:
+        schema = await client.get_tool_schema(tool_name)
+        print_json_vertical(schema)
 
 
 async def children_of_categories(categories: list[Any]):
