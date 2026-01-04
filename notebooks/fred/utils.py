@@ -97,3 +97,53 @@ async def find_leaf_categories(
         payload = json.loads(json.dumps(leaves))
         yaml.safe_dump(payload, fh, sort_keys=False, allow_unicode=True)
     print(f"Wrote {len(leaves)} leaf categories (with names) to {output_path}")
+
+
+async def export_finance_category_series(input_path: str, output_path: str, delay_seconds: float = 2.0,) -> None:
+    """
+    Load finance category metadata, pull FRED series for each leaf, and persist to YAML.
+    """
+
+    print(f"Reading categories from {input_path}")
+    print(f"Writing series to {output_path}")
+
+    with open(input_path, "r", encoding="utf-8") as fh:
+        categories: list[dict[str, Any]] = yaml.safe_load(fh) or []
+
+    print(f"Loaded {len(categories)} categories")
+
+    series_bundle: list[dict[str, Any]] = []
+    async with MCPClient(config) as client:
+        for category in categories:
+            time.sleep(delay_seconds)  # keep us polite with FRED
+            category_id = category["leaf_id"]
+            category_name = category["leaf_name"]
+
+            response = await client.call_tool(
+                "fred.category_series",
+                {"category_id": category_id},
+            )
+            payload = (response.structuredContent or {}).get("result", {})
+
+            pagination = payload.get("pagination", {})
+            count = pagination.get("count", 0)
+            offset = pagination.get("offset", 0)
+            limit = pagination.get("limit", 0)
+            seriess = payload.get("seriess", [])
+
+            print(f"Processing {len(seriess)} series for category {category_id}, {category_name}")
+            print(f"Pagination: count={count}, offset={offset}, limit={limit}")
+
+            series_bundle.append(
+                {
+                    "category_id": category_id,
+                    "category_name": category_name,
+                    "seriess": seriess,
+                }
+            )
+
+    with open(output_path, "w", encoding="utf-8") as fh:
+        sanitized = json.loads(json.dumps(series_bundle))
+        yaml.safe_dump(sanitized, fh, sort_keys=False, allow_unicode=True)
+
+    print(f"Wrote series data for {len(series_bundle)} categories to {output_path}")

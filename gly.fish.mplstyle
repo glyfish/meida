@@ -1,0 +1,39 @@
+lines.linewidth : 2.0
+
+patch.antialiased: True
+
+axes.edgecolor: white
+axes.grid : True
+axes.titlesize: 14
+axes.labelsize: 12
+axes.facecolor: white
+axes.prop_cycle: cycler('color', ['0067C4', 'FF9500', '5600C9', 'AC9C00', '329EFF', 'FFC574', '320075', 'FFE800', '003B6F', 'AC6500', '8C35FF', 'FFEB22'])
+
+xtick.labelsize : 10
+xtick.major.size: 0
+xtick.minor.size: 0
+xtick.major.pad: 10
+
+ytick.labelsize : 10
+ytick.major.size: 0
+ytick.minor.size: 0
+ytick.major.pad: 10
+
+grid.color: e0e0e0
+grid.linestyle: -
+grid.linewidth: 1.0
+
+legend.edgecolor: white
+legend.fancybox: True
+legend.fontsize: 11
+legend.framealpha: 0.75
+legend.facecolor: white
+
+font.size: 14
+
+figure.facecolor: white
+figure.edgecolor: white
+figure.figsize: 6.4, 4.8
+
+savefig.facecolor: white
+savefig.edgecolor: white
