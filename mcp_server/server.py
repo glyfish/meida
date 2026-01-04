@@ -3,16 +3,14 @@
 from __future__ import annotations
 
 from typing import Any, Awaitable, Callable, Mapping
-import logging
+from lib.logger import get_logger
 
 from mcp.server.fastmcp import FastMCP
 
 from lib.clients import FredClient
 
 
-logger = logging.getLogger("meida.mcp")
-if not logger.handlers:
-    logging.basicConfig(level=logging.INFO)
+logger = get_logger("meida.mcp")
 
 server = FastMCP(
     name="mcp-server",
@@ -87,6 +85,7 @@ async def get_series_info(series_id: str) -> Mapping[str, Any]:
 async def get_series_observations(
     series_id: str,
     limit: int | None = 100,
+    offset: int | None = 0,
     frequency: str | None = None,
     units: str | None = None,
 ) -> Mapping[str, Any]:
@@ -94,11 +93,29 @@ async def get_series_observations(
         params: dict[str, Any] = {"series_id": series_id}
         if limit is not None:
             params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
         if frequency:
             params["frequency"] = frequency
         if units:
             params["units"] = units
-        return await client.get_series_observations(**params)
+
+        response = await client.get_series_observations(**params)
+        total = response.count or 0
+        returned = len(response.observations)
+        effective_limit = limit if limit is not None else total
+        effective_offset = offset or 0
+
+        if (effective_offset + returned) < total:
+            logger.warning(
+                "Incomplete observations for %s (offset=%s, limit=%s, returned=%s, total=%s)",
+                series_id,
+                effective_offset,
+                effective_limit,
+                returned,
+                total,
+            )
+        return response
 
     return await _call_fred(handler)
 
@@ -107,7 +124,7 @@ async def get_series_observations(
     name="fred.series_updates",
     description="Return recently updated FRED series.",
 )
-async def get_series_updates(limit: int | None = 50, offset: int | None = 0) -> Mapping[str, Any]:
+async def get_series_updates(limit: int | None = 100, offset: int | None = 0) -> Mapping[str, Any]:
     async def handler(client: FredClient) -> Any:
         params: dict[str, Any] = {}
         if limit is not None:
@@ -123,7 +140,7 @@ async def get_series_updates(limit: int | None = 50, offset: int | None = 0) -> 
     name="fred.releases",
     description="List the available FRED releases.",
 )
-async def list_releases(limit: int | None = 50, order_by: str | None = None) -> Mapping[str, Any]:
+async def list_releases(limit: int | None = 100, order_by: str | None = None) -> Mapping[str, Any]:
     async def handler(client: FredClient) -> Any:
         params: dict[str, Any] = {}
         if limit is not None:
@@ -139,7 +156,7 @@ async def list_releases(limit: int | None = 50, order_by: str | None = None) -> 
     name="fred.release_series",
     description="List the series that belong to a FRED release.",
 )
-async def list_release_series(release_id: int, limit: int | None = 50) -> Mapping[str, Any]:
+async def list_release_series(release_id: int, limit: int | None = 100) -> Mapping[str, Any]:
     async def handler(client: FredClient) -> Any:
         params: dict[str, Any] = {"release_id": release_id}
         if limit is not None:
