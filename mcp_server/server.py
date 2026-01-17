@@ -1,7 +1,4 @@
-"""MCP server that exposes FRED tools via FastMCP."""
-
 from __future__ import annotations
-
 from typing import Any, Awaitable, Callable, Mapping
 from lib.logger import get_logger
 
