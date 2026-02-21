@@ -1,4 +1,5 @@
 {
   "include": ["."],
-  "extraPaths": ["../navi"]
+  "extraPaths": ["../navi"],
+  "reportMissingModuleSource": "none"
 }
