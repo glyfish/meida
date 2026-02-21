@@ -1,10 +1,11 @@
 {
+    "python.defaultInterpreterPath": "~/.pyenv/versions/meida-3.11.2/bin/python",
     "python.envFile": "${workspaceFolder}/.env",
     "editor.snippetSuggestions": "top",
     "python-envs.pythonProjects": [
         {
             "path": "",
-            "envManager": "ms-python.python:system",
+            "envManager": "ms-python.python-envs:pyenv",
             "packageManager": "ms-python.python:pip"
         }
     ],
