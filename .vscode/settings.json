@@ -2,11 +2,12 @@
     "python.defaultInterpreterPath": "~/.pyenv/versions/meida-3.11.2/bin/python",
     "python.envFile": "${workspaceFolder}/.env",
     "editor.snippetSuggestions": "top",
+    "python.defaultInterpreterPath": "/Users/troy/.pyenv/versions/meida-3.11.2/bin/python", 
     "python-envs.pythonProjects": [
         {
             "path": "",
-            "envManager": "ms-python.python-envs:pyenv",
+            "envManager": "ms-python.python:system",
             "packageManager": "ms-python.python:pip"
         }
-    ],
+    ]
 }
