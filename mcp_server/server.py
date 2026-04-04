@@ -34,7 +34,7 @@ def _serialize(payload: Any) -> Mapping[str, Any]:
 
 
 @server.tool(
-    name="fred.category_children",
+    name="fred_category_children",
     description="List the child categories for a FRED category.",
 )
 async def list_category_children(category_id: int) -> Mapping[str, Any]:
@@ -45,7 +45,7 @@ async def list_category_children(category_id: int) -> Mapping[str, Any]:
 
 
 @server.tool(
-    name="fred.category_series",
+    name="fred_category_series",
     description="List the series contained within a FRED category.",
 )
 async def list_category_series(
@@ -65,7 +65,7 @@ async def list_category_series(
 
 
 @server.tool(
-    name="fred.series_info",
+    name="fred_series_info",
     description="Fetch metadata for a single FRED series.",
 )
 async def get_series_info(series_id: str) -> Mapping[str, Any]:
@@ -76,7 +76,7 @@ async def get_series_info(series_id: str) -> Mapping[str, Any]:
 
 
 @server.tool(
-    name="fred.series_observations",
+    name="fred_series_observations",
     description="Return observations for a series (limit defaults to 100).",
 )
 async def get_series_observations(
@@ -118,7 +118,7 @@ async def get_series_observations(
 
 
 @server.tool(
-    name="fred.series_updates",
+    name="fred_series_updates",
     description="Return recently updated FRED series.",
 )
 async def get_series_updates(limit: int | None = 100, offset: int | None = 0) -> Mapping[str, Any]:
@@ -134,8 +134,8 @@ async def get_series_updates(limit: int | None = 100, offset: int | None = 0) ->
 
 
 @server.tool(
-    name="fred.releases",
-    description="List the available FRED releases.",
+    name="fred_release_series",
+    description="List the series that belong to a FRED release.",
 )
 async def list_releases(limit: int | None = 100, order_by: str | None = None) -> Mapping[str, Any]:
     async def handler(client: FredClient) -> Any:
@@ -150,7 +150,7 @@ async def list_releases(limit: int | None = 100, order_by: str | None = None) ->
 
 
 @server.tool(
-    name="fred.release_series",
+    name="fred_release_series",
     description="List the series that belong to a FRED release.",
 )
 async def list_release_series(release_id: int, limit: int | None = 100) -> Mapping[str, Any]:
