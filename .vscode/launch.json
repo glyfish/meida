@@ -7,9 +7,6 @@
             "request": "launch",
             "module": "mcp_server.server",
             "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "envFile": "${workspaceFolder}/.env",
             "console": "integratedTerminal"
         }
