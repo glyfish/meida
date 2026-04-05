@@ -5,7 +5,7 @@
     "python.defaultInterpreterPath": "/Users/troy/.pyenv/versions/meida-3.11.2/bin/python", 
     "python-envs.pythonProjects": [
         {
-            "path": "",
+            "path": ".",
             "envManager": "ms-python.python:system",
             "packageManager": "ms-python.python:pip"
         }
