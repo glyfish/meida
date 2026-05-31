@@ -1,0 +1,81 @@
+- category_id: 32262
+  category_name: Business Cycle Expansions & Contractions
+  seriess: []
+- category_id: 33936
+  category_name: Business Surveys
+  seriess: []
+- category_id: 32436
+  category_name: Construction
+  seriess: []
+- category_id: 33940
+  category_name: Emissions
+  seriess: []
+- category_id: 33490
+  category_name: Finance Companies
+  seriess: []
+- category_id: 32216
+  category_name: Health Insurance
+  seriess: []
+- category_id: 33959
+  category_name: Patents
+  seriess: []
+- category_id: 6
+  category_name: Retail Trade
+  seriess: []
+- category_id: 33441
+  category_name: Services
+  seriess: []
+- category_id: 33492
+  category_name: Technology
+  seriess: []
+- category_id: 33203
+  category_name: Wholesale Trade
+  seriess: []
+- category_id: 33957
+  category_name: Consumer Expenditures
+  seriess: []
+- category_id: 32300
+  category_name: Housing Units Authorized by Building Permits
+  seriess: []
+- category_id: 32301
+  category_name: Housing Units Authorized, But Not Yet Started
+  seriess: []
+- category_id: 32302
+  category_name: Housing Starts
+  seriess: []
+- category_id: 32303
+  category_name: Housing Units Under Construction
+  seriess: []
+- category_id: 32304
+  category_name: Housing Units Completed
+  seriess: []
+- category_id: 32426
+  category_name: New Residential Sales
+  seriess: []
+- category_id: 33949
+  category_name: Manufactured Housing
+  seriess: []
+- category_id: 33938
+  category_name: Automotive Production Seasonal Factor
+  seriess: []
+- category_id: 32432
+  category_name: Inventories
+  seriess: []
+- category_id: 32431
+  category_name: New Orders
+  seriess: []
+- category_id: 32433
+  category_name: Inventory to Shipments
+  seriess: []
+- category_id: 32435
+  category_name: Unfilled Orders
+  seriess: []
+- category_id: 32434
+  category_name: Unfilled Orders to Shipments
+  seriess: []
+- category_id: 32430
+  category_name: Shipments
+  seriess: []
+- category_id: 32993
+  category_name: Motor Vehicles
+  seriess: []
