@@ -134,7 +134,7 @@ async def get_series_updates(limit: int | None = 100, offset: int | None = 0) ->
 
 
 @server.tool(
-    name="fred_release_series",
+    name="list_releases",
     description="List the series that belong to a FRED release.",
 )
 async def list_releases(limit: int | None = 100, order_by: str | None = None) -> Mapping[str, Any]:
