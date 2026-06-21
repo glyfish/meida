@@ -4,14 +4,14 @@ from lib.logger import get_logger
 
 from mcp.server.fastmcp import FastMCP
 
-from lib.clients import FredClient
+from lib.clients import FredClient, TiingoClient
 
 
 logger = get_logger("meida.mcp")
 
 server = FastMCP(
     name="mcp-server",
-    instructions="Access curated Federal Reserve Economic Data (FRED) tools.",
+    instructions="Access curated Federal Reserve Economic Data (FRED) and Tiingo end-of-day price tools.",
     host="0.0.0.0",
     port=8080,
 )
@@ -31,6 +31,13 @@ def _serialize(payload: Any) -> Mapping[str, Any]:
     if isinstance(payload, dict):
         return payload
     raise TypeError("Tool response must be pydantic BaseModel or mapping")
+
+
+async def _call_tiingo(handler: Callable[[TiingoClient], Awaitable[Any]]) -> Mapping[str, Any]:
+    """Create a TiingoClient, invoke the handler, and serialize the response."""
+    async with TiingoClient() as client:
+        payload = await handler(client)
+    return _serialize(payload)
 
 
 @server.tool(
@@ -161,6 +168,41 @@ async def list_release_series(release_id: int, limit: int | None = 100) -> Mappi
         return await client.get_release_series(**params)
 
     return await _call_fred(handler)
+
+
+@server.tool(
+    name="tiingo_series_info",
+    description="Fetch metadata for a Tiingo ticker (ETF, mutual fund, or stock), including its available date range.",
+)
+async def get_tiingo_series_info(ticker: str) -> Mapping[str, Any]:
+    async def handler(client: TiingoClient) -> Any:
+        return await client.get_meta(ticker)
+
+    return await _call_tiingo(handler)
+
+
+@server.tool(
+    name="tiingo_price_series",
+    description=(
+        "Return the end-of-day price series (OHLCV plus split/dividend-adjusted prices) for a "
+        "Tiingo ticker. Provide start_date/end_date as YYYY-MM-DD for a range; omit for the latest day."
+    ),
+)
+async def get_tiingo_price_series(
+    ticker: str,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    resample_freq: str | None = None,
+) -> Mapping[str, Any]:
+    async def handler(client: TiingoClient) -> Any:
+        return await client.get_prices(
+            ticker,
+            start_date=start_date,
+            end_date=end_date,
+            resample_freq=resample_freq,
+        )
+
+    return await _call_tiingo(handler)
 
 
 def run() -> None:
