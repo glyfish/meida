@@ -1,26 +1,61 @@
 # meida
 
-## Supported APIs
+An MCP server and Jupyter notebook workspace for exploring economic and financial data. Built on top of [navi](../navi/README.md), which provides the API clients, statistical models, and environment configuration.
 
-- FRED: [https://fred.stlouisfed.org/docs/api/fred/](https://fred.stlouisfed.org/docs/api/fred/)
-- Bureau of Labor Statistics: [https://www.bls.gov/audience/developers.htm](https://www.bls.gov/audience/developers.htm)
+## What's here
 
-## Secrets
+- **`mcp_server/`** — [FastMCP](https://github.com/jlowin/fastmcp) server exposing FRED and Tiingo tools over SSE on `http://localhost:8080`
+- **`notebooks/fred/`** — notebooks for browsing FRED categories, series metadata, and observations
+- **`notebooks/tiingo/`** — notebooks for Tiingo end-of-day price data
 
-Store shared API credentials in `../navi/.env`. The `navi.lib.env` helpers use `python-dotenv`
-to load the file and expose `get_fred_api_key()` / `get_bls_api_key()` (plus
-`get_fred_base_url()` / `get_bls_base_url()`) to any VS Code project that installs `navi`.
+## Dependencies
 
-### Running the FRED MCP notebook
+This project depends on **navi**, which must be checked out as a sibling directory:
 
-1. Install deps: `pip install -r requirements.txt`.
-2. Export the repo path so the editable `../navi` package is on `PYTHONPATH` (see `.env`).
-3. Ensure `../navi/.env` contains `FRED_API_KEY` / `BLS_API_KEY`.
-4. Start the MCP server in a separate shell (stdio transport):
+```text
+gly.fish/
+├── meida/   ← this repo
+└── navi/    ← required sibling
+```
 
-   ```bash
-   python mcp_server.py
-   ```
+navi is installed as a local editable package via `requirements.in`:
 
-5. Open `notebooks/fred/mcp.ipynb` and run the setup cell; it imports `navi.lib.env`
-   and confirms the keys are available before invoking the MCP tools.
+```text
+-e ../navi
+```
+
+## Setup
+
+### 1. Check out navi
+
+```bash
+git clone <navi-repo-url> ../navi
+```
+
+### 2. Configure API keys
+
+API keys are read from `../navi/.env`. Follow the [navi setup instructions](../navi/README.md#setup) to create that file.
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Start the MCP server
+
+```bash
+python mcp_server/server.py
+```
+
+The server listens on `http://localhost:8080/sse`.
+
+### 5. Open notebooks
+
+Launch JupyterLab and open any notebook under `notebooks/`.
+
+## Supported data sources
+
+- **FRED** — [Federal Reserve Economic Data](https://fred.stlouisfed.org/docs/api/fred/)
+- **Tiingo** — [end-of-day equity prices](https://api.tiingo.com/)
+- **BLS** — [Bureau of Labor Statistics](https://www.bls.gov/developers/)
