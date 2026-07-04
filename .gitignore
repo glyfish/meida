@@ -15,3 +15,7 @@ logs/*
 .ipynb_checkpoints
 _minted*
 .env
+
+# FRED data (downloaded locally, not tracked)
+notebooks/fred/series/series_data/
+notebooks/fred/categories/category_data/
