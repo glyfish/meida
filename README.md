@@ -54,6 +54,51 @@ The server listens on `http://localhost:8080/sse`.
 
 Launch JupyterLab and open any notebook under `notebooks/`.
 
+## Generating the FRED data files
+
+The category and series metadata under `notebooks/fred/categories/category_data/`
+and `notebooks/fred/series/series_data/` are **not tracked in git** (they are large
+and fully regenerable, so they are `.gitignore`d). Rebuild them locally with the
+notebooks below.
+
+Both stages call FRED tools over the MCP server, so the server must be running
+(see [step 4](#4-start-the-mcp-server)) before you begin. Both helpers throttle
+their requests with `time.sleep` to stay within FRED's rate limits, so a full
+rebuild takes a while and the resulting `series_data/` is a few hundred MB.
+
+Files follow the naming convention `fred_<name>_<root_category_id>.yaml`, and a
+`series_data/` file is generated from the `category_data/` file of the same name.
+
+### Stage 1 — category leaf discovery → `category_data/`
+
+Run the notebooks in `notebooks/fred/categories/` (`academic`, `finance`,
+`international`, `national_accounts`, `population`, `prices`, `production`,
+`regional_data`). Each walks the FRED category tree from a root category via the
+`fred.category_children` tool and writes its leaf categories with
+[`find_leaf_categories(root_id, root_name, output_path)`](notebooks/fred/utils.py)
+into `category_data/`, e.g.:
+
+```python
+root_id = 32991
+root_name = "Money, Banking, & Finance"
+await find_leaf_categories(root_id, root_name, f"fred_finance_{root_id}.yaml")
+```
+
+### Stage 2 — series metadata export → `series_data/`
+
+Run [notebooks/fred/series/series_info.ipynb](notebooks/fred/series/series_info.ipynb).
+For each `category_data/` file it pulls the FRED series for every leaf category via
+the `fred.category_series` tool and writes them with
+[`export_finance_category_series(input_path, output_path)`](notebooks/fred/utils.py)
+into `series_data/` under the same filename:
+
+```python
+filename = "fred_finance_32991.yaml"
+input_path = str(Path(f"../categories/category_data/{filename}").absolute())
+output_path = str(Path(f"series_data/{filename}").absolute())
+await export_finance_category_series(input_path, output_path)
+```
+
 ## Supported data sources
 
 - **FRED** — [Federal Reserve Economic Data](https://fred.stlouisfed.org/docs/api/fred/)
