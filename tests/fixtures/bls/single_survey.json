@@ -1,0 +1,16 @@
+{
+  "status": "REQUEST_SUCCEEDED",
+  "responseTime": 13,
+  "message": [],
+  "Results": {
+    "survey": [
+      {
+        "survey_name": "American Time Use",
+        "survey_abbreviation": "TU",
+        "allowsNetChange": "false",
+        "allowsPercentChange": "false",
+        "hasAnnualAverages": "false"
+      }
+    ]
+  }
+}

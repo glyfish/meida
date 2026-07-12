@@ -9,17 +9,22 @@ clients accept explicit ``api_key``/``base_url``/``client`` arguments.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, Callable
 
 import httpx
 import pytest
 
-from lib.clients import FredClient, TiingoClient
+from lib.clients import BlsClient, FredClient, TiingoClient
 
 HttpHandler = Callable[[httpx.Request], httpx.Response]
 
 FRED_BASE_URL = "https://fred.test/fred"
 TIINGO_BASE_URL = "https://tiingo.test/tiingo"
+BLS_BASE_URL = "https://bls.test/publicAPI/v2"
+
+_FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def _mock_async_client(handler: HttpHandler, base_url: str) -> httpx.AsyncClient:
@@ -60,6 +65,32 @@ async def make_tiingo_client() -> Callable[[HttpHandler], TiingoClient]:
 
     for http in created:
         await http.aclose()
+
+
+@pytest.fixture
+async def make_bls_client() -> Callable[[HttpHandler], BlsClient]:
+    """Factory building a BlsClient whose HTTP calls are served by ``handler``."""
+    created: list[httpx.AsyncClient] = []
+
+    def _factory(handler: HttpHandler) -> BlsClient:
+        http = _mock_async_client(handler, BLS_BASE_URL)
+        created.append(http)
+        return BlsClient(api_key="test-key", base_url=BLS_BASE_URL, client=http)
+
+    yield _factory
+
+    for http in created:
+        await http.aclose()
+
+
+@pytest.fixture
+def load_bls_fixture() -> Callable[[str], Any]:
+    """Return a loader for the captured BLS response fixtures (tests/fixtures/bls)."""
+
+    def _load(name: str) -> Any:
+        return json.loads((_FIXTURES / "bls" / f"{name}.json").read_text())
+
+    return _load
 
 
 # --- Sample payloads (shaped to satisfy the pydantic models) -----------------

@@ -1,0 +1,8 @@
+{
+  "status": "REQUEST_NOT_PROCESSED",
+  "responseTime": 0,
+  "message": [
+    "The key:INVALID_KEY_1234567890 provided by the User is invalid. Please provide a proper key for the operation to be successful"
+  ],
+  "Results": {}
+}

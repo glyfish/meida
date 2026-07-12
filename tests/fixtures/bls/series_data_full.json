@@ -1,0 +1,582 @@
+{
+  "status": "REQUEST_SUCCEEDED",
+  "responseTime": 87,
+  "message": [],
+  "Results": {
+    "series": [
+      {
+        "seriesID": "LNS14000000",
+        "catalog": {
+          "series_title": "(Seas) Unemployment Rate",
+          "series_id": "LNS14000000",
+          "seasonality": "Seasonally Adjusted",
+          "survey_name": "Labor Force Statistics from the Current Population Survey",
+          "survey_abbreviation": "LN",
+          "measure_data_type": "Percent or rate",
+          "commerce_industry": "All Industries",
+          "occupation": "All Occupations",
+          "cps_labor_force_status": "Unemployment rate",
+          "demographic_age": "16 years and over",
+          "demographic_ethnic_origin": "All Origins",
+          "demographic_race": "All Races",
+          "demographic_gender": "Both Sexes",
+          "demographic_education": "All educational levels"
+        },
+        "data": [
+          {
+            "year": "2023",
+            "period": "M12",
+            "periodName": "December",
+            "value": "3.8",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.1",
+                "3": "0.1",
+                "6": "0.2",
+                "12": "0.3"
+              },
+              "pct_changes": {
+                "1": "2.7",
+                "3": "2.7",
+                "6": "5.6",
+                "12": "8.6"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M11",
+            "periodName": "November",
+            "value": "3.7",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.2",
+                "3": "0.0",
+                "6": "0.1",
+                "12": "0.1"
+              },
+              "pct_changes": {
+                "1": "-5.1",
+                "3": "0.0",
+                "6": "2.8",
+                "12": "2.8"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M10",
+            "periodName": "October",
+            "value": "3.9",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.2",
+                "3": "0.4",
+                "6": "0.5",
+                "12": "0.3"
+              },
+              "pct_changes": {
+                "1": "5.4",
+                "3": "11.4",
+                "6": "14.7",
+                "12": "8.3"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M09",
+            "periodName": "September",
+            "value": "3.7",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.0",
+                "3": "0.1",
+                "6": "0.2",
+                "12": "0.2"
+              },
+              "pct_changes": {
+                "1": "0.0",
+                "3": "2.8",
+                "6": "5.7",
+                "12": "5.7"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M08",
+            "periodName": "August",
+            "value": "3.7",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.2",
+                "3": "0.1",
+                "6": "0.1",
+                "12": "0.1"
+              },
+              "pct_changes": {
+                "1": "5.7",
+                "3": "2.8",
+                "6": "2.8",
+                "12": "2.8"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M07",
+            "periodName": "July",
+            "value": "3.5",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "0.1",
+                "6": "0.0",
+                "12": "0.0"
+              },
+              "pct_changes": {
+                "1": "-2.8",
+                "3": "2.9",
+                "6": "0.0",
+                "12": "0.0"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M06",
+            "periodName": "June",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.0",
+                "3": "0.1",
+                "6": "0.1",
+                "12": "0.0"
+              },
+              "pct_changes": {
+                "1": "0.0",
+                "3": "2.9",
+                "6": "2.9",
+                "12": "0.0"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M05",
+            "periodName": "May",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.2",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "0.0"
+              },
+              "pct_changes": {
+                "1": "5.9",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "0.0"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M04",
+            "periodName": "April",
+            "value": "3.4",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "-0.1",
+                "6": "-0.2",
+                "12": "-0.3"
+              },
+              "pct_changes": {
+                "1": "-2.9",
+                "3": "-2.9",
+                "6": "-5.6",
+                "12": "-8.1"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M03",
+            "periodName": "March",
+            "value": "3.5",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "-0.2"
+              },
+              "pct_changes": {
+                "1": "-2.8",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "-5.4"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M02",
+            "periodName": "February",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.1",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "-0.3"
+              },
+              "pct_changes": {
+                "1": "2.9",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "-7.7"
+              }
+            }
+          },
+          {
+            "year": "2023",
+            "period": "M01",
+            "periodName": "January",
+            "value": "3.5",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.0",
+                "3": "-0.1",
+                "6": "0.0",
+                "12": "-0.5"
+              },
+              "pct_changes": {
+                "1": "0.0",
+                "3": "-2.8",
+                "6": "0.0",
+                "12": "-12.5"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M12",
+            "periodName": "December",
+            "value": "3.5",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "0.0",
+                "6": "-0.1",
+                "12": "-0.4"
+              },
+              "pct_changes": {
+                "1": "-2.8",
+                "3": "0.0",
+                "6": "-2.8",
+                "12": "-10.3"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M11",
+            "periodName": "November",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.0",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "-0.5"
+              },
+              "pct_changes": {
+                "1": "0.0",
+                "3": "0.0",
+                "6": "0.0",
+                "12": "-12.2"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M10",
+            "periodName": "October",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.1",
+                "3": "0.1",
+                "6": "-0.1",
+                "12": "-0.9"
+              },
+              "pct_changes": {
+                "1": "2.9",
+                "3": "2.9",
+                "6": "-2.7",
+                "12": "-20.0"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M09",
+            "periodName": "September",
+            "value": "3.5",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "-0.1",
+                "6": "-0.2",
+                "12": "-1.2"
+              },
+              "pct_changes": {
+                "1": "-2.8",
+                "3": "-2.8",
+                "6": "-5.4",
+                "12": "-25.5"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M08",
+            "periodName": "August",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.1",
+                "3": "0.0",
+                "6": "-0.3",
+                "12": "-1.5"
+              },
+              "pct_changes": {
+                "1": "2.9",
+                "3": "0.0",
+                "6": "-7.7",
+                "12": "-29.4"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M07",
+            "periodName": "July",
+            "value": "3.5",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "-0.2",
+                "6": "-0.5",
+                "12": "-1.9"
+              },
+              "pct_changes": {
+                "1": "-2.8",
+                "3": "-5.4",
+                "6": "-12.5",
+                "12": "-35.2"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M06",
+            "periodName": "June",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.0",
+                "3": "-0.1",
+                "6": "-0.3",
+                "12": "-2.3"
+              },
+              "pct_changes": {
+                "1": "0.0",
+                "3": "-2.7",
+                "6": "-7.7",
+                "12": "-39.0"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M05",
+            "periodName": "May",
+            "value": "3.6",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "-0.3",
+                "6": "-0.5",
+                "12": "-2.2"
+              },
+              "pct_changes": {
+                "1": "-2.7",
+                "3": "-7.7",
+                "6": "-12.2",
+                "12": "-37.9"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M04",
+            "periodName": "April",
+            "value": "3.7",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.0",
+                "3": "-0.3",
+                "6": "-0.8",
+                "12": "-2.4"
+              },
+              "pct_changes": {
+                "1": "0.0",
+                "3": "-7.5",
+                "6": "-17.8",
+                "12": "-39.3"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M03",
+            "periodName": "March",
+            "value": "3.7",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.2",
+                "3": "-0.2",
+                "6": "-1.0",
+                "12": "-2.4"
+              },
+              "pct_changes": {
+                "1": "-5.1",
+                "3": "-5.1",
+                "6": "-21.3",
+                "12": "-39.3"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M02",
+            "periodName": "February",
+            "value": "3.9",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "-0.1",
+                "3": "-0.2",
+                "6": "-1.2",
+                "12": "-2.3"
+              },
+              "pct_changes": {
+                "1": "-2.5",
+                "3": "-4.9",
+                "6": "-23.5",
+                "12": "-37.1"
+              }
+            }
+          },
+          {
+            "year": "2022",
+            "period": "M01",
+            "periodName": "January",
+            "value": "4.0",
+            "footnotes": [
+              {}
+            ],
+            "calculations": {
+              "net_changes": {
+                "1": "0.1",
+                "3": "-0.5",
+                "6": "-1.4",
+                "12": "-2.4"
+              },
+              "pct_changes": {
+                "1": "2.6",
+                "3": "-11.1",
+                "6": "-25.9",
+                "12": "-37.5"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

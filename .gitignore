@@ -20,3 +20,7 @@ _minted*
 # FRED data (downloaded locally, not tracked)
 notebooks/fred/series/series_data/
 notebooks/fred/categories/category_data/
+
+# BLS data (downloaded locally, not tracked)
+notebooks/bls/survey_data/
+notebooks/bls/series_data/

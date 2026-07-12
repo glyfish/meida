@@ -4,7 +4,7 @@ from lib.logger import get_logger
 
 from mcp.server.fastmcp import FastMCP
 
-from lib.clients import FredClient, TiingoClient
+from lib.clients import BlsClient, FredClient, TiingoClient
 
 
 logger = get_logger("meida.mcp")
@@ -36,6 +36,13 @@ def _serialize(payload: Any) -> Mapping[str, Any]:
 async def _call_tiingo(handler: Callable[[TiingoClient], Awaitable[Any]]) -> Mapping[str, Any]:
     """Create a TiingoClient, invoke the handler, and serialize the response."""
     async with TiingoClient() as client:
+        payload = await handler(client)
+    return _serialize(payload)
+
+
+async def _call_bls(handler: Callable[[BlsClient], Awaitable[Any]]) -> Mapping[str, Any]:
+    """Create a BlsClient, invoke the handler, and serialize the response."""
+    async with BlsClient() as client:
         payload = await handler(client)
     return _serialize(payload)
 
@@ -203,6 +210,81 @@ async def get_tiingo_price_series(
         )
 
     return await _call_tiingo(handler)
+
+
+@server.tool(
+    name="bls_series_data",
+    description=(
+        "Fetch observations for one or more BLS series IDs (up to 50). Optionally "
+        "restrict to a start_year/end_year range and enable catalog metadata, net/"
+        "percent-change calculations, annual averages, and aspects."
+    ),
+)
+async def bls_series_data(
+    series_ids: list[str],
+    start_year: int | None = None,
+    end_year: int | None = None,
+    catalog: bool = False,
+    calculations: bool = False,
+    annualaverage: bool = False,
+    aspects: bool = False,
+) -> Mapping[str, Any]:
+    async def handler(client: BlsClient) -> Any:
+        return await client.get_series_data(
+            series_ids,
+            start_year=start_year,
+            end_year=end_year,
+            catalog=catalog,
+            calculations=calculations,
+            annualaverage=annualaverage,
+            aspects=aspects,
+        )
+
+    return await _call_bls(handler)
+
+
+@server.tool(
+    name="bls_series_latest",
+    description="Return the single most-recent datapoint for a BLS series.",
+)
+async def bls_series_latest(series_id: str) -> Mapping[str, Any]:
+    async def handler(client: BlsClient) -> Any:
+        return await client.get_series_latest(series_id)
+
+    return await _call_bls(handler)
+
+
+@server.tool(
+    name="bls_popular_series",
+    description="List the 25 most popular BLS series IDs, optionally within a survey (e.g. 'LA').",
+)
+async def bls_popular_series(survey: str | None = None) -> Mapping[str, Any]:
+    async def handler(client: BlsClient) -> Any:
+        return await client.get_popular_series(survey)
+
+    return await _call_bls(handler)
+
+
+@server.tool(
+    name="bls_all_surveys",
+    description="List all BLS surveys (abbreviation and name).",
+)
+async def bls_all_surveys() -> Mapping[str, Any]:
+    async def handler(client: BlsClient) -> Any:
+        return await client.get_all_surveys()
+
+    return await _call_bls(handler)
+
+
+@server.tool(
+    name="bls_survey_info",
+    description="Fetch metadata for a single BLS survey by its abbreviation (e.g. 'TU').",
+)
+async def bls_survey_info(survey_abbreviation: str) -> Mapping[str, Any]:
+    async def handler(client: BlsClient) -> Any:
+        return await client.get_survey(survey_abbreviation)
+
+    return await _call_bls(handler)
 
 
 def run() -> None:

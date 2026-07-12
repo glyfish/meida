@@ -87,6 +87,31 @@ class RecordingTiingoClient:
         return {}
 
 
+class RecordingBlsClient:
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    async def get_series_data(self, series_ids: Any, **params: Any) -> Any:
+        self.calls.append(("get_series_data", {"series_ids": series_ids, **params}))
+        return {}
+
+    async def get_series_latest(self, series_id: str) -> Any:
+        self.calls.append(("get_series_latest", {"series_id": series_id}))
+        return {}
+
+    async def get_popular_series(self, survey: Any = None) -> Any:
+        self.calls.append(("get_popular_series", {"survey": survey}))
+        return {}
+
+    async def get_all_surveys(self) -> Any:
+        self.calls.append(("get_all_surveys", {}))
+        return {}
+
+    async def get_survey(self, survey_abbreviation: str) -> Any:
+        self.calls.append(("get_survey", {"survey_abbreviation": survey_abbreviation}))
+        return {}
+
+
 def _patch_fred(monkeypatch, fake: RecordingFredClient) -> None:
     async def fake_call_fred(handler):
         return await handler(fake)
@@ -99,6 +124,13 @@ def _patch_tiingo(monkeypatch, fake: RecordingTiingoClient) -> None:
         return await handler(fake)
 
     monkeypatch.setattr(server, "_call_tiingo", fake_call_tiingo)
+
+
+def _patch_bls(monkeypatch, fake: RecordingBlsClient) -> None:
+    async def fake_call_bls(handler):
+        return await handler(fake)
+
+    monkeypatch.setattr(server, "_call_bls", fake_call_bls)
 
 
 # --- Conditional parameter assembly -----------------------------------------
@@ -218,3 +250,77 @@ async def test_observations_includes_frequency_and_units(monkeypatch):
         "frequency": "q",
         "units": "lin",
     }
+
+
+# --- BLS tools ----------------------------------------------------------------
+
+
+async def test_bls_series_data_passes_all_params(monkeypatch):
+    fake = RecordingBlsClient()
+    _patch_bls(monkeypatch, fake)
+
+    await server.bls_series_data(
+        series_ids=["LNS14000000", "CES0000000001"],
+        start_year=2020,
+        end_year=2023,
+        catalog=True,
+        calculations=True,
+    )
+
+    name, params = fake.calls[0]
+    assert name == "get_series_data"
+    assert params == {
+        "series_ids": ["LNS14000000", "CES0000000001"],
+        "start_year": 2020,
+        "end_year": 2023,
+        "catalog": True,
+        "calculations": True,
+        "annualaverage": False,
+        "aspects": False,
+    }
+
+
+async def test_bls_series_data_defaults(monkeypatch):
+    fake = RecordingBlsClient()
+    _patch_bls(monkeypatch, fake)
+
+    await server.bls_series_data(series_ids=["LNS14000000"])
+
+    _, params = fake.calls[0]
+    assert params["start_year"] is None and params["end_year"] is None
+    assert params["catalog"] is False and params["aspects"] is False
+
+
+async def test_bls_series_latest(monkeypatch):
+    fake = RecordingBlsClient()
+    _patch_bls(monkeypatch, fake)
+
+    await server.bls_series_latest(series_id="LNS14000000")
+
+    assert fake.calls == [("get_series_latest", {"series_id": "LNS14000000"})]
+
+
+async def test_bls_popular_series_optional_survey(monkeypatch):
+    fake = RecordingBlsClient()
+    _patch_bls(monkeypatch, fake)
+
+    await server.bls_popular_series()
+    await server.bls_popular_series(survey="LA")
+
+    assert fake.calls == [
+        ("get_popular_series", {"survey": None}),
+        ("get_popular_series", {"survey": "LA"}),
+    ]
+
+
+async def test_bls_all_surveys_and_survey_info(monkeypatch):
+    fake = RecordingBlsClient()
+    _patch_bls(monkeypatch, fake)
+
+    await server.bls_all_surveys()
+    await server.bls_survey_info(survey_abbreviation="TU")
+
+    assert fake.calls == [
+        ("get_all_surveys", {}),
+        ("get_survey", {"survey_abbreviation": "TU"}),
+    ]

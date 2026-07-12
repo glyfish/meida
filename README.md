@@ -4,9 +4,11 @@ An MCP server and Jupyter notebook workspace for exploring economic and financia
 
 ## What's here
 
-- **`mcp_server/`** — [FastMCP](https://github.com/jlowin/fastmcp) server exposing FRED and Tiingo tools over SSE on `http://localhost:8080`
+- **`mcp_server/`** — [FastMCP](https://github.com/jlowin/fastmcp) server exposing FRED, Tiingo, and BLS tools over SSE on `http://localhost:8080`
 - **`notebooks/fred/`** — notebooks for browsing FRED categories, series metadata, and observations
 - **`notebooks/tiingo/`** — notebooks for Tiingo end-of-day price data
+- **`notebooks/bls/`** — notebooks for browsing BLS surveys and time series
+- **`documents/`** — reference docs (e.g. [BLS API endpoints](documents/bls_api_reference.md))
 
 ## Dependencies
 
@@ -110,6 +112,22 @@ keys are required.
 pip install -r requirements-dev.txt
 pytest
 ```
+
+## BLS tools
+
+The server exposes these Bureau of Labor Statistics tools (see
+[documents/bls_api_reference.md](documents/bls_api_reference.md) for the
+underlying API):
+
+- `bls_series_data` — observations for up to 50 series IDs, with optional
+  `start_year`/`end_year`, `catalog`, `calculations`, `annualaverage`, `aspects`
+- `bls_series_latest` — the most-recent datapoint for a series
+- `bls_popular_series` — the 25 most popular series IDs (optionally per survey)
+- `bls_all_surveys` / `bls_survey_info` — survey catalog and per-survey metadata
+
+BLS works without a key at reduced limits; set `BLS_API_KEY` in `../navi/.env`
+to raise the limits and enable `catalog`/`calculations`. Explore via the
+notebooks in `notebooks/bls/`.
 
 ## Supported data sources
 
