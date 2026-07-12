@@ -1,0 +1,4 @@
+# Development/test-only dependencies (not required to run the server or notebooks).
+# Install with:  pip install -r requirements-dev.txt
+pytest
+pytest-asyncio

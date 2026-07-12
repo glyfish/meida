@@ -99,6 +99,18 @@ output_path = str(Path(f"series_data/{filename}").absolute())
 await export_finance_category_series(input_path, output_path)
 ```
 
+## Testing
+
+Unit tests live in `tests/` and cover the MCP server logic
+([mcp_server/server.py](mcp_server/server.py)) and the navi HTTP clients
+(`lib/clients`). They use `httpx.MockTransport`, so no network access or API
+keys are required.
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
 ## Supported data sources
 
 - **FRED** — [Federal Reserve Economic Data](https://fred.stlouisfed.org/docs/api/fred/)
