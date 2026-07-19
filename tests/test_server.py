@@ -133,6 +133,42 @@ def _patch_bls(monkeypatch, fake: RecordingBlsClient) -> None:
     monkeypatch.setattr(server, "_call_bls", fake_call_bls)
 
 
+class RecordingBisClient:
+    """Fake BisClient returning minimal pydantic models the tools can dump."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    async def get_dataflows(self, agency: str = "BIS") -> Any:
+        from lib.clients.models.bis import BisDataflow
+
+        self.calls.append(("get_dataflows", {"agency": agency}))
+        return [BisDataflow(id="WS_TC", name="Total credit")]
+
+    async def get_datastructure(self, dsd_id: str, agency: str = "BIS") -> Any:
+        from lib.clients.models.bis import BisCodelist, BisDataStructure, BisDimension
+
+        self.calls.append(("get_datastructure", {"dsd_id": dsd_id, "agency": agency}))
+        return BisDataStructure(
+            id=dsd_id,
+            dimensions=[BisDimension(id="FREQ", codelist_id="CL_FREQ")],
+            codelists={"CL_FREQ": BisCodelist(id="CL_FREQ", codes={"M": "Monthly", "A": "Annual"})},
+        )
+
+    async def get_data(self, flow: str, key: str = "all", **params: Any) -> Any:
+        from lib.clients.models.bis import BisDataResponse
+
+        self.calls.append(("get_data", {"flow": flow, "key": key, **params}))
+        return BisDataResponse(flow=flow)
+
+
+def _patch_bis(monkeypatch, fake: RecordingBisClient) -> None:
+    async def fake_call_bis(handler):
+        return await handler(fake)
+
+    monkeypatch.setattr(server, "_call_bis", fake_call_bis)
+
+
 # --- Conditional parameter assembly -----------------------------------------
 
 
@@ -324,3 +360,65 @@ async def test_bls_all_surveys_and_survey_info(monkeypatch):
         ("get_all_surveys", {}),
         ("get_survey", {"survey_abbreviation": "TU"}),
     ]
+
+
+# --- BIS tools ----------------------------------------------------------------
+
+
+async def test_bis_dataflows_wraps_list(monkeypatch):
+    """get_dataflows returns a list, which _serialize cannot handle directly."""
+    fake = RecordingBisClient()
+    _patch_bis(monkeypatch, fake)
+
+    result = await server.bis_dataflows()
+
+    assert fake.calls == [("get_dataflows", {"agency": "BIS"})]
+    assert result["dataflows"][0]["id"] == "WS_TC"
+
+
+async def test_bis_datastructure_omits_codes_by_default(monkeypatch):
+    """Codelists can hold 1000+ entries; the tool must not dump them unasked."""
+    fake = RecordingBisClient()
+    _patch_bis(monkeypatch, fake)
+
+    result = await server.bis_datastructure(dsd_id="BIS_TOTAL_CREDIT")
+
+    codelist = result["codelists"]["CL_FREQ"]
+    assert codelist["codes"] == {}
+    assert codelist["code_count"] == 2
+    assert [d["id"] for d in result["dimensions"]] == ["FREQ"]
+
+
+async def test_bis_datastructure_include_codes(monkeypatch):
+    fake = RecordingBisClient()
+    _patch_bis(monkeypatch, fake)
+
+    result = await server.bis_datastructure(dsd_id="BIS_TOTAL_CREDIT", include_codes=True)
+
+    assert result["codelists"]["CL_FREQ"]["codes"] == {"M": "Monthly", "A": "Annual"}
+
+
+async def test_bis_series_data_passes_params(monkeypatch):
+    fake = RecordingBisClient()
+    _patch_bis(monkeypatch, fake)
+
+    await server.bis_series_data(
+        flow="WS_CBPOL", key="M.US", start_period="2025-01", end_period="2026-01"
+    )
+
+    assert fake.calls[0] == (
+        "get_data",
+        {"flow": "WS_CBPOL", "key": "M.US",
+         "start_period": "2025-01", "end_period": "2026-01"},
+    )
+
+
+async def test_bis_series_data_defaults(monkeypatch):
+    fake = RecordingBisClient()
+    _patch_bis(monkeypatch, fake)
+
+    await server.bis_series_data(flow="WS_CBPOL")
+
+    _, params = fake.calls[0]
+    assert params["key"] == "all"
+    assert params["start_period"] is None and params["end_period"] is None

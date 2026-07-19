@@ -4,7 +4,7 @@ from lib.logger import get_logger
 
 from mcp.server.fastmcp import FastMCP
 
-from lib.clients import BlsClient, FredClient, TiingoClient
+from lib.clients import BisClient, BlsClient, FredClient, TiingoClient
 
 
 logger = get_logger("meida.mcp")
@@ -43,6 +43,13 @@ async def _call_tiingo(handler: Callable[[TiingoClient], Awaitable[Any]]) -> Map
 async def _call_bls(handler: Callable[[BlsClient], Awaitable[Any]]) -> Mapping[str, Any]:
     """Create a BlsClient, invoke the handler, and serialize the response."""
     async with BlsClient() as client:
+        payload = await handler(client)
+    return _serialize(payload)
+
+
+async def _call_bis(handler: Callable[[BisClient], Awaitable[Any]]) -> Mapping[str, Any]:
+    """Create a BisClient, invoke the handler, and serialize the response."""
+    async with BisClient() as client:
         payload = await handler(client)
     return _serialize(payload)
 
@@ -285,6 +292,73 @@ async def bls_survey_info(survey_abbreviation: str) -> Mapping[str, Any]:
         return await client.get_survey(survey_abbreviation)
 
     return await _call_bls(handler)
+
+
+@server.tool(
+    name="bis_dataflows",
+    description=(
+        "List the BIS statistical dataflows (datasets) available, such as total "
+        "credit, policy rates, property prices, and banking statistics. Each entry "
+        "gives the dataflow id used by the other BIS tools."
+    ),
+)
+async def bis_dataflows(agency: str = "BIS") -> Mapping[str, Any]:
+    async def handler(client: BisClient) -> Any:
+        flows = await client.get_dataflows(agency)
+        # A bare list is not serializable by _serialize; wrap it.
+        return {"dataflows": [flow.model_dump() for flow in flows]}
+
+    return await _call_bis(handler)
+
+
+@server.tool(
+    name="bis_datastructure",
+    description=(
+        "Describe a BIS dataflow's structure: the ordered dimensions that make up "
+        "a series key and the codelist that decodes each one. Set include_codes=true "
+        "to also return every code/label pair — some codelists have 1000+ entries, "
+        "so it is off by default."
+    ),
+)
+async def bis_datastructure(
+    dsd_id: str,
+    agency: str = "BIS",
+    include_codes: bool = False,
+) -> Mapping[str, Any]:
+    async def handler(client: BisClient) -> Any:
+        structure = await client.get_datastructure(dsd_id, agency)
+        payload = structure.model_dump()
+        if not include_codes:
+            for codelist in payload.get("codelists", {}).values():
+                codelist["code_count"] = len(codelist.get("codes", {}))
+                codelist["codes"] = {}
+        return payload
+
+    return await _call_bis(handler)
+
+
+@server.tool(
+    name="bis_series_data",
+    description=(
+        "Return observations for a BIS dataflow. 'key' is the dot-joined series key "
+        "in dimension order (e.g. 'M.US' for monthly/United States); omit a position "
+        "to wildcard it ('M..A'), use '+' for alternatives ('M.US+GB'), or 'all' for "
+        "every series. Dimension values come back as codes — use bis_datastructure "
+        "to decode them."
+    ),
+)
+async def bis_series_data(
+    flow: str,
+    key: str = "all",
+    start_period: str | None = None,
+    end_period: str | None = None,
+) -> Mapping[str, Any]:
+    async def handler(client: BisClient) -> Any:
+        return await client.get_data(
+            flow, key, start_period=start_period, end_period=end_period
+        )
+
+    return await _call_bis(handler)
 
 
 def run() -> None:

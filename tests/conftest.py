@@ -16,13 +16,14 @@ from typing import Any, Callable
 import httpx
 import pytest
 
-from lib.clients import BlsClient, FredClient, TiingoClient
+from lib.clients import BisClient, BlsClient, FredClient, TiingoClient
 
 HttpHandler = Callable[[httpx.Request], httpx.Response]
 
 FRED_BASE_URL = "https://fred.test/fred"
 TIINGO_BASE_URL = "https://tiingo.test/tiingo"
 BLS_BASE_URL = "https://bls.test/publicAPI/v2"
+BIS_BASE_URL = "https://bis.test/api/v1"
 
 _FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -82,6 +83,37 @@ async def make_bls_client() -> Callable[[HttpHandler], BlsClient]:
 
     for http in created:
         await http.aclose()
+
+
+@pytest.fixture
+async def make_bis_client() -> Callable[[HttpHandler], BisClient]:
+    """Factory building a BisClient whose HTTP calls are served by ``handler``.
+
+    BIS needs no credentials, so there is no key to inject.
+    """
+    created: list[httpx.AsyncClient] = []
+
+    def _factory(handler: HttpHandler, **kwargs: Any) -> BisClient:
+        http = _mock_async_client(handler, BIS_BASE_URL)
+        created.append(http)
+        return BisClient(base_url=BIS_BASE_URL, client=http, **kwargs)
+
+    yield _factory
+
+    for http in created:
+        await http.aclose()
+
+
+@pytest.fixture
+def load_bis_fixture() -> Callable[[str], Any]:
+    """Load a captured BIS fixture; .json is parsed, other files return text."""
+
+    def _load(name: str) -> Any:
+        path = _FIXTURES / "bis" / name
+        text = path.read_text()
+        return json.loads(text) if name.endswith(".json") else text
+
+    return _load
 
 
 @pytest.fixture
