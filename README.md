@@ -8,7 +8,7 @@ An MCP server and Jupyter notebook workspace for exploring economic and financia
 - **`notebooks/fred/`** — notebooks for browsing FRED categories, series metadata, and observations
 - **`notebooks/tiingo/`** — notebooks for Tiingo end-of-day price data
 - **`notebooks/bls/`** — notebooks for browsing BLS surveys and time series
-- **`documents/`** — reference docs: [architecture](documents/architecture.md), [BLS API endpoints](documents/bls_api_reference.md)
+- **`documents/`** — reference docs: [architecture](documents/architecture.md), and API endpoint references for [FRED](documents/fred_api_reference.md), [Tiingo](documents/tiingo_api_reference.md), and [BLS](documents/bls_api_reference.md)
 
 ## Dependencies
 

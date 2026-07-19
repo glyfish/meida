@@ -22,5 +22,6 @@ notebooks/fred/series/series_data/
 notebooks/fred/categories/category_data/
 
 # BLS data (downloaded locally, not tracked)
-notebooks/bls/survey_data/
 notebooks/bls/series_data/
+# Exported BLS metadata catalogs (regenerable; consumed by the yada project)
+notebooks/bls/data/

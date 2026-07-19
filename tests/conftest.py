@@ -72,10 +72,11 @@ async def make_bls_client() -> Callable[[HttpHandler], BlsClient]:
     """Factory building a BlsClient whose HTTP calls are served by ``handler``."""
     created: list[httpx.AsyncClient] = []
 
-    def _factory(handler: HttpHandler) -> BlsClient:
+    def _factory(handler: HttpHandler, **kwargs: Any) -> BlsClient:
+        """Extra kwargs go to BlsClient (e.g. max_attempts, backoff_seconds)."""
         http = _mock_async_client(handler, BLS_BASE_URL)
         created.append(http)
-        return BlsClient(api_key="test-key", base_url=BLS_BASE_URL, client=http)
+        return BlsClient(api_key="test-key", base_url=BLS_BASE_URL, client=http, **kwargs)
 
     yield _factory
 

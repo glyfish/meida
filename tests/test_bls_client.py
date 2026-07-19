@@ -140,9 +140,108 @@ async def test_http_error_wrapped(make_bls_client):
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(500, text="server error")
 
+    # 5xx is retried, so disable the backoff to keep the test fast.
     with pytest.raises(BlsAPIError):
-        async with make_bls_client(handler) as client:
+        async with make_bls_client(handler, backoff_seconds=0) as client:
             await client.get_all_surveys()
+
+
+# --- retry behavior -----------------------------------------------------------
+
+
+async def test_retries_5xx_then_succeeds(make_bls_client, load_bls_fixture):
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] < 3:
+            return httpx.Response(500, text="upstream boom")
+        return httpx.Response(200, json=load_bls_fixture("all_surveys"))
+
+    async with make_bls_client(handler, backoff_seconds=0) as client:
+        result = await client.get_all_surveys()
+
+    assert calls["n"] == 3  # failed twice, succeeded on the third attempt
+    assert result.results.survey[0].survey_abbreviation == "AP"
+
+
+async def test_retries_transport_errors(make_bls_client, load_bls_fixture):
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise httpx.ConnectError("connection refused", request=request)
+        return httpx.Response(200, json=load_bls_fixture("all_surveys"))
+
+    async with make_bls_client(handler, backoff_seconds=0) as client:
+        await client.get_all_surveys()
+
+    assert calls["n"] == 2
+
+
+async def test_gives_up_after_max_attempts(make_bls_client):
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(503, text="unavailable")
+
+    with pytest.raises(BlsAPIError) as exc_info:
+        async with make_bls_client(handler, max_attempts=3, backoff_seconds=0) as client:
+            await client.get_all_surveys()
+
+    assert calls["n"] == 3
+    assert "after 3 attempts" in str(exc_info.value)
+
+
+async def test_does_not_retry_client_errors(make_bls_client):
+    """4xx is permanent — retrying a bad request cannot help."""
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(400, text="bad request")
+
+    with pytest.raises(BlsAPIError):
+        async with make_bls_client(handler, backoff_seconds=0) as client:
+            await client.get_all_surveys()
+
+    assert calls["n"] == 1
+
+
+async def test_does_not_retry_request_not_processed(make_bls_client, load_bls_fixture):
+    """BLS's own failure status is permanent, despite the HTTP 200."""
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(200, json=load_bls_fixture("error_not_processed"))
+
+    with pytest.raises(BlsAPIError):
+        async with make_bls_client(handler, backoff_seconds=0) as client:
+            await client.get_series_data(["LNS14000000"])
+
+    assert calls["n"] == 1
+
+
+async def test_backoff_delay_increases(make_bls_client, monkeypatch):
+    """Delay between retries grows exponentially (0.5s, 1.0s, ...)."""
+    delays: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        delays.append(seconds)
+
+    monkeypatch.setattr("lib.clients.bls.asyncio.sleep", fake_sleep)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(500, text="boom")
+
+    with pytest.raises(BlsAPIError):
+        async with make_bls_client(handler, max_attempts=4, backoff_seconds=0.5) as client:
+            await client.get_all_surveys()
+
+    assert delays == [0.5, 1.0, 2.0]  # one sleep between each pair of attempts
 
 
 async def test_client_without_key_omits_registrationkey():

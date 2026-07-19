@@ -57,11 +57,11 @@ and plotting modules directly.
 ### meida
 
 | Path | Role |
-|---|---|
+| --- | --- |
 | `mcp_server/server.py` | FastMCP server; all tool definitions |
 | `notebooks/fred/`, `notebooks/tiingo/`, `notebooks/bls/` | Per-source exploration + data discovery; each has a `utils.py` of MCP helpers |
 | `tests/` | Unit tests for meida **and** navi's clients (see §7) |
-| `documents/` | Reference docs (this file, `bls_api_reference.md`) |
+| `documents/` | Reference docs: this file plus `fred_api_reference.md`, `tiingo_api_reference.md`, `bls_api_reference.md` |
 | `requirements.in` / `.txt` | Runtime deps, pip-compiled; includes `-e ../navi` |
 | `requirements-dev.in` / `.txt` | Test-only deps (pytest, pytest-asyncio) |
 | `pytest.ini` | `testpaths=tests`, `pythonpath=.`, `asyncio_mode=auto` |
@@ -69,7 +69,7 @@ and plotting modules directly.
 ### navi
 
 | Path | Role |
-|---|---|
+| --- | --- |
 | `lib/env.py` | API keys and base URLs from `navi/.env` |
 | `lib/clients/` | Async HTTP clients: `fred.py`, `tiingo.py`, `bls.py` |
 | `lib/clients/models/` | Frozen pydantic models per provider |
@@ -171,7 +171,7 @@ Two properties matter architecturally:
 The abstraction is intentionally thin — the providers genuinely differ:
 
 | | FRED | Tiingo | BLS |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Method | GET | GET | **POST** (multi-series) + GET |
 | Auth | `api_key` query param | `Authorization: Token` header | `registrationkey` in **body**/query |
 | Key required | Yes | Yes | **No** (reduced limits) |
@@ -209,7 +209,7 @@ All tests live in **meida** (`tests/`), covering meida's server *and* navi's
 `lib/clients`. navi's analysis modules are tested elsewhere. 59 tests, ~0.1s.
 
 | File | Covers |
-|---|---|
+| --- | --- |
 | `test_server.py` | `_serialize`, per-tool parameter assembly, observations warning, BLS tool wiring |
 | `test_{fred,tiingo,bls}_client.py` | Request construction, auth injection, model parsing, error translation |
 | `test_{fred,tiingo,bls}_models.py` | Aliases, validators, defaults, immutability |
@@ -235,7 +235,7 @@ an object, not the array the BLS docs show). They contain no secrets.
 (overridable with `NAVI_ENV_FILE`), so **both repos share one credentials file**.
 
 | Variable | Default | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `FRED_API_KEY` | — | required |
 | `TIINGO_API_KEY` | — | required |
 | `BLS_API_KEY` | — | optional; raises limits, enables `catalog`/`calculations` |
@@ -257,9 +257,9 @@ YAML. The outputs are **git-ignored and regenerable** — they were large enough
 that the FRED series data (~206 MB) was purged from git history.
 
 | Source | Discovery model | Output (ignored) |
-|---|---|---|
+| --- | --- | --- |
 | FRED | Category tree walk → leaf categories → series per leaf | `notebooks/fred/{categories/category_data,series/series_data}/` |
-| BLS | No tree; surveys → popular series → catalog metadata | `notebooks/bls/{survey_data,series_data}/` |
+| BLS | No tree; flat-file catalogs from `download.bls.gov` → survey + series metadata | `notebooks/bls/{data,series_data}/` |
 
 The asymmetry is inherent: FRED exposes a browsable hierarchy, BLS does not —
 its series IDs are composed from survey-specific code schemes, so API-side

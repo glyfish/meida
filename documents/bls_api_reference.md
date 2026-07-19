@@ -32,7 +32,7 @@ these were retrieved via the Wayback Machine mirror.
 ## Limits (registered v2 vs unregistered v1)
 
 | | v2 (Registered) | v1 (Unregistered) |
-|---|---|---|
+| --- | --- | --- |
 | Daily queries | 500 | 25 |
 | Series per query | 50 | 25 |
 | Years per query | 20 | 10 |
@@ -55,7 +55,7 @@ years. Add `"registrationkey"` for v2 limits.
 `POST /timeseries/data/` — the full-featured call. JSON body fields:
 
 | Field | Type | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `seriesid` | array | required |
 | `startyear` / `endyear` | `"YYYY"` | up to a 20-year span |
 | `catalog` | bool | include series metadata (title, survey, seasonality, area, occupation…) |
