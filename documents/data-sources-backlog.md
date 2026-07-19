@@ -58,27 +58,66 @@ mapping table for the top overlapping series and let the agent pick by need
 
 ## 2. BIS — Bank for International Settlements
 
-**Access (verified).** Data portal at <https://data.bis.org/>, an **SDMX API**,
-and **bulk CSV** at <https://data.bis.org/bulkdownload>. Terms of permitted use
-apply; no rate limits published.
+> **Status: client and MCP tools built** (navi `fff84bf`, meida `b05a7c2`).
+> Remaining work is the document-store catalog export.
 
-**Data.** Credit to the non-financial sector, debt service ratios, residential
-property prices, effective exchange rates, policy rates, locational and
-consolidated banking statistics, debt securities, OTC derivatives, global
-liquidity indicators, consumer prices.
+**Access (verified).** SDMX 2.1 API at `https://stats.bis.org/api/v1`, plus a
+data portal at <https://data.bis.org/> and **bulk CSV** at
+<https://data.bis.org/bulkdownload>. **No credentials of any kind** — verified
+on both structure and observation endpoints with only a `User-Agent`. This makes
+BIS the only unauthenticated source in the stack, so there is no `.env` entry
+and no quota to design around.
 
-**Evaluation.** The strongest candidate — it fits the existing pattern exactly
-and adds genuine coverage: cross-country banking, derivatives, and credit
-aggregates that FRED carries only thinly. Some overlap with FRED (which
-republishes selected BIS property-price and credit-gap series), so the same
-provenance question as §1 applies, at smaller scale.
+**Data.** 29 dataflows: total credit, debt service ratios, residential and
+commercial property prices, effective exchange rates, central bank policy rates,
+locational and consolidated banking statistics, debt securities, OTC
+derivatives, global liquidity indicators, CPMI payments, consumer prices.
 
-**Challenges.** SDMX is a different paradigm — dimension-coded series keys and
-XML/JSON-SDMX rather than plain REST. Conceptually close to BLS's dimension
-codes, so the facet machinery built for BLS should transfer. Bulk CSV is the
-easier on-ramp; the SDMX API is the better long-term interface.
+**Structural model.** Maps almost one-to-one onto the BLS work:
 
-**Value:** high. **Effort:** moderate — mostly the SDMX learning curve.
+| BLS | BIS (SDMX) |
+| --- | --- |
+| Survey (68) | **Dataflow** (29) |
+| Facet columns (`lfst_code`) | **Dimensions** (7 for total credit) |
+| Lookup files (`ln.lfst`) | **Codelists** (`CL_AREA`, 101 codes) |
+| Per-survey column layout | **DSD** (data structure definition) |
+
+BIS is the *easier* of the two: the DSD declares which codelist decodes each
+dimension, so nothing has to be reverse-engineered from filenames (the trap that
+made `ce`/`sm` fail in BLS), and `?references=children` returns the DSD plus all
+codelists in a single request. Units are a real dimension (`UNIT_TYPE`) rather
+than three per-survey encodings.
+
+**What was built.**
+
+- `lib/clients/bis.py` — `BisClient` with `get_dataflows`, `get_datastructure`,
+  `get_data`; `lib/clients/models/bis.py` — frozen models with
+  `BisDataStructure.decode()`.
+- MCP tools `bis_dataflows`, `bis_datastructure`, `bis_series_data`.
+- 22 tests against fixtures captured live, including one asserting that **no
+  credentials are ever sent**.
+
+**Implementation notes worth keeping.**
+
+- **SDMX-JSON needs an exact version.** `version=1.0.0` or `2.0.0`; a bare
+  `version=1.0` returns HTTP 406.
+- **CSV for data, SDMX-JSON for structure.** Requesting `format=csv` on the data
+  path avoids SDMX-XML parsing entirely — dimensions arrive as plain columns.
+  This kept the client to ~230 lines instead of pulling in `pandasdmx`.
+- **Data responses carry codes, not labels.** `UNIT_MEASURE: '368'`, not
+  `'Per cent per annum'`. Decoding requires pairing with `get_datastructure()`.
+- **Codelists are large.** `CL_BIS_UNIT` has 1,096 codes; a full DSD dump is
+  ~42 KB versus ~1.8 KB without codes. `bis_datastructure` therefore suppresses
+  code/label pairs by default (`include_codes=False`) and reports counts.
+
+**Remaining.** Series enumeration strategy (query with wildcards vs the
+availability endpoint) determines whether the catalog is thousands or millions
+of series — verify this first, as it did for BLS. Then the export:
+dataflows → `survey.yaml`, series + dimensions → series files, codelists →
+facet decoding. Also the FRED overlap from §1, at smaller scale, since FRED
+republishes selected BIS property-price and credit-gap series.
+
+**Value:** high. **Effort:** the catalog export only; the client is done.
 
 ---
 
@@ -189,10 +228,20 @@ and format changes" means the parser needs to be defensive.
 
 ## Suggested order
 
-1. **FRED/BLS overlap** — a live problem the moment both catalogs are indexed.
-2. **BIS** — best value-to-effort; reuses everything already built.
-3. **LittleSis** — small, open, no auth; good pilot for non-series data.
-4. **Congress.gov** — larger; needs a mapping strategy to pay off.
-5. **Polymarket** — highest novelty, needs its own architecture; do it when
-   there's appetite for a second storage model.
-6. **Columbia CLIO** — separate project, sequence independently.
+| # | Source | Status |
+| --- | --- | --- |
+| 1 | **BIS** | Client + MCP tools **done**; catalog export remains |
+| 2 | **FRED/BLS overlap** | Not started — bites as soon as both catalogs are indexed |
+| 3 | **LittleSis** | Not started — small, open, no auth; good pilot for non-series data |
+| 4 | **Congress.gov** | Not started — larger; needs a mapping strategy to pay off |
+| 5 | **Polymarket** | Not started — highest novelty, needs its own storage model |
+| 6 | **Columbia CLIO** | Separate project, sequence independently |
+
+BIS moved to the front because its client is built. Finishing its catalog export
+next also keeps the export machinery fresh from the BLS work, and BIS is the
+cleaner of the two to build against.
+
+The FRED/BLS overlap stays high because it is a *correctness* problem rather
+than a feature: the moment both catalogs are in the vector store, the same
+statistic appears twice with no basis for the agent to choose. Adding BIS
+enlarges it slightly, since FRED republishes selected BIS series too.
