@@ -14,18 +14,24 @@ See [architecture.md](architecture.md) for the current client/tool pattern.
 The stack currently assumes one shape: **a series with observations over time**
 (navi client → pydantic models → MCP tools → ChromaDB catalog + Postgres cache).
 
-Only one candidate below fits that shape. The rest break it in four different
-ways, and each needs a deliberate decision about whether it belongs in the same
-stores or gets its own.
+Some candidates fit that shape directly; the rest break it, and each needs a
+deliberate decision about whether it belongs in the same stores or gets its own.
 
 | Source | Data shape | Fits current pattern? |
 | --- | --- | --- |
 | BIS | Time series | ✅ Directly |
+| CDC | Time series | ✅ Directly |
+| Voteview | Panel → derived series | ✅ Mostly (needs reduction) |
 | FRED/BLS overlap | — (reconciliation task) | n/a |
 | Polymarket | Ephemeral, high-frequency probabilities | ❌ Different lifecycle |
 | LittleSis | Graph (entities + relationships) | ❌ Not time series |
-| Congress.gov | Text documents | ❌ RAG-shaped, not numeric |
-| Columbia CLIO | Bibliographic records | ❌ Different domain entirely |
+| Congress.gov | Text + cosponsorship graph | ❌ RAG + graph reduction |
+| Cliodynamics (Seshat) | Polities with dated attributes | ❌ Not time series (graph/RAG) |
+
+Several of these (CDC, Voteview, Congress, Clio-Infra) feed the structural
+demographic theory project — see
+[structural-demographic-theory.md](structural-demographic-theory.md) for how they
+combine.
 
 ---
 
@@ -203,45 +209,139 @@ to make it analytically useful.
 
 ---
 
-## 6. Columbia CLIO open data
+## 6. Cliodynamics — historical databanks (Seshat et al.)
 
-**Access (verified).** <https://library.columbia.edu/bts/clio-data.html> —
-Columbia University Libraries' catalog open data. **MARCXML bulk download**,
-**CC0 public domain**, monthly updates. **No API.** Excludes Law Library,
-ReCAP partner records (NYPL, Princeton), and vendor-restricted records.
+> Corrects an earlier version of this entry that described Columbia University's
+> CLIO **library catalog** (MARCXML/CC0). That was the wrong "CLIO." The intent
+> is **cliodynamics** — quantitative analysis of history — for a research
+> project tangential to finance.
 
-**Data.** Bibliographic and holdings records — books, serials, music, video,
-images, cartographic materials, manuscripts, archival collections.
+**What it is.** Cliodynamics is a field, not one dataset. It draws on several
+long-horizon historical databanks. The flagship is **Seshat: Global History
+Databank**; others named alongside it are D-PLACE, Clio-Infra (economic
+performance and well-being, 1800 CE→), CHIA, eHRAF, and the Atlas of Cultural
+Evolution.
 
-**Evaluation.** Not financial data at all; this is library catalog metadata.
-Sensible for the separate research/bibliography project it was flagged for, and
-CC0 with bulk download makes it unusually easy to work with. It should be its
-own store with no connection to the financial pipeline.
+**Access (verified — Seshat).** Open Django REST API at
+<https://seshat-db.com/api/>. **No authentication** for reads, JSON, standard
+`count`/`next`/`previous`/`results` pagination. Also GitHub repos and download
+pages; a User Agreement & Data License applies. Endpoint groups: `core`,
+`sc` (social complexity), `wf` (warfare), `ec` (economy), `crisisdb`,
+`general`, `rt`.
 
-**Challenges.** MARC is an idiosyncratic format (use `pymarc`); records are
-descriptive metadata, not full text. Monthly updates "with potential structural
-and format changes" means the parser needs to be defensive.
+**Data.** 864 polities across 47 regions and 10 macro-regions spanning millennia
+(e.g. "Early Qing", `start_year 1644, end_year 1796`). Variables cover social
+complexity (territory, population, bureaucracy, infrastructure), warfare,
+religion, and crisis/instability events — each value carrying uncertainty,
+citations, and recorded expert disagreement.
 
-**Value:** high for its own project, nil for finance. **Effort:** low-medium.
+**Evaluation.** Genuinely interesting and cleanly accessible, but the **worst
+architectural fit in the backlog**. The unit of record is a *polity with dated
+attributes*, not a series of observations over time — `sc/polity-populations`
+gives a population estimate scoped to a polity's date range, not a continuous
+annual line. It resembles LittleSis's graph-of-assertions more than FRED's
+series, and the citations/disagreement metadata are arguably the point, which
+also makes it a RAG candidate rather than a numeric one.
+
+**Challenges.**
+
+- **Not a time series.** Needs its own schema (polity → variable → dated value
+  with provenance); do not force it into the series/observation model.
+- **Sparse and uneven.** Coverage varies wildly by polity and variable; many
+  values are ranges or disputed. Fine for exploration, not for precise trends.
+- **Separate project.** Flagged as tangential to finance, so it should be its
+  own store with no link to the financial pipeline. Sequence independently.
+
+**Value:** high for its own project, nil for finance. **Effort:** low to ingest
+(clean API), medium to model the polity/provenance shape well.
 
 ---
 
-## Suggested order
+## 7. CDC — public health statistics
 
-| # | Source | Status |
+**Access (verified).** Socrata API at `data.cdc.gov/resource/<id>.json` (also
+CSV). **No token required** for reads (an app token raises rate limits). Rows
+returned live without auth. Discovery via the Socrata catalog API.
+
+**Data.** Mortality, life expectancy, and cause-of-death series. Confirmed
+dataset ids: `w9j2-ggv5` (death rates & life expectancy at birth — fields
+`year, race, sex, average_life_expectancy, mortality`), `xkb8-kh2a` (provisional
+drug-overdose deaths), `9j2v-jamp` (suicide death rates). CDC WONDER offers finer
+mortality-by-cause/age but through a clunky XML-POST API.
+
+**Evaluation.** The contemporary-US **health** leg of structural demographic
+theory — the immiseration signal BLS cannot supply. The headline metric is
+**deaths of despair** (Case & Deaton: drug + alcohol + suicide mortality),
+effectively a purpose-built immiseration index. Fits the time-series model
+directly; a thin `CdcClient` mirrors the existing pattern.
+
+**Challenges.** Socrata is one API over *many* independent datasets with
+inconsistent schemas, so there is no single response shape — each dataset id
+needs its own field mapping. Provisional series get revised.
+
+**Value:** high (for SDT). **Effort:** low — token-free API, standard shape.
+
+---
+
+## 8. Voteview — Congressional roll-call ideology
+
+**Access (verified).** Direct CSV/JSON download, no auth
+(`voteview.com/static/data/out/...`). `HSall_members.csv` is 6.2 MB, **51,063
+member-Congress rows** with `nominate_dim1`/`dim2` (DW-NOMINATE) plus party and
+biographical fields. A ~500 MB MongoDB dump is offered for full programmatic use.
+
+**Coverage.** **Every Congress, 1st through 119th — 1789 to 2027, no gaps.** The
+longest span of any source in the stack (~236 years).
+
+**Data.** Member ideology (DW-NOMINATE), roll-call votes, members' votes, and
+party-polarization/unity series. The authoritative source for Congressional
+voting behavior over time.
+
+**Evaluation.** Supplies the cheap, robust half of the **intra-elite cohesion**
+leg of SDT: the shrinking moderate "overlap" bloc and bipartisan-vote fraction,
+both derivable from the member file. Turchin uses DW-NOMINATE polarization
+directly in *Ages of Discord*. Complements the (harder) cosponsorship and
+Record-text metrics — see the SDT doc.
+
+**Challenges.** It's a **panel, not a series** — one row per member per Congress.
+Producing a cohesion *time series* means a reduction step (e.g. count members
+between the party medians per Congress). Straightforward, but not a plain load.
+
+**Value:** high (for SDT). **Effort:** low — download + a reduction pass.
+
+---
+
+## Priority
+
+Guiding principle: **financial sources first, then demographic, then other.**
+
+| Tier | Source | Status / note |
 | --- | --- | --- |
-| 1 | **BIS** | Client + MCP tools **done**; catalog export remains |
-| 2 | **FRED/BLS overlap** | Not started — bites as soon as both catalogs are indexed |
-| 3 | **LittleSis** | Not started — small, open, no auth; good pilot for non-series data |
-| 4 | **Congress.gov** | Not started — larger; needs a mapping strategy to pay off |
-| 5 | **Polymarket** | Not started — highest novelty, needs its own storage model |
-| 6 | **Columbia CLIO** | Separate project, sequence independently |
+| **Financial** | BIS | Client + MCP tools **done**; catalog export remains |
+| **Financial** | FRED/BLS overlap | Correctness task — bites once both catalogs are indexed |
+| **Demographic (SDT)** | CDC + Voteview | Token-free/no-auth; health + cheap cohesion legs; fit the series model |
+| **Demographic (SDT)** | Clio-Infra | Historical backbone; Excel loader, no API |
+| **Demographic (SDT)** | Congress.gov | Cosponsorship + Record text; needs a free key |
+| **Other** | LittleSis | Corporate/ownership graph (finance-adjacent) |
+| **Other** | Polymarket | Event probabilities; own storage model |
+| **Other** | Cliodynamics (Seshat) | Separate research project |
 
-BIS moved to the front because its client is built. Finishing its catalog export
-next also keeps the export machinery fresh from the BLS work, and BIS is the
-cleaner of the two to build against.
+**Financial tier.** BIS is the immediate next step — its client and tools exist,
+so only the catalog export remains. FRED/BLS overlap sits here too: it is a
+*correctness* problem, not a feature — the moment both catalogs are in the vector
+store the same statistic appears twice with no basis for the agent to choose, and
+BIS slightly enlarges it (FRED republishes selected BIS series).
 
-The FRED/BLS overlap stays high because it is a *correctness* problem rather
-than a feature: the moment both catalogs are in the vector store, the same
-statistic appears twice with no basis for the agent to choose. Adding BIS
-enlarges it slightly, since FRED republishes selected BIS series too.
+**Demographic tier.** The structural demographic theory project. CDC + Voteview
+lead it: both unauthenticated, both a thin loader over the existing series model,
+together delivering two SDT legs (contemporary health; the cheap half of elite
+cohesion) in a few days. Clio-Infra and Congress cost more (Excel parsing; a key
+plus graph/text machinery). See
+[structural-demographic-theory.md](structural-demographic-theory.md).
+
+**Other.** LittleSis is finance-adjacent (corporate ownership/control) and could
+rise if corporate-structure questions become relevant; Polymarket and Seshat both
+need storage models the stack does not yet have.
+
+> The numbered sections above are in discovery order and act as a reference
+> catalog; this table is the actual roadmap.
