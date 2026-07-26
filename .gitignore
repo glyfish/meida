@@ -25,3 +25,6 @@ notebooks/fred/categories/category_data/
 notebooks/bls/notebook_downloads/
 # Exported BLS metadata catalogs (regenerable; consumed by the yada project)
 notebooks/bls/data/
+
+# Exported BIS metadata catalogs (regenerable; consumed by the yada project)
+notebooks/bis/data/
