@@ -95,12 +95,23 @@ async def decode_series(
     ))
     tables = {dim["id"]: dsd["codelists"].get(dim.get("codelist_id"), {}).get("codes", {})
               for dim in dsd["dimensions"]}
+    # UNIT_MEASURE is an attribute (not a dimension) carried as a code, e.g. 368;
+    # its codelist is the unit one (CL_BIS_UNIT / CL_UNIT_MEASURE), not the
+    # multiplier (CL_UNIT_MULT). Decode it so plots get "Per cent per year".
+    unit_codes: dict[str, str] = {}
+    for cid, cl in dsd["codelists"].items():
+        if "UNIT" in cid and "MULT" not in cid:
+            unit_codes = cl.get("codes", {})
+            break
     for series in data.get("series", []):
         series["labels"] = {
             dim: tables.get(dim, {}).get(code, code)
             for dim, code in series.get("dimensions", {}).items()
             if dim in tables
         }
+        unit = series.get("unit_measure")
+        if unit and unit in unit_codes:
+            series["unit_label"] = unit_codes[unit]
     return data
 
 
@@ -149,5 +160,5 @@ def plot_bis_series(series: dict[str, Any], **kwargs: Any) -> None:
     values, dates = bis_series_to_arrays(series)
     kwargs.setdefault("title", series.get("title") or series.get("key"))
     kwargs.setdefault("xlabel", "Date")
-    kwargs.setdefault("ylabel", series.get("unit_measure") or "Value")
+    kwargs.setdefault("ylabel", series.get("unit_label") or series.get("unit_measure") or "Value")
     curve(values, dates, **kwargs)
