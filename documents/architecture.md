@@ -259,7 +259,7 @@ that the FRED series data (~206 MB) was purged from git history.
 | Source | Discovery model | Output (ignored) |
 | --- | --- | --- |
 | FRED | Category tree walk → leaf categories → series per leaf | `notebooks/fred/{categories/category_data,series/series_data}/` |
-| BLS | Flat-file catalog from `download.bls.gov` → survey + series metadata | `notebooks/bls/data/` (catalog), `series_data/` (observations) |
+| BLS | Flat-file catalog from `download.bls.gov` → survey + series metadata | `notebooks/bls/data/` (catalog), `notebook_downloads/` (observations) |
 
 For BLS the catalog is built from the **flat files** (`download.bls.gov`), not
 the API — the API can only enumerate ~25 popular series per survey and lacks
