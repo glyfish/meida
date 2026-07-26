@@ -525,12 +525,45 @@ def write_all_series_yaml(
     surveys: list[str] | None = None,
     source_dir: Path | str = BLS_SOURCE_DIR,
     output_dir: Path | str = BLS_DATA_DIR,
+    popular: dict[str, set[str]] | None = None,
 ) -> int:
-    """Write a series YAML per survey. Returns the total record count."""
+    """Write a series YAML per survey. Returns the total record count.
+
+    ``popular`` maps a survey code to its popular series IDs (from
+    ``fetch_popular_ids``); passed through so each record's ``is_popular`` is set.
+    """
     source_dir = Path(source_dir)
     surveys = surveys or [p.name.upper() for p in sorted(source_dir.iterdir())
                           if p.is_dir() and (p / f"{p.name}.series").exists()]
-    return sum(write_series_yaml(c, source_dir, output_dir) for c in surveys)
+    popular = popular or {}
+    return sum(write_series_yaml(c, source_dir, output_dir, popular.get(c.upper()))
+               for c in surveys)
+
+
+async def fetch_popular_ids(
+    surveys: list[str] | None = None,
+    delay: float = 1.0,
+) -> dict[str, set[str]]:
+    """Fetch each survey's ~25 most-popular series IDs for the ``is_popular`` flag.
+
+    Uses the BLS API directly (not the MCP server), so it fits the otherwise
+    offline generation flow. Pass the result to ``write_all_series_yaml(popular=...)``
+    and ``export_oe_national(popular_ids=...)``.
+    """
+    from lib.clients import BlsClient  # lazy: only needed during generation
+
+    surveys = [s.upper() for s in (surveys or CORE_SURVEYS)]
+    popular: dict[str, set[str]] = {}
+    async with BlsClient() as client:
+        for code in surveys:
+            await asyncio.sleep(delay)  # BLS API is rate-limited; be gentle
+            try:
+                response = await client.get_popular_series(survey=code)
+                popular[code] = {s.series_id for s in response.results.series}
+            except Exception as exc:  # a survey may have no popular list
+                popular[code] = set()
+                print(f"  {code}: no popular series ({type(exc).__name__})")
+    return popular
 
 
 # OE (Occupational Employment & Wage Statistics) is a ~6M-series
@@ -581,6 +614,7 @@ async def export_oe_national(
     keep_full: bool = False,
     force: bool = False,
     delay: float = 3.0,
+    popular_ids: set[str] | None = None,
 ) -> int:
     """Download OE, filter to the national/all-industries slice, write its YAML.
 
@@ -613,7 +647,8 @@ async def export_oe_national(
 
     # oe.series is now small, so fetching lookups (and overview.txt) is cheap.
     await fetch_bls_source_files(["OE"], dest=dest, delay=delay)
-    return write_series_yaml("OE", source_dir=dest, output_dir=output_dir)
+    return write_series_yaml("OE", source_dir=dest, output_dir=output_dir,
+                             popular_ids=popular_ids)
 
 
 def bls_point_to_date(row: dict[str, Any]) -> datetime:

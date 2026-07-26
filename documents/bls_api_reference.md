@@ -295,13 +295,16 @@ Run from `notebooks/bls/` (functions in `utils.py`):
 
 ```python
 manifest = await fetch_bls_source_files(CORE_SURVEYS, delay=3.0)  # 22 core surveys
+popular = await fetch_popular_ids(CORE_SURVEYS)                    # is_popular flags (API)
 await export_oe_national()               # + OE national/all-industries slice (~16.5k)
 write_survey_yaml(manifest=manifest)     # -> data/survey.yaml (all 23)
-write_all_series_yaml(CORE_SURVEYS)      # -> data/bls_series_<CODE>.yaml (OE already written)
+write_all_series_yaml(CORE_SURVEYS, popular=popular)  # -> data/bls_series_<CODE>.yaml
 ```
 
 `fetch_bls_source_files` downloads each survey's `.series` + needed lookups (and
 `overview.txt`) to `/tmp/bls_source`; the writers read that and write to `data/`.
+`fetch_popular_ids` fetches each survey's ~25 most-popular series IDs from the
+**API** (one request per survey) so records get `is_popular` set.
 `export_oe_national()` wraps OE's larger process into one call — it streams
 `oe.series` (~1.26 GB) to disk, filters to `areatype=N` + `industry=000000`,
 fetches OE's lookups, and writes `bls_series_OE.yaml` (a re-run reuses the
