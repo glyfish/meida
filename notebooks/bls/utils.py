@@ -15,6 +15,7 @@ import time
 
 import numpy
 from curl_cffi import CurlError
+from curl_cffi import requests as curl_requests
 from curl_cffi.requests import AsyncSession
 import yaml
 
@@ -530,6 +531,89 @@ def write_all_series_yaml(
     surveys = surveys or [p.name.upper() for p in sorted(source_dir.iterdir())
                           if p.is_dir() and (p / f"{p.name}.series").exists()]
     return sum(write_series_yaml(c, source_dir, output_dir) for c in surveys)
+
+
+# OE (Occupational Employment & Wage Statistics) is a ~6M-series
+# occupation x geography x industry cross-product -- too large to catalog whole.
+# We keep only the national, all-industries occupation series: employment and
+# wages by detailed occupation (the elite-overproduction data, ~16.5k series).
+OE_NATIONAL_FILTER = {"areatype_code": "N", "industry_code": "000000"}
+
+
+def _stream_download(url: str, dest: Path, chunk: int = 1 << 20) -> int:
+    """Stream a large file to disk (curl_cffi browser fingerprint), returning bytes.
+
+    Used for oe.series (~1.26 GB) so the whole file is never held in memory.
+    """
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    total = 0
+    with curl_requests.Session() as session:
+        response = session.get(url, impersonate=BLS_IMPERSONATE, stream=True, timeout=1800)
+        if response.status_code != 200:
+            raise RuntimeError(f"download failed: HTTP {response.status_code} for {url}")
+        with open(dest, "wb") as fh:
+            for piece in response.iter_content(chunk_size=chunk):
+                fh.write(piece)
+                total += len(piece)
+    return total
+
+
+def _filter_series_file(src: Path, dst: Path, keep: dict[str, str]) -> int:
+    """Write header + rows matching every ``keep`` {column: value}. Streaming."""
+    kept = 0
+    with open(src, encoding="utf-8", errors="ignore") as fin:
+        header = fin.readline()
+        cols = [h.strip() for h in header.rstrip("\n").split("\t")]
+        idx = {c: cols.index(c) for c in keep if c in cols}
+        with open(dst, "w", encoding="utf-8") as fout:
+            fout.write(header)
+            for line in fin:
+                parts = line.rstrip("\n").split("\t")
+                if all(len(parts) > i and parts[i].strip() == keep[c] for c, i in idx.items()):
+                    fout.write(line)
+                    kept += 1
+    return kept
+
+
+async def export_oe_national(
+    dest: Path | str = BLS_SOURCE_DIR,
+    output_dir: Path | str = BLS_DATA_DIR,
+    keep_full: bool = False,
+    force: bool = False,
+    delay: float = 3.0,
+) -> int:
+    """Download OE, filter to the national/all-industries slice, write its YAML.
+
+    Wraps the whole OE process into one call: stream ``oe.series`` (~1.26 GB) to
+    disk, filter to ``areatype=N`` + ``industry=000000`` (~16.5k occupation
+    employment/wage series), fetch OE's lookups (so occupation/datatype decode),
+    and write ``bls_series_OE.yaml``. Returns the record count.
+
+    The full file is removed after filtering unless ``keep_full`` is set. With
+    the filtered ``oe.series`` already present, a re-run skips the big download
+    unless ``force=True``.
+    """
+    dest, output_dir = Path(dest), Path(output_dir)
+    oe_dir = dest / "oe"
+    oe_dir.mkdir(parents=True, exist_ok=True)
+    full = oe_dir / "oe.series.full"
+    filtered = oe_dir / "oe.series"
+
+    if force or not filtered.exists():
+        if force or not full.exists():
+            print("Downloading oe.series (~1.26 GB, streamed)...")
+            n = await asyncio.to_thread(
+                _stream_download, f"{BLS_DOWNLOAD_BASE}/oe/oe.series", full
+            )
+            print(f"  downloaded {n / 1e6:.0f} MB")
+        kept = _filter_series_file(full, filtered, OE_NATIONAL_FILTER)
+        print(f"  filtered to {kept:,} national / all-industries series")
+        if not keep_full:
+            full.unlink(missing_ok=True)
+
+    # oe.series is now small, so fetching lookups (and overview.txt) is cheap.
+    await fetch_bls_source_files(["OE"], dest=dest, delay=delay)
+    return write_series_yaml("OE", source_dir=dest, output_dir=output_dir)
 
 
 def bls_point_to_date(row: dict[str, Any]) -> datetime:

@@ -291,14 +291,19 @@ Each record + `survey.yaml` gives the document store everything it needs:
 
 ### Regeneration
 
-From `notebooks/bls/` (functions in `utils.py`):
+Run from `notebooks/bls/` (functions in `utils.py`):
 
 ```python
-manifest = await fetch_bls_source_files(CORE_SURVEYS, delay=3.0)  # curl_cffi, gentle
-write_survey_yaml(manifest=manifest)     # -> data/survey.yaml
-write_all_series_yaml()                  # -> data/bls_series_<CODE>.yaml
+manifest = await fetch_bls_source_files(CORE_SURVEYS, delay=3.0)  # 22 core surveys
+await export_oe_national()               # + OE national/all-industries slice (~16.5k)
+write_survey_yaml(manifest=manifest)     # -> data/survey.yaml (all 23)
+write_all_series_yaml(CORE_SURVEYS)      # -> data/bls_series_<CODE>.yaml (OE already written)
 ```
 
-OE needs its own filtered step (download `oe.series`, keep `areatype=N &
-industry=000000`, then `write_series_yaml("OE")`). The manifest's `source_mtime`
-lets a yearly rebuild detect whether BLS actually changed before re-embedding.
+`fetch_bls_source_files` downloads each survey's `.series` + needed lookups (and
+`overview.txt`) to `/tmp/bls_source`; the writers read that and write to `data/`.
+`export_oe_national()` wraps OE's larger process into one call — it streams
+`oe.series` (~1.26 GB) to disk, filters to `areatype=N` + `industry=000000`,
+fetches OE's lookups, and writes `bls_series_OE.yaml` (a re-run reuses the
+filtered file unless `force=True`). The manifest's `source_mtime` lets a yearly
+rebuild detect whether BLS actually changed before re-embedding.
