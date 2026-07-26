@@ -259,11 +259,17 @@ that the FRED series data (~206 MB) was purged from git history.
 | Source | Discovery model | Output (ignored) |
 | --- | --- | --- |
 | FRED | Category tree walk → leaf categories → series per leaf | `notebooks/fred/{categories/category_data,series/series_data}/` |
-| BLS | No tree; flat-file catalogs from `download.bls.gov` → survey + series metadata | `notebooks/bls/{data,series_data}/` |
+| BLS | Flat-file catalog from `download.bls.gov` → survey + series metadata | `notebooks/bls/data/` (catalog), `series_data/` (observations) |
 
-The asymmetry is inherent: FRED exposes a browsable hierarchy, BLS does not —
-its series IDs are composed from survey-specific code schemes, so API-side
-discovery bottoms out at surveys plus popular series.
+For BLS the catalog is built from the **flat files** (`download.bls.gov`), not
+the API — the API can only enumerate ~25 popular series per survey and lacks
+coverage dates. The result is a **survey/series** metadata model (`survey.yaml` plus one
+`bls_series_<CODE>.yaml` per survey, ~288k series across 22 economic surveys and
+a filtered OE occupation slice), the analog of FRED's
+category/series with faceted classification instead of a category path. Two
+operational notes: the fetch needs `curl_cffi` (browser TLS fingerprint) to
+pass BLS's bot filter, and observations are fetched from the API separately —
+the catalog is metadata only. See [bls_api_reference.md](bls_api_reference.md).
 
 ---
 
