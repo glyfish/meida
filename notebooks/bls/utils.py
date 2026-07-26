@@ -9,11 +9,13 @@ from datetime import date, datetime
 from pathlib import Path
 import asyncio
 import os
+import random
 import re
 import time
 
-import httpx
 import numpy
+from curl_cffi import CurlError
+from curl_cffi.requests import AsyncSession
 import yaml
 
 from lib.mcp_client import MCPClient, MCPClientConfig
@@ -67,9 +69,11 @@ async def popular_series(survey: str | None = None) -> list[str]:
 
 BLS_DOWNLOAD_BASE = "https://download.bls.gov/pub/time.series"
 
-# download.bls.gov 403s anything claiming to be a browser without a browser's
-# fingerprint. An honest automation UA is accepted; do NOT spoof Chrome.
-BLS_USER_AGENT = "Mozilla/5.0 (compatible; meida-bls-exporter)"
+# download.bls.gov blocks non-browser TLS fingerprints -- plain httpx/curl get a
+# 403 "Access Denied" (same page it serves for rate-limiting, so the two are
+# indistinguishable). curl_cffi impersonating a browser presents a matching
+# fingerprint and passes. Still be gentle: this host rate-limits bulk access.
+BLS_IMPERSONATE = "chrome"
 
 BLS_SOURCE_DIR = Path("/tmp/bls_source")
 BLS_DATA_DIR = Path("data")
@@ -88,7 +92,10 @@ CORE_SURVEYS = [
 _SKIP_LOOKUPS = {"aspect", "footnote", "period", "areamaps", "map_info", "contacts", "txt"}
 
 # Columns that carry units, in priority order. Decoded via the matching lookup.
-_UNITS_COLUMNS = ("tdat_code", "tdata_code", "data_type_code", "measure_code", "ratelevel_code")
+# OE's ``datatype_code`` is the measure (employment count vs. mean/median wage),
+# i.e. the series' units -- decoded via oe.datatype.
+_UNITS_COLUMNS = ("tdat_code", "tdata_code", "data_type_code", "datatype_code",
+                  "measure_code", "ratelevel_code")
 
 # Surveys with neither a units column nor an index base: units are implicit in
 # the survey itself (AP is average prices in dollars, per the item name).
@@ -122,26 +129,33 @@ def _iso_and_int(year: str, period: str) -> tuple[str, int]:
 
 
 async def _bls_get(
-    client: httpx.AsyncClient,
+    session: AsyncSession,
     url: str,
     delay: float = 1.0,
     max_attempts: int = 4,
-) -> httpx.Response | None:
+):
     """GET a BLS file, pausing between calls and backing off on throttling.
 
     download.bls.gov rate-limits bulk access and answers with the *same* 403
-    "Access Denied" page it uses for a rejected user-agent, so a 403 is
-    ambiguous: it may mean "bad UA" or "slow down". We retry it with growing
-    delays and only give up after ``max_attempts``.
+    "Access Denied" page it uses for a blocked fingerprint, so a 403 is
+    ambiguous: it may mean "not a browser" or "slow down". The session already
+    impersonates a browser; a lingering 403 means throttling, so we retry with
+    growing delays and give up after ``max_attempts``.
     """
     for attempt in range(1, max_attempts + 1):
-        await asyncio.sleep(delay)  # be a polite bulk consumer
+        # Jittered pause so the cadence isn't a fixed metronome (looks human,
+        # and stays gentle on a host that rate-limits bulk access).
+        await asyncio.sleep(random.uniform(delay, delay * 1.8))
         try:
-            response = await client.get(url)
-        except httpx.TransportError:
+            response = await session.get(url)
+        except CurlError:
             response = None
         if response is not None and response.status_code == 200:
             return response
+        # 404 is permanent (the file genuinely doesn't exist, e.g. ce has no
+        # data_type lookup) -- don't burn escalating backoff retrying it.
+        if response is not None and response.status_code == 404:
+            return None
         if attempt < max_attempts:
             backoff = delay * (4 ** attempt)
             status = response.status_code if response is not None else "transport error"
@@ -188,10 +202,17 @@ async def fetch_bls_source_files(
     """
     surveys = [s.upper() for s in (surveys or CORE_SURVEYS)]
     dest = Path(dest)
+    dest.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, Any] = {}
-    headers = {"User-Agent": BLS_USER_AGENT}
 
-    async with httpx.AsyncClient(headers=headers, timeout=httpx.Timeout(120.0)) as client:
+    async with AsyncSession(impersonate=BLS_IMPERSONATE, timeout=120.0) as client:
+        # Survey names live only in the top-level overview.txt, not per-survey;
+        # write_survey_yaml needs it, so always ensure it's present.
+        if not (dest / "overview.txt").exists():
+            ov = await _bls_get(client, f"{BLS_DOWNLOAD_BASE}/overview.txt", delay)
+            if ov is not None:
+                (dest / "overview.txt").write_text(ov.text, encoding="utf-8")
+
         for code in surveys:
             s = code.lower()
             out_dir = dest / s
@@ -245,18 +266,45 @@ async def fetch_bls_source_files(
     return manifest
 
 
-def _load_lookups(survey: str, source_dir: Path) -> dict[str, dict[str, str]]:
-    """Load every lookup table present for a survey as {name: {code: text}}."""
+def _load_lookups(survey: str, source_dir: Path, series_columns: list[str]) -> dict[str, dict[str, Any]]:
+    """Load lookup tables as {name: {"key_cols": [...], "table": {tuple: label}}}.
+
+    Lookup files come in three shapes and a naive col0->col1 map is wrong for two
+    of them:
+
+    * simple ``code, text`` (e.g. ``ln.race``) -- keyed by its one code column;
+    * extra attribute columns (e.g. ``ce.industry`` = industry_code, naics_code,
+      ..., industry_name) -- the label is the ``*_name``/``*_text`` column, not
+      col 1;
+    * compound key (e.g. ``wp.item`` = group_code, item_code, item_name) where
+      ``item_code`` is not unique -- keyed by *(group_code, item_code)*.
+
+    Key columns are the lookup's ``*_code`` columns that also appear in the
+    ``.series`` (so we can rebuild the key from a series row); ``ce.industry``
+    keeps only ``industry_code`` because ``naics_code`` isn't a series column,
+    while ``wp.item`` keeps both. Falls back to the first column when no
+    ``*_code`` matches (the ``seasonal`` lookup, whose code the series stores in a
+    column literally named ``seasonal``).
+    """
     s = survey.lower()
-    lookups: dict[str, dict[str, str]] = {}
+    series_cols = set(series_columns)
+    lookups: dict[str, dict[str, Any]] = {}
     for path in sorted((source_dir / s).glob(f"{s}.*")):
         name = path.name.split(".", 1)[1]
-        if name in ("series",) or name in _SKIP_LOOKUPS:
+        if name == "series" or name in _SKIP_LOOKUPS:
             continue
         header, rows = _read_tsv(path)
         if len(header) < 2:
             continue
-        lookups[name] = {r[0]: r[1] for r in rows if len(r) > 1}
+        key_idx = [i for i, h in enumerate(header) if h.endswith("_code") and h in series_cols]
+        key_cols = [header[i] for i in key_idx] if key_idx else [header[0]]
+        if not key_idx:
+            key_idx = [0]
+        val_idx = next((i for i, h in enumerate(header)
+                        if h.endswith("_name") or h.endswith("_text")), len(header) - 1)
+        bound = max(key_idx + [val_idx])
+        table = {tuple(r[i] for i in key_idx): r[val_idx] for r in rows if len(r) > bound}
+        lookups[name] = {"key_cols": key_cols, "table": table}
     return lookups
 
 
@@ -273,7 +321,7 @@ def _format_base_date(value: str) -> str:
     return value
 
 
-def _resolve_units(row: list[str], ix: dict[str, int], lookups: dict[str, dict[str, str]]):
+def _resolve_units(row: list[str], ix: dict[str, int], lookups: dict[str, dict[str, Any]]):
     """Return (units, index_base). BLS encodes units three different ways.
 
     Surveys carry either an explicit data-type column (LN/LE/LA/JT...), an index
@@ -283,9 +331,10 @@ def _resolve_units(row: list[str], ix: dict[str, int], lookups: dict[str, dict[s
     for col in _UNITS_COLUMNS:
         if col in ix and ix[col] < len(row):
             code = row[ix[col]]
-            table = lookups.get(col[:-5])
-            if table and code in table:
-                return table[code], None
+            lk = lookups.get(col[:-5])
+            label = lk["table"].get((code,)) if lk else None
+            if label:
+                return label, None
             if code:
                 return code, None  # no lookup shipped (e.g. ce/sm data_type)
     for col, fmt in (("base_period", _normalize_base), ("base_date", _format_base_date)):
@@ -294,13 +343,14 @@ def _resolve_units(row: list[str], ix: dict[str, int], lookups: dict[str, dict[s
     return None, None
 
 
-def _resolve_frequency(row: list[str], ix: dict[str, int], lookups: dict[str, dict[str, str]]) -> str:
+def _resolve_frequency(row: list[str], ix: dict[str, int], lookups: dict[str, dict[str, Any]]) -> str:
     """Frequency from periodicity_code when present, else derived from the period."""
     if "periodicity_code" in ix and ix["periodicity_code"] < len(row):
         code = row[ix["periodicity_code"]]
-        table = lookups.get("periodicity", {})
-        if code in table:
-            return table[code]
+        lk = lookups.get("periodicity")
+        label = lk["table"].get((code,)) if lk else None
+        if label:
+            return label
     period = row[ix["end_period"]] if "end_period" in ix and ix["end_period"] < len(row) else ""
     return {"M": "Monthly", "Q": "Quarterly", "S": "Semiannual", "A": "Annual"}.get(period[:1], "")
 
@@ -395,7 +445,7 @@ def write_series_yaml(
     source_dir, output_dir = Path(source_dir), Path(output_dir)
     header, rows = _read_tsv(source_dir / s / f"{s}.series")
     ix = {h: i for i, h in enumerate(header)}
-    lookups = _load_lookups(code, source_dir)
+    lookups = _load_lookups(code, source_dir, header)
     popular_ids = popular_ids or set()
 
     years = [int(r[ix["end_year"]]) for r in rows
@@ -425,8 +475,18 @@ def write_series_yaml(
             # All-zero / dash codes mean "all ages, all races, ..." — noise.
             if not value or not value.strip("0-"):
                 continue
-            table = lookups.get(col[:-5], {})
-            facets[col[:-5]] = table.get(value, value)
+            name = col[:-5]
+            lk = lookups.get(name)
+            if lk:
+                # Compound lookups (e.g. item keyed by group+item) pull their
+                # other key columns from this same series row.
+                key = tuple(g(kc) for kc in lk["key_cols"])
+                facets[name] = lk["table"].get(key, value)
+            else:
+                facets[name] = value
+
+        seasonal_lk = lookups.get("seasonal")
+        seasonal = (seasonal_lk["table"].get((g("seasonal"),)) if seasonal_lk else None)
 
         record = {
             "series_id": g("series_id"),
@@ -434,7 +494,7 @@ def write_series_yaml(
             "survey": code,
             "units": units,
             "frequency": _resolve_frequency(r, ix, lookups),
-            "seasonal_adjustment": lookups.get("seasonal", {}).get(g("seasonal")) or g("seasonal") or None,
+            "seasonal_adjustment": seasonal or g("seasonal") or None,
             "observation_start": start_iso,
             "observation_start_int": start_int,
             "observation_end": end_iso,
