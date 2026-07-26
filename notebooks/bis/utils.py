@@ -229,14 +229,19 @@ async def _bis_retry(fn, *args, delay: float = 2.0, max_attempts: int = 4, **kwa
     raise last  # type: ignore[misc]
 
 
-def build_bis_records(flow: str, dsd: Any, data: Any) -> list[dict[str, Any]]:
+def build_bis_records(
+    flow: str, dsd: Any, data: Any, flow_name: str | None = None,
+) -> list[dict[str, Any]]:
     """Build series-metadata records for one dataflow from its DSD + full data.
 
     Keys/facets/title come from the DSD dimensions -- not the client's ``key``,
     which is polluted by attribute columns (e.g. ``TITLE_TS``) on multi-attribute
-    flows. Coverage is derived from the observations, then discarded: the catalog
-    is metadata only.
+    flows. When a flow carries no ``TITLE``/``TITLE_TS`` attribute, the title is
+    synthesized from ``flow_name`` + the decoded facet labels (mirroring the BLS
+    catalog) so every series has embeddable text. Coverage is derived from the
+    observations, then discarded: the catalog is metadata only.
     """
+    flow_name = flow_name or flow
     dim_ids = [d.id for d in dsd.dimensions]
     decode = {
         d.id: (dsd.codelists[d.codelist_id].codes if d.codelist_id in dsd.codelists else {})
@@ -258,10 +263,14 @@ def build_bis_records(flow: str, dsd: Any, data: Any) -> list[dict[str, Any]]:
         key = ".".join(dm.get(i, "") for i in dim_ids)
         facets = {i.lower(): decode[i].get(dm[i], dm[i])
                   for i in dim_ids if i != "FREQ" and dm.get(i)}
+        title = dm.get("TITLE") or dm.get("TITLE_TS")
+        if not title:  # many flows carry no title attr -> synthesize from facets
+            labels = ", ".join(str(v) for v in facets.values())
+            title = f"{flow_name} — {labels}" if labels else flow_name
         records.append({
             "series_id": f"{flow}/{key}",
             "key": key,
-            "title": dm.get("TITLE") or dm.get("TITLE_TS"),
+            "title": title,
             "flow": flow,
             "units": unit_codes.get(dm.get("UNIT_MEASURE")),
             "frequency": decode.get("FREQ", {}).get(dm.get("FREQ")),
@@ -311,7 +320,8 @@ async def export_bis_catalog(
             dsd_id = _dsd_id_from_structure(meta.structure if meta else None)
             dsd = await _bis_retry(client.get_datastructure, dsd_id, delay=delay)
             data = await _bis_retry(client.get_data, flow, "all", delay=delay)
-            records = build_bis_records(flow, dsd, data)
+            records = build_bis_records(flow, dsd, data,
+                                        flow_name=meta.name if meta else None)
             _write_yaml(
                 {"flow": flow, "generated": date.today().isoformat(),
                  "series_count": len(records), "series": records},

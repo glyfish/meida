@@ -25,10 +25,10 @@ The API sections' source: BLS Developers docs — API Signatures v2, v1, and
 FAQ/Getting Started pages (last modified Oct 5, 2020), retrieved via the Wayback
 Machine (bls.gov blocks automated requests).
 
-- Developers home: https://www.bls.gov/developers/home.htm
-- API Signatures v2: https://www.bls.gov/developers/api_signature_v2.htm
-- API Signatures v1: https://www.bls.gov/developers/api_signature.htm
-- FAQs: https://www.bls.gov/developers/api_faqs.htm
+- [BLS Developers home](https://www.bls.gov/developers/home.htm)
+- [API Signatures v2](https://www.bls.gov/developers/api_signature_v2.htm)
+- [API Signatures v1](https://www.bls.gov/developers/api_signature.htm)
+- [API FAQs](https://www.bls.gov/developers/api_faqs.htm)
 
 ## Basics
 
@@ -61,16 +61,19 @@ Machine (bls.gov blocks automated requests).
 ## Endpoints (v2)
 
 ### 1. Single Series
+
 `GET /timeseries/data/{seriesID}`
 Returns the last 3 years for one series. No key needed for the basic call.
 Excel: append `.xlsx` to the path.
 
 ### 2. Multiple Series
+
 `POST /timeseries/data/`
 JSON body: `{"seriesid":["id1", …, "idN"]}` (up to 50). Defaults to last 3
 years. Add `"registrationkey"` for v2 limits.
 
 ### 3. One or More Series with Optional Parameters
+
 `POST /timeseries/data/` — the full-featured call. JSON body fields:
 
 | Field | Type | Notes |
@@ -86,19 +89,23 @@ years. Add `"registrationkey"` for v2 limits.
 Optional params default to `false`.
 
 ### 4. Latest Series Data
+
 `GET /timeseries/data/{seriesID}?latest=true`
 Just the single most-recent datapoint for a series.
 
 ### 5. Popular Series
+
 `GET /timeseries/popular`
 The 25 most-popular series IDs overall; optional `?survey=XX` narrows to one
 survey (e.g. `LA` = Local Area Unemployment). Returns only series IDs.
 
 ### 6. All Surveys
+
 `GET /surveys`
 Catalog of every BLS survey: `survey_abbreviation` + `survey_name`.
 
 ### 7. Single Survey
+
 `GET /surveys/{abbreviation}`
 Metadata for one survey (e.g. `TU`): name, plus `allowsNetChange`,
 `allowsPercentChange`, `hasAnnualAverages` flags.
