@@ -171,7 +171,9 @@ has `D` daily and `S` semiannual):
 | `U` | Turnover – notional amounts (daily average) — trading activity, a flow |
 | `A` | Outstanding – notional amounts — open contracts at period end, a stock |
 
-**`OD_RISK_CAT`** — underlying risk class:
+**`OD_RISK_CAT`** — the asset class the derivative's payoff is exposed to (its
+market-risk category). This flow covers foreign-exchange and interest-rate
+contracts, the latter also split by maturity (short- vs long-term):
 
 | code | label |
 | --- | --- |
@@ -180,7 +182,9 @@ has `D` daily and `S` semiannual):
 | `I` | Interest rate, short-term |
 | `J` | Interest rate, long-term |
 
-**`OD_INSTR`** — contract type:
+**`OD_INSTR`** — the kind of contract. **Futures** lock in a price for future
+delivery; **options** grant the right (not the obligation) to trade at a strike
+price. `A` (All instruments) is futures + options combined:
 
 | code | label |
 | --- | --- |
@@ -188,11 +192,12 @@ has `D` daily and `S` semiannual):
 | `T` | Total futures |
 | `H` | Options, total |
 
-**`ISSUE_CUR`** — issuance currency (the 25 present in this flow). Currencies are
-a **shared codelist** reused across flows (via `ISSUE_CUR` and the `BIS_UNIT`
-attribute); other flows may carry more — the full set is available via the
-`bis_datastructure` tool. Standard ISO 4217 codes plus two BIS aggregates
-(`EU1`, `TO1`):
+**`ISSUE_CUR`** — the currency the contract is denominated in (for these FX
+derivatives, the currency traded against the US dollar — e.g. `AUD` = AUD/USD
+contracts). These 25 codes appear in this flow; currencies are a **shared
+codelist** reused across flows (via `ISSUE_CUR` and the `BIS_UNIT` attribute), so
+other flows may carry more — the full set is available via the `bis_datastructure`
+tool. Standard ISO 4217 codes plus two BIS aggregates (`EU1`, `TO1`):
 
 | code | currency | code | currency |
 | --- | --- | --- | --- |
@@ -210,7 +215,8 @@ attribute); other flows may carry more — the full set is available via the
 | `KRW` | Won | `TO1` | Total all currencies *(aggregate)* |
 | `MXN` | Mexican Peso | | |
 
-**`XD_EXCHANGE`** — exchange / region:
+**`XD_EXCHANGE`** — the organized exchange the contracts trade on. BIS aggregates
+to **regions** rather than naming individual venues — hence the `8x` codes:
 
 | code | label |
 | --- | --- |
@@ -249,15 +255,20 @@ A,U,B,A,AUD,8A,K,0,USD,6,E,2025,6197,A,F,
 
 | column | meaning | client |
 | --- | --- | --- |
-| `TIME_PERIOD` | period (`YYYY`, `YYYY-Qn`, …) | kept |
-| `OBS_VALUE` | the value — **before** `UNIT_MULT` is applied | kept |
-| `OBS_STATUS` | value status (e.g. `A` normal, `E` estimated, `B` break, `P` provisional) | kept |
-| `BIS_UNIT` | unit of measure (e.g. `USD`, `ARS`) — the unit for flows with no `UNIT_MEASURE` dimension | dropped |
-| `UNIT_MULT` | **power-of-10 scale** applied to `OBS_VALUE` (see below) | dropped |
-| `DECIMALS` | display precision | dropped |
-| `COLLECTION` | collection mode (e.g. `E` end-of-period, `A` average) | dropped |
-| `AVAILABILITY` / `OBS_CONF` | availability / confidentiality (e.g. `F` free) | dropped |
-| `OBS_PRE_BREAK` | value before a series break, where one exists | dropped |
+| `TIME_PERIOD` | the period the value is for (`YYYY`, `YYYY-Qn`, `YYYY-MM`, …) | kept |
+| `OBS_VALUE` | the reported value — **before** `UNIT_MULT` scaling is applied | kept |
+| `OBS_STATUS` | quality/status of the value: `A` normal, `B` break, `E` estimated, `F` forecast, `P` provisional, plus missing-value variants (`H` holiday/weekend, `L` not collected, `M` cannot exist, `Q` suppressed) | kept |
+| `BIS_UNIT` | unit of measure (e.g. `USD`, `ARS`) — carries the unit for flows with no `UNIT_MEASURE` dimension | dropped |
+| `UNIT_MULT` | **power-of-10 scale** on `OBS_VALUE`: `0` units, `3` thousands, `6` millions, `9` billions, `12` trillions (see below) | dropped |
+| `DECIMALS` | display precision — how many decimal places to show | dropped |
+| `COLLECTION` | how the value summarizes its period: `E` end-of-period, `A` average, `B` beginning, `S` summed, `H`/`L` highest/lowest, `M` middle | dropped |
+| `AVAILABILITY` | dissemination/embargo status — who may see the value: `A` all users (free), `K` free but latest value embargoed, `B`/`C`/`D`… restricted to BIS / central banks / not for publication | dropped |
+| `OBS_CONF` | confidentiality: `F` free, `C` confidential, `N` not for publication, `D`/`S` secondary confidentiality | dropped |
+| `OBS_PRE_BREAK` | the value before a series break, where one exists | dropped |
+
+The attribute codes come from BIS's standard SDMX codelists (`CL_OBS_STATUS`,
+`CL_CONF_STATUS`, `CL_COLLECTION`, `CL_AVAILABILITY`, `CL_UNIT_MULT`); a
+representative subset is shown above.
 
 ⚠️ **Value scaling (`UNIT_MULT`).** `OBS_VALUE` is unscaled; the true magnitude is
 `OBS_VALUE × 10^UNIT_MULT`, in units of `BIS_UNIT`:
