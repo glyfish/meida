@@ -8,7 +8,7 @@ An MCP server and Jupyter notebook workspace for exploring economic and financia
 - **`notebooks/fred/`** — notebooks for browsing FRED categories, series metadata, and observations
 - **`notebooks/tiingo/`** — notebooks for Tiingo end-of-day price data
 - **`notebooks/bls/`** — notebooks for browsing BLS surveys and time series
-- **`documents/`** — reference docs: [architecture](documents/architecture.md), and API endpoint references for [FRED](documents/fred_api_reference.md), [Tiingo](documents/tiingo_api_reference.md), and [BLS](documents/bls_api_reference.md)
+- **Docs** — project documentation lives in the shared **`sefer`** repo (a sibling of this one); meida's architecture and the FRED/Tiingo/BLS/BIS API references are under `sefer/meida/`.
 
 ## Dependencies
 
@@ -116,7 +116,7 @@ pytest
 ## BLS tools
 
 The server exposes these Bureau of Labor Statistics tools (see
-[documents/bls_api_reference.md](documents/bls_api_reference.md) for the
+the BLS reference (`sefer/meida/api/bls.md`) for the
 underlying API):
 
 - `bls_series_data` — observations for up to 50 series IDs, with optional
