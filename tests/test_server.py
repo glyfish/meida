@@ -422,3 +422,106 @@ async def test_bis_series_data_defaults(monkeypatch):
     _, params = fake.calls[0]
     assert params["key"] == "all"
     assert params["start_period"] is None and params["end_period"] is None
+
+
+# --- CDC server tools --------------------------------------------------------
+
+
+class RecordingCdcClient:
+    """Fake CdcClient returning minimal pydantic models the tools can dump."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    async def discover(self, query: str = "", *, category: Any = None, limit: int = 20) -> Any:
+        from lib.clients.models.cdc import CdcCatalogEntry
+
+        self.calls.append(("discover", {"query": query, "category": category, "limit": limit}))
+        return [CdcCatalogEntry(id="w9j2-ggv5", name="Life expectancy")]
+
+    async def categories(self) -> Any:
+        from lib.clients.models.cdc import CdcCategory
+
+        self.calls.append(("categories", {}))
+        return [CdcCategory(category="National Center for Health Statistics", count=287)]
+
+    async def tags(self) -> Any:
+        from lib.clients.models.cdc import CdcTag
+
+        self.calls.append(("tags", {}))
+        return [CdcTag(tag="mortality", count=117)]
+
+    async def columns(self, dataset_id: str) -> Any:
+        from lib.clients.models.cdc import CdcColumn, CdcDataset
+
+        self.calls.append(("columns", {"dataset_id": dataset_id}))
+        return CdcDataset(id=dataset_id, name="LE", columns=[CdcColumn(field_name="year")])
+
+    async def query(self, dataset_id: str, **params: Any) -> Any:
+        from lib.clients.models.cdc import CdcDataResponse
+
+        self.calls.append(("query", {"dataset_id": dataset_id, **params}))
+        return CdcDataResponse(dataset_id=dataset_id, rows=[{"year": "1900"}])
+
+
+def _patch_cdc(monkeypatch, fake: RecordingCdcClient) -> None:
+    async def fake_call_cdc(handler):
+        return server._serialize(await handler(fake))
+
+    monkeypatch.setattr(server, "_call_cdc", fake_call_cdc)
+
+
+async def test_cdc_discover_wraps_list(monkeypatch):
+    """discover returns a list, which _serialize cannot handle directly."""
+    fake = RecordingCdcClient()
+    _patch_cdc(monkeypatch, fake)
+
+    result = await server.cdc_discover(query="life expectancy")
+
+    assert fake.calls == [("discover", {"query": "life expectancy", "category": None, "limit": 20})]
+    assert result["datasets"][0]["id"] == "w9j2-ggv5"
+
+
+async def test_cdc_dataset_columns(monkeypatch):
+    fake = RecordingCdcClient()
+    _patch_cdc(monkeypatch, fake)
+
+    result = await server.cdc_dataset_columns(dataset_id="w9j2-ggv5")
+
+    assert fake.calls == [("columns", {"dataset_id": "w9j2-ggv5"})]
+    assert result["columns"][0]["field_name"] == "year"
+
+
+async def test_cdc_series_data_passes_soql(monkeypatch):
+    fake = RecordingCdcClient()
+    _patch_cdc(monkeypatch, fake)
+
+    result = await server.cdc_series_data(dataset_id="w9j2-ggv5", where="year>2000", limit=5)
+
+    name, params = fake.calls[0]
+    assert name == "query"
+    assert params["dataset_id"] == "w9j2-ggv5"
+    assert params["where"] == "year>2000"
+    assert params["limit"] == 5
+    assert result["rows"][0]["year"] == "1900"
+
+
+async def test_cdc_categories(monkeypatch):
+    fake = RecordingCdcClient()
+    _patch_cdc(monkeypatch, fake)
+
+    result = await server.cdc_categories()
+
+    assert fake.calls == [("categories", {})]
+    assert result["categories"][0]["category"] == "National Center for Health Statistics"
+    assert result["categories"][0]["count"] == 287
+
+
+async def test_cdc_tags(monkeypatch):
+    fake = RecordingCdcClient()
+    _patch_cdc(monkeypatch, fake)
+
+    result = await server.cdc_tags()
+
+    assert fake.calls == [("tags", {})]
+    assert result["tags"][0]["tag"] == "mortality"

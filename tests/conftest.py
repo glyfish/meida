@@ -16,7 +16,7 @@ from typing import Any, Callable
 import httpx
 import pytest
 
-from lib.clients import BisClient, BlsClient, FredClient, TiingoClient
+from lib.clients import BisClient, BlsClient, CdcClient, FredClient, TiingoClient
 
 HttpHandler = Callable[[httpx.Request], httpx.Response]
 
@@ -24,6 +24,7 @@ FRED_BASE_URL = "https://fred.test/fred"
 TIINGO_BASE_URL = "https://tiingo.test/tiingo"
 BLS_BASE_URL = "https://bls.test/publicAPI/v2"
 BIS_BASE_URL = "https://bis.test/api/v1"
+CDC_BASE_URL = "https://cdc.test"
 
 _FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -105,6 +106,29 @@ async def make_bis_client() -> Callable[[HttpHandler], BisClient]:
 
 
 @pytest.fixture
+async def make_cdc_client() -> Callable[[HttpHandler], CdcClient]:
+    """Factory building a CdcClient whose HTTP calls are served by ``handler``.
+
+    CDC's app token is optional; tests inject it explicitly (default
+    ``"test-token"``, pass ``app_token=""`` for the no-token case) so no real
+    ``CDC_API_KEY`` is ever read from the environment.
+    """
+    created: list[httpx.AsyncClient] = []
+
+    def _factory(
+        handler: HttpHandler, *, app_token: str = "test-token", **kwargs: Any
+    ) -> CdcClient:
+        http = _mock_async_client(handler, CDC_BASE_URL)
+        created.append(http)
+        return CdcClient(base_url=CDC_BASE_URL, app_token=app_token, client=http, **kwargs)
+
+    yield _factory
+
+    for http in created:
+        await http.aclose()
+
+
+@pytest.fixture
 def load_bis_fixture() -> Callable[[str], Any]:
     """Load a captured BIS fixture; .json is parsed, other files return text."""
 
@@ -122,6 +146,16 @@ def load_bls_fixture() -> Callable[[str], Any]:
 
     def _load(name: str) -> Any:
         return json.loads((_FIXTURES / "bls" / f"{name}.json").read_text())
+
+    return _load
+
+
+@pytest.fixture
+def load_cdc_fixture() -> Callable[[str], Any]:
+    """Load a captured CDC fixture (tests/fixtures/cdc); .json files are parsed."""
+
+    def _load(name: str) -> Any:
+        return json.loads((_FIXTURES / "cdc" / name).read_text())
 
     return _load
 

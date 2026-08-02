@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "resource": {
+        "id": "w9j2-ggv5",
+        "name": "NCHS - Death rates and life expectancy at birth",
+        "description": "Age-adjusted death rates and life expectancy at birth."
+      },
+      "metadata": {"domain": "data.cdc.gov"}
+    },
+    {
+      "resource": {
+        "id": "ss2j-8ajj",
+        "name": "U.S. State Life Expectancy by Sex, 2020",
+        "description": "State-level life expectancy by sex."
+      },
+      "metadata": {"domain": "data.cdc.gov"}
+    }
+  ]
+}

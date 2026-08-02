@@ -8,7 +8,7 @@ An MCP server and Jupyter notebook workspace for exploring economic and financia
 - **`notebooks/fred/`** — notebooks for browsing FRED categories, series metadata, and observations
 - **`notebooks/tiingo/`** — notebooks for Tiingo end-of-day price data
 - **`notebooks/bls/`** — notebooks for browsing BLS surveys and time series
-- **Docs** — project documentation lives in the shared **`sefer`** repo (a sibling of this one); meida's architecture and the FRED/Tiingo/BLS/BIS API references are under `sefer/meida/`.
+- **Docs** — project documentation lives in the shared **`sefer`** repo (a sibling of this one); meida's architecture and the FRED/Tiingo/BLS/BIS/CDC API references are under `sefer/meida/`.
 
 ## Dependencies
 

@@ -1,0 +1,12 @@
+{
+  "id": "w9j2-ggv5",
+  "name": "NCHS - Death rates and life expectancy at birth",
+  "description": "Age-adjusted death rates and life expectancy at birth, United States, 1900-2018.",
+  "columns": [
+    {"fieldName": "year", "name": "Year", "dataTypeName": "text", "description": "Year of death"},
+    {"fieldName": "race", "name": "Race", "dataTypeName": "text"},
+    {"fieldName": "sex", "name": "Sex", "dataTypeName": "text"},
+    {"fieldName": "average_life_expectancy", "name": "Average Life Expectancy (Years)", "dataTypeName": "number"},
+    {"fieldName": "mortality", "name": "Age-adjusted Death Rate", "dataTypeName": "number"}
+  ]
+}

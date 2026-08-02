@@ -4,7 +4,7 @@ from lib.logger import get_logger
 
 from mcp.server.fastmcp import FastMCP
 
-from lib.clients import BisClient, BlsClient, FredClient, TiingoClient
+from lib.clients import BisClient, BlsClient, CdcClient, FredClient, TiingoClient
 
 
 logger = get_logger("meida.mcp")
@@ -50,6 +50,13 @@ async def _call_bls(handler: Callable[[BlsClient], Awaitable[Any]]) -> Mapping[s
 async def _call_bis(handler: Callable[[BisClient], Awaitable[Any]]) -> Mapping[str, Any]:
     """Create a BisClient, invoke the handler, and serialize the response."""
     async with BisClient() as client:
+        payload = await handler(client)
+    return _serialize(payload)
+
+
+async def _call_cdc(handler: Callable[[CdcClient], Awaitable[Any]]) -> Mapping[str, Any]:
+    """Create a CdcClient, invoke the handler, and serialize the response."""
+    async with CdcClient() as client:
         payload = await handler(client)
     return _serialize(payload)
 
@@ -359,6 +366,96 @@ async def bis_series_data(
         )
 
     return await _call_bis(handler)
+
+
+@server.tool(
+    name="cdc_discover",
+    description=(
+        "Search the CDC open-data (Socrata) catalog for datasets by keyword "
+        "(e.g. 'life expectancy', 'drug overdose') and/or a 'category' from "
+        "cdc_categories. Returns dataset ids + names for the other CDC tools."
+    ),
+)
+async def cdc_discover(
+    query: str = "", category: str | None = None, limit: int = 20
+) -> Mapping[str, Any]:
+    async def handler(client: CdcClient) -> Any:
+        entries = await client.discover(query, category=category, limit=limit)
+        return {"datasets": [entry.model_dump() for entry in entries]}
+
+    return await _call_cdc(handler)
+
+
+@server.tool(
+    name="cdc_categories",
+    description=(
+        "List the CDC catalog's categories with dataset counts (e.g. 'National "
+        "Center for Health Statistics', 'Behavioral Risk Factors') — the topic map "
+        "for browsing. Pass a category to cdc_discover to list its datasets."
+    ),
+)
+async def cdc_categories() -> Mapping[str, Any]:
+    async def handler(client: CdcClient) -> Any:
+        categories = await client.categories()
+        return {"categories": [category.model_dump() for category in categories]}
+
+    return await _call_cdc(handler)
+
+
+@server.tool(
+    name="cdc_tags",
+    description=(
+        "List the CDC catalog's tags with dataset counts (e.g. 'mortality', "
+        "'covid-19', 'prevalence') — finer-grained topics for search."
+    ),
+)
+async def cdc_tags() -> Mapping[str, Any]:
+    async def handler(client: CdcClient) -> Any:
+        tags = await client.tags()
+        return {"tags": [tag.model_dump() for tag in tags]}
+
+    return await _call_cdc(handler)
+
+
+@server.tool(
+    name="cdc_dataset_columns",
+    description=(
+        "Describe a CDC dataset's columns (field name, type, label) from its id — "
+        "use it to see which fields to filter/select in cdc_series_data. CDC "
+        "datasets have inconsistent schemas, so check columns before querying."
+    ),
+)
+async def cdc_dataset_columns(dataset_id: str) -> Mapping[str, Any]:
+    async def handler(client: CdcClient) -> Any:
+        return await client.columns(dataset_id)
+
+    return await _call_cdc(handler)
+
+
+@server.tool(
+    name="cdc_series_data",
+    description=(
+        "Return rows from a CDC dataset by id, filtered with SoQL. 'where' is a "
+        "SoQL predicate (e.g. \"race='All Races' AND year>2010\"); 'select' and "
+        "'order' are optional comma-separated field lists; 'limit'/'offset' page "
+        "the results. Values come back as strings — cast as needed."
+    ),
+)
+async def cdc_series_data(
+    dataset_id: str,
+    where: str | None = None,
+    select: str | None = None,
+    order: str | None = None,
+    limit: int = 1000,
+    offset: int = 0,
+) -> Mapping[str, Any]:
+    async def handler(client: CdcClient) -> Any:
+        return await client.query(
+            dataset_id, where=where, select=select, order=order,
+            limit=limit, offset=offset,
+        )
+
+    return await _call_cdc(handler)
 
 
 def run() -> None:
