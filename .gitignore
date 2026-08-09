@@ -28,3 +28,6 @@ notebooks/bls/data/
 
 # Exported BIS metadata catalogs (regenerable; consumed by the yada project)
 notebooks/bis/data/
+
+# Exported CDC series catalog (regenerable; consumed by the yada project)
+notebooks/cdc/data/
