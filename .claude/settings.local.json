@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sG \"https://api.us.socrata.com/api/catalog/v1\" --data-urlencode \"domains=data.cdc.gov\" --data-urlencode \"q=provisional suicide\" --data-urlencode \"limit=40\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -sG \"https://api.us.socrata.com/api/catalog/v1\" --data-urlencode \"domains=data.cdc.gov\" --data-urlencode \"q=life expectancy state\" --data-urlencode \"limit=40\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(r['resource']['id'],'|',r['resource']['name']\\) for r in d['results']]\")",
+      "Bash(curl -s \"https://data.cdc.gov/api/views/489q-934x.json\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(c['fieldName'],'|',c['name'],'|',c['dataTypeName']\\) for c in d['columns']]\")",
+      "Bash(python3 /private/tmp/claude-501/-Users-troy-Develop-gly-fish-meida/9f1af693-e4a7-4c7d-8f06-bcff173fd26f/scratchpad/run_export.py)"
+    ]
+  }
+}
