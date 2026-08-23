@@ -1,5 +1,8 @@
 {
   "include": ["."],
   "extraPaths": ["../navi"],
+  "venvPath": "/Users/troy/.pyenv/versions/3.14.7/envs",
+  "venv": "meida-3.14.7",
+  "pythonVersion": "3.14",
   "reportMissingModuleSource": "none"
 }

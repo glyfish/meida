@@ -33,7 +33,7 @@ async def children_of_categories(categories: list[Any]):
         category_id = category["id"]
         category_name = category["name"]
         args = {"category_id": category_id}
-        result = await call_tool("fred.category_children", args)
+        result = await call_tool("fred_category_children", args)
         children = result.structuredContent['result']['categories']  # type: ignore
         print(f"Category {category_id}, {category_name} has {len(children)} children")
 
@@ -47,7 +47,7 @@ async def explore_categories(root_id: int = 0, depth: int = 2):
             print(f"{indent}- category {category_id}")
             if level >= depth:
                 continue
-            response = await client.call_tool("fred.category_children", {"category_id": category_id})
+            response = await client.call_tool("fred_category_children", {"category_id": category_id})
             payload = response.structuredContent or {}
             for child in payload.get("categories", []):
                 queue.append((child["id"], level + 1))
@@ -69,7 +69,7 @@ async def find_leaf_categories(
             category_id, path = queue.pop(0)
 
             response = await client.call_tool(
-                "fred.category_children", {"category_id": category_id}
+                "fred_category_children", {"category_id": category_id}
             )
             payload = response.structuredContent or {}
             children = payload["result"].get("categories", [])
@@ -120,7 +120,7 @@ async def export_finance_category_series(input_path: str, output_path: str, dela
             category_name = category["leaf_name"]
 
             response = await client.call_tool(
-                "fred.category_series",
+                "fred_category_series",
                 {"category_id": category_id},
             )
             payload = (response.structuredContent or {}).get("result", {})

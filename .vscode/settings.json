@@ -1,8 +1,7 @@
 {
-    "python.defaultInterpreterPath": "~/.pyenv/versions/meida-3.11.2/bin/python",
+    "python.defaultInterpreterPath": "/Users/troy/.pyenv/versions/3.14.7/envs/meida-3.14.7/bin/python",
     "python.envFile": "${workspaceFolder}/.env",
     "editor.snippetSuggestions": "top",
-    "python.defaultInterpreterPath": "/Users/troy/.pyenv/versions/meida-3.11.2/bin/python", 
     "python-envs.pythonProjects": [
         {
             "path": ".",

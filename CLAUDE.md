@@ -8,7 +8,7 @@ Exposes navi's data clients as MCP tools and builds the metadata catalogs
 
 ## Environment & commands
 
-- pyenv env `meida-3.11.2`; deps are pip-compiled (`requirements.in` → `.txt`,
+- pyenv env `meida-3.14.7`; deps are pip-compiled (`requirements.in` → `.txt`,
   includes `-e ../navi`).
 - Tests: `pytest tests`.
 - Run: the MCP server over SSE on port 8080.

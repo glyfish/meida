@@ -1,26 +1,16 @@
 -e ../navi
 jupyterlab
 jupyter
-matplotlib
-matplotlib-label-lines
-pandas
-mcp
-python-dotenv
-statsmodels
-SQLAlchemy
 ipython
 ipykernel
-alembic
-backtrader
-beautifulsoup4
-coloredlogs
+matplotlib
+matplotlib-label-lines
 cycler
-debugpy
-gitdb
-GitPython
-markdown-it-py
-python-language-server[all]
-shortuuid
+pandas
+statsmodels
 tabulate
-psycopg2
+shortuuid
+mcp<2                    # 2.0 drops the SSE transport this server runs on
+python-dotenv
 curl_cffi
+python-lsp-server[all]   # language server behind jupyter-lsp (successor of python-language-server)

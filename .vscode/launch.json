@@ -2,10 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run MCP server (stdio)",
+            "name": "Run MCP server (sse)",
             "type": "debugpy",
             "request": "launch",
             "module": "mcp_server.server",
+            "python": "/Users/troy/.pyenv/versions/3.14.7/envs/meida-3.14.7/bin/python",
             "cwd": "${workspaceFolder}",
             "envFile": "${workspaceFolder}/.env",
             "console": "integratedTerminal"
@@ -16,6 +17,7 @@
             "request": "launch",
             "module": "pytest",
             "args": ["tests"],
+            "python": "/Users/troy/.pyenv/versions/3.14.7/envs/meida-3.14.7/bin/python",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         }
