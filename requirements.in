@@ -1,16 +1,11 @@
+# navi declares the analysis and plot stack it imports (numpy, pandas, scipy,
+# statsmodels, matplotlib, matplotlib-label-lines, cycler, tabulate, shortuuid,
+# httpx, pydantic, python-dotenv, curl_cffi), so they are not repeated here.
+# Lines below that name one of those carry a deliberate constraint.
 -e ../navi
 jupyterlab
 jupyter
 ipython
 ipykernel
-matplotlib
-matplotlib-label-lines
-cycler
-pandas
-statsmodels
-tabulate
-shortuuid
 mcp<2                    # 2.0 drops the SSE transport this server runs on
-python-dotenv
-curl_cffi
 python-lsp-server[all]   # language server behind jupyter-lsp (successor of python-language-server)
