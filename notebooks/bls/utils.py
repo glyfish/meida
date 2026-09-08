@@ -4,6 +4,16 @@ Mirrors notebooks/fred/utils.py: thin wrappers over the MCP tools plus a couple
 of discovery routines that persist survey/series metadata to YAML. The MCP
 server must be running (see the project README).
 """
+
+import sys as _sys
+from pathlib import Path as _Path
+
+# meida's repo root, so `clients` resolves. The clients package used to live in
+# navi (installed, hence importable from anywhere); it now sits beside
+# mcp_server, which the notebooks' cwd does not reach. Anchored to __file__
+# rather than "../.." so it holds whatever directory the kernel started in.
+_sys.path.append(str(_Path(__file__).resolve().parents[2]))
+
 from typing import Any
 from datetime import date, datetime
 from pathlib import Path
@@ -22,6 +32,14 @@ import yaml
 from lib.mcp_client import MCPClient, MCPClientConfig
 from lib.utils import print_json_vertical
 from lib.env import get_mcp_url
+from clients.models.bls import (
+    BlsBaseResponse,
+    BlsSeriesResponse,
+    BlsSurveysResponse,
+    Observation,
+    Series,
+    Survey,
+)
 
 MCP_URL = get_mcp_url()
 config = MCPClientConfig(url=MCP_URL)
@@ -32,29 +50,150 @@ async def call_tool(tool_name: str, arguments: dict[str, Any] | None = None):
         return await client.call_tool(tool_name, arguments or {})
 
 
-async def list_mcp_tools() -> None:
+async def list_mcp_tools(prefix: str | tuple[str, ...] | None = None) -> None:
+    """Print the server's tools, optionally only those whose name starts with ``prefix``.
+
+    Print-only: the notebooks call this as a bare expression, so returning a
+    value would echo the list underneath the printed output. ``prefix`` accepts
+    a tuple because a source's tools are not always one family -- FRED's
+    ``list_releases`` predates the naming convention, and CDC spans ``cdc_``,
+    ``timeseries_source_`` and ``series_catalog_``.
+    """
+    prefixes = (prefix,) if isinstance(prefix, str) else prefix
     async with MCPClient(config) as client:
         for tool in await client.list_tools():
+            if prefixes and not tool.name.startswith(tuple(prefixes)):
+                continue
             print(f"{tool.name}: {tool.description}")
 
 
-async def show_all_surveys() -> list[dict[str, Any]]:
-    """Print and return every BLS survey (abbreviation + name)."""
+def _schema_type(spec: dict[str, Any]) -> str:
+    """Render a JSON-schema property as a short Python-ish type name."""
+    options = spec.get("anyOf")
+    if options:
+        named = [_schema_type(o) for o in options if o.get("type") != "null"]
+        return " | ".join(named) + " | None"
+    kind = spec.get("type", "any")
+    if kind == "array":
+        return f"list[{_schema_type(spec.get('items', {}))}]"
+    return {"integer": "int", "number": "float", "string": "str",
+            "boolean": "bool", "object": "dict"}.get(kind, str(kind))
+
+
+async def show_tool_schema(tool_name: str) -> dict[str, Any]:
+    """Print one tool's arguments -- name, type, and required-or-default."""
+    async with MCPClient(config) as client:
+        schema = dict(await client.get_tool_schema(tool_name) or {})
+    required = set(schema.get("required", []))
+    print(f"{tool_name}(")
+    for name, spec in (schema.get("properties") or {}).items():
+        default = "required" if name in required else f"default={spec.get('default')!r}"
+        print(f"    {name:<14} {_schema_type(spec):<20} {default}")
+    print(")")
+    return schema
+
+
+async def show_all_surveys(match: str | None = None) -> list[dict[str, Any]]:
+    """Print and return BLS surveys (abbreviation + name).
+
+    BLS publishes ~70 survey programs, so ``match`` filters to the ones whose
+    name or abbreviation contains it (case-insensitive) rather than printing
+    the whole catalog.
+    """
     result = await call_tool("bls_all_surveys")
-    surveys = result.structuredContent["result"]["results"]["survey"]  # type: ignore
+    surveys = result.structuredContent["surveys"]  # type: ignore
+    if match:
+        needle = match.lower()
+        hits = [s for s in surveys
+                if needle in s["survey_name"].lower()
+                or needle in s["survey_abbreviation"].lower()]
+        print(f"{len(hits)} of {len(surveys)} surveys match {match!r}\n")
+        surveys = hits
     for survey in surveys:
         print(f"{survey['survey_abbreviation']}: {survey['survey_name']}")
     return surveys
+
+
+def show_notices(payload: dict[str, Any]) -> list[str]:
+    """Print the advisories BLS attached to a SUCCESSFUL response.
+
+    ``notices`` is the only place a silently trimmed result shows up: BLS still
+    answers 200 with data, and only the notice says the data is not what was
+    asked for. Worth printing after every fetch.
+    """
+    notices = list(payload.get("notices") or [])
+    if not notices:
+        print("no notices: BLS answered the request as asked")
+    for notice in notices:
+        print(f"notice: {notice}")
+    return notices
+
+
+def show_series_catalog(payload: dict[str, Any]) -> dict[str, str]:
+    """Print ``series_id  title  [units]`` for a ``catalog=True`` fetch.
+
+    Returns the id -> title mapping, which is what turns a list of opaque BLS
+    ids into something a caller can choose from.
+    """
+    titles: dict[str, str] = {}
+    for series in payload.get("series", []):
+        catalog = series.get("catalog") or {}
+        title = catalog.get("series_title") or "(no catalog metadata)"
+        units = catalog.get("measure_data_type") or ""
+        titles[series["series_id"]] = title
+        print(f"{series['series_id']}  {title}" + (f"  [{units}]" if units else ""))
+    return titles
+
+
+def show_observations(series: dict[str, Any], count: int = 6,
+                      on_date: str | None = None) -> None:
+    """Print observations as ``date  period  period_type  value``.
+
+    ``on_date`` keeps only the rows carrying that ISO date -- the way to see
+    the annual-average row (M13/Q05/S03) sitting on the same date as the year's
+    first period.
+    """
+    rows = series.get("observations", [])
+    if on_date:
+        rows = [row for row in rows if row.get("date") == on_date]
+    for row in rows[:count]:
+        print(f"{row.get('date')}  {row.get('period'):<4} "
+              f"{row.get('period_type'):<15} {row.get('value')}")
+
+
+def filter_observations(series: dict[str, Any],
+                        period_type: str = "monthly") -> dict[str, Any]:
+    """Return a copy of ``series`` holding only rows of one ``period_type``.
+
+    Requested with ``annualaverage=True``, a series interleaves aggregate rows
+    (M13/Q05/S03) dated to the same day as the year's first period, so plotting
+    the raw list draws two points on one x. ``period_type`` is the only field
+    that separates them.
+    """
+    rows = [row for row in series.get("observations", [])
+            if row.get("period_type") == period_type]
+    return {**series, "observations": rows}
+
+
+def observation_span(series: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Return the (earliest, latest) ISO date in a series.
+
+    BLS returns observations newest-first, and a truncated response looks
+    exactly like a complete one, so the span is what shows which years actually
+    came back.
+    """
+    dates = sorted(row["date"] for row in series.get("observations", []) if row.get("date"))
+    return (dates[0], dates[-1]) if dates else (None, None)
 
 
 async def popular_series(survey: str | None = None) -> list[str]:
     """Return the popular series IDs overall, or for a single survey."""
     args = {"survey": survey} if survey else {}
     result = await call_tool("bls_popular_series", args)
-    if not result or not result.structuredContent or "result" not in result.structuredContent:
+    if not result or not result.structuredContent or "series" not in result.structuredContent:
         print(f"No result for survey {survey}")
         return []
-    series = result.structuredContent["result"]["results"]["series"]  # type: ignore
+    series = result.structuredContent["series"]  # type: ignore
     return [s["series_id"] for s in series]
 
 
@@ -550,7 +689,7 @@ async def fetch_popular_ids(
     offline generation flow. Pass the result to ``write_all_series_yaml(popular=...)``
     and ``export_oe_national(popular_ids=...)``.
     """
-    from lib.clients import BlsClient  # lazy: only needed during generation
+    from clients import BlsClient  # lazy: only needed during generation
 
     surveys = [s.upper() for s in (surveys or CORE_SURVEYS)]
     popular: dict[str, set[str]] = {}
@@ -677,6 +816,24 @@ def bls_point_to_date(row: dict[str, Any]) -> datetime:
     return datetime(year, 1, 1)  # A01, M13, Q05, S03 and anything unexpected
 
 
+def suppressed_observations(series: dict[str, Any]) -> list[dict[str, Any]]:
+    """Rows whose value will not parse as a number.
+
+    BLS withholds a figure by publishing a non-numeric placeholder ('-') rather
+    than omitting the row, usually with a footnote saying why.
+    ``bls_series_to_arrays`` drops these so a plot does not break, which means
+    the point count silently disagrees with the observation count unless a
+    caller looks -- so this makes looking easy.
+    """
+    out = []
+    for row in series.get("observations", series.get("data", [])):
+        try:
+            float(row["value"])
+        except (TypeError, ValueError, KeyError):
+            out.append(row)
+    return out
+
+
 def bls_series_to_arrays(series: dict[str, Any]) -> tuple[numpy.ndarray, numpy.ndarray]:
     """Return ``(values, dates)`` for one series, in chronological order.
 
@@ -684,12 +841,17 @@ def bls_series_to_arrays(series: dict[str, Any]) -> tuple[numpy.ndarray, numpy.n
     ascending and casts to float. Rows whose value will not parse are skipped.
     """
     points: list[tuple[datetime, float]] = []
-    for row in series.get("data", []):
+    # `observations` is meida's name for what BLS calls `data`. The rows now
+    # carry a derived ISO `date`, so bls_point_to_date is only the fallback for
+    # a row whose period code the server could not resolve.
+    for row in series.get("observations", series.get("data", [])):
         try:
             value = float(row["value"])
         except (TypeError, ValueError):
             continue  # e.g. suppressed or non-numeric entries
-        points.append((bls_point_to_date(row), value))
+        iso = row.get("date")
+        when = datetime.fromisoformat(iso) if iso else bls_point_to_date(row)
+        points.append((when, value))
 
     points.sort(key=lambda point: point[0])
     dates = numpy.array([point[0] for point in points])
@@ -738,11 +900,185 @@ async def fetch_series(
                 "calculations": calculations,
             },
         )
-        payload = result.structuredContent["result"]  # type: ignore
-        all_series.extend(payload["results"]["series"])
+        payload = result.structuredContent  # type: ignore
+        all_series.extend(payload["series"])
         print(f"Fetched {len(batch)} series (total {len(all_series)})")
 
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as fh:
         yaml.safe_dump(all_series, fh, sort_keys=False, allow_unicode=True)
     print(f"Wrote {len(all_series)} series to {output_path}")
+
+
+# --- direct-client helpers (client.ipynb) ------------------------------------
+#
+# Everything above works on the MCP server's payloads: dicts with renamed keys
+# (`observations`, `series_id`, `period_type`) and a derived ISO `date` on every
+# row. navi's BlsClient does none of that renaming -- it returns the pydantic
+# models in clients/models/bls.py, holding BLS's own field names and string
+# values. These are separate functions rather than edits to the ones above
+# because both shapes have to keep working side by side.
+
+
+def show_client_envelope(response: BlsBaseResponse) -> None:
+    """Print the envelope every BLS response carries: status, time, messages.
+
+    ``message`` is the field to watch. BLS answers 200 with data even when it
+    silently trimmed the request, and the advisory listed here is the only
+    sign that what came back is not what was asked for.
+    """
+    print(f"status={response.status}  response_time={response.response_time}ms")
+    if not response.message:
+        print("message: []  -- BLS answered the request as asked")
+    for message in response.message:
+        print(f"message: {message}")
+
+
+def show_client_surveys(response: BlsSurveysResponse,
+                        match: str | None = None) -> list[Survey]:
+    """Print and return ``Survey`` models (abbreviation + name).
+
+    BLS publishes ~70 survey programs, so ``match`` filters to the ones whose
+    name or abbreviation contains it (case-insensitive) rather than printing
+    the whole catalog.
+    """
+    surveys = list(response.results.survey)
+    if match:
+        needle = match.lower()
+        hits = [survey for survey in surveys
+                if needle in survey.survey_name.lower()
+                or needle in survey.survey_abbreviation.lower()]
+        print(f"{len(hits)} of {len(surveys)} surveys match {match!r}\n")
+        surveys = hits
+    for survey in surveys:
+        print(f"{survey.survey_abbreviation}: {survey.survey_name}")
+    return surveys
+
+
+def show_client_series_catalog(response: BlsSeriesResponse) -> dict[str, str]:
+    """Print ``series_id  title  [units]`` for a ``catalog=True`` fetch.
+
+    Returns the id -> title mapping, which is what turns a list of opaque BLS
+    ids into something a caller can choose from.
+    """
+    titles: dict[str, str] = {}
+    for series in response.results.series:
+        catalog = series.catalog
+        title = (catalog.series_title if catalog else None) or "(no catalog metadata)"
+        units = (catalog.measure_data_type if catalog else None) or ""
+        titles[series.series_id] = title
+        print(f"{series.series_id}  {title}" + (f"  [{units}]" if units else ""))
+    return titles
+
+
+def show_client_observations(rows: list[Observation], count: int = 6) -> None:
+    """Print observations as ``year  period  periodName  value``.
+
+    Those are the model's own fields: no date, and a value that is still a
+    string. Rows arrive newest-first, so the head of the list is the most
+    recent data BLS returned for the request.
+    """
+    for row in rows[:count]:
+        print(f"{row.year}  {row.period:<4} {row.period_name:<10} {row.value}")
+
+
+def client_observation_date(observation: Observation) -> datetime:
+    """Derive a datetime from an ``Observation``'s ``year`` + ``period``.
+
+    The models carry no date field because BLS sends none: a row is dated by a
+    year string and a period *code*. Turning the pair into a datetime is the
+    caller's job here, and it is one of the steps the MCP layer performs before
+    a payload reaches the walkthrough notebook.
+    """
+    return bls_point_to_date({"year": observation.year, "period": observation.period})
+
+
+def client_observation_span(rows: list[Observation]) -> tuple[str | None, str | None]:
+    """Return the (earliest, latest) derived ISO date across observations.
+
+    A response trimmed to the 20-year limit looks exactly like a complete one,
+    so the span is what shows which years actually came back.
+    """
+    dates = sorted(client_observation_date(row) for row in rows)
+    if not dates:
+        return (None, None)
+    return (dates[0].date().isoformat(), dates[-1].date().isoformat())
+
+
+def client_monthly_observations(series: Series) -> list[Observation]:
+    """Keep only the true monthly rows (``M01``-``M12``) of a ``Series``.
+
+    Requested with ``annualaverage=True``, a monthly series interleaves an
+    ``M13`` row per year holding that year's mean. ``M13`` names no month, so
+    any date derivation collapses it onto January 1st -- the same date as that
+    year's ``M01`` -- and plotting the unfiltered list draws two points on one
+    x. The period code is the only field that separates them.
+    """
+    return [row for row in series.data
+            if row.period.startswith("M") and row.period != "M13"]
+
+
+def show_client_suppressed(rows: list[Observation]) -> list[Observation]:
+    """Print, and return, the observations whose value will not parse.
+
+    BLS withholds a figure by publishing a non-numeric placeholder ('-')
+    rather than omitting the row, usually with a footnote saying why. Arrays
+    built from these rows are therefore shorter than the list they came from,
+    so the count and the offending rows get printed rather than left implicit.
+    """
+    withheld: list[Observation] = []
+    for row in rows:
+        try:
+            float(row.value)
+        except (TypeError, ValueError):
+            withheld.append(row)
+    print(f"{len(rows)} observations, {len(rows) - len(withheld)} plottable")
+    for row in withheld:
+        notes = "; ".join(note.text or "" for note in row.footnotes)
+        print(f"  withheld: {row.year}-{row.period}  value={row.value!r}  {notes}")
+    return withheld
+
+
+def client_observations_to_arrays(
+    rows: list[Observation],
+) -> tuple[numpy.ndarray, numpy.ndarray]:
+    """Return ``(values, dates)`` as numpy arrays, in chronological order.
+
+    Three things the client leaves to the caller happen here: the string value
+    is parsed to a float, the year/period pair is turned into a datetime, and
+    the newest-first list is sorted ascending. Rows whose value will not parse
+    are skipped -- ``show_client_suppressed`` reports which ones.
+    """
+    points: list[tuple[datetime, float]] = []
+    for row in rows:
+        try:
+            value = float(row.value)
+        except (TypeError, ValueError):
+            continue  # withheld or otherwise non-numeric
+        points.append((client_observation_date(row), value))
+
+    points.sort(key=lambda point: point[0])
+    dates = numpy.array([point[0] for point in points])
+    values = numpy.array([point[1] for point in points])
+    return values, dates
+
+
+def plot_client_series(series: Series, rows: list[Observation] | None = None,
+                       **kwargs: Any) -> None:
+    """Plot a ``Series`` model with the project style.
+
+    ``rows`` defaults to every observation on the series; pass a filtered list
+    (see ``client_monthly_observations``) to plot a subset. Titles and labels
+    default to the catalog, which is only populated when the fetch asked for
+    ``catalog=True``. Extra kwargs pass through to ``lib.plots.curve``.
+    """
+    # Imported lazily: lib.plots pulls in matplotlib and backtrader, which the
+    # non-plotting notebooks shouldn't pay for on `import utils`.
+    from lib.plots import curve
+
+    values, dates = client_observations_to_arrays(series.data if rows is None else rows)
+    catalog = series.catalog
+    kwargs.setdefault("title", (catalog.series_title if catalog else None) or series.series_id)
+    kwargs.setdefault("xlabel", "Date")
+    kwargs.setdefault("ylabel", (catalog.measure_data_type if catalog else None) or "Value")
+    curve(values, dates, **kwargs)
