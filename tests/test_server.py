@@ -3,7 +3,7 @@
 These exercise the logic meida actually owns: response serialization, the
 per-tool conditional parameter assembly, and the incomplete-observations
 warning. The navi client itself is replaced with a recording fake so these
-stay isolated from ``lib.clients`` (covered separately).
+stay isolated from ``clients`` (covered separately).
 """
 from __future__ import annotations
 
@@ -13,29 +13,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from mcp_server import server
-
-
-# --- _serialize --------------------------------------------------------------
-
-
-class _Model(BaseModel):
-    a: int
-    b: str
-
-
-def test_serialize_pydantic_model_returns_dump():
-    assert server._serialize(_Model(a=1, b="x")) == {"a": 1, "b": "x"}
-
-
-def test_serialize_dict_passthrough():
-    payload = {"already": "a dict"}
-    assert server._serialize(payload) is payload
-
-
-def test_serialize_rejects_unsupported_type():
-    with pytest.raises(TypeError):
-        server._serialize(object())
+from mcp_server import cdc_query, server
 
 
 # --- Recording fake + patching helpers --------------------------------------
@@ -54,6 +32,9 @@ class RecordingFredClient:
 
     async def _get(self, path: str, params: dict[str, Any]) -> Any:
         return self._record("_get", {"path": path, **params})
+
+    async def get_category_children(self, category_id: int) -> Any:
+        return self._record("get_category_children", {"category_id": category_id})
 
     async def get_category_series(self, **params: Any) -> Any:
         return self._record("get_category_series", params)
@@ -79,12 +60,25 @@ class RecordingTiingoClient:
         self.calls: list[tuple[str, dict[str, Any]]] = []
 
     async def get_meta(self, ticker: str) -> Any:
+        from clients.models.tiingo import TiingoMeta
+
         self.calls.append(("get_meta", {"ticker": ticker}))
-        return {}
+        return TiingoMeta.model_validate(
+            {"ticker": ticker.upper(), "name": "Apple Inc", "exchangeCode": "NASDAQ",
+             "startDate": "1980-12-12", "endDate": "2024-01-03"}
+        )
 
     async def get_prices(self, ticker: str, **params: Any) -> Any:
+        from clients.models.tiingo import TiingoPriceSeries
+
         self.calls.append(("get_prices", {"ticker": ticker, **params}))
-        return {}
+        return TiingoPriceSeries.model_validate(
+            {"ticker": ticker.upper(),
+             "prices": [{"date": "2024-01-03T00:00:00.000Z", "open": 1.0, "high": 2.0,
+                         "low": 3.0, "close": 4.0, "volume": 5, "adjOpen": 6.0,
+                         "adjHigh": 7.0, "adjLow": 8.0, "adjClose": 9.0,
+                         "adjVolume": 10.0, "divCash": 11.0, "splitFactor": 12.0}]}
+        )
 
 
 class RecordingBlsClient:
@@ -140,13 +134,13 @@ class RecordingBisClient:
         self.calls: list[tuple[str, dict[str, Any]]] = []
 
     async def get_dataflows(self, agency: str = "BIS") -> Any:
-        from lib.clients.models.bis import BisDataflow
+        from clients.models.bis import BisDataflow
 
         self.calls.append(("get_dataflows", {"agency": agency}))
         return [BisDataflow(id="WS_TC", name="Total credit")]
 
     async def get_datastructure(self, dsd_id: str, agency: str = "BIS") -> Any:
-        from lib.clients.models.bis import BisCodelist, BisDataStructure, BisDimension
+        from clients.models.bis import BisCodelist, BisDataStructure, BisDimension
 
         self.calls.append(("get_datastructure", {"dsd_id": dsd_id, "agency": agency}))
         return BisDataStructure(
@@ -156,7 +150,7 @@ class RecordingBisClient:
         )
 
     async def get_data(self, flow: str, key: str = "all", **params: Any) -> Any:
-        from lib.clients.models.bis import BisDataResponse
+        from clients.models.bis import BisDataResponse
 
         self.calls.append(("get_data", {"flow": flow, "key": key, **params}))
         return BisDataResponse(flow=flow)
@@ -192,13 +186,16 @@ async def test_category_series_includes_optional_params(monkeypatch):
     assert params == {"category_id": 42, "limit": 5, "order_by": "popularity"}
 
 
-async def test_category_children_uses_raw_get(monkeypatch):
+async def test_category_children_uses_the_typed_client_method(monkeypatch):
+    """It used to reach past the client to the private _get, which returned an
+    unvalidated dict and left the tool with no response model to describe."""
     fake = RecordingFredClient()
     _patch_fred(monkeypatch, fake)
 
-    await server.list_category_children(category_id=7)
+    result = await server.list_category_children(category_id=7)
 
-    assert fake.calls == [("_get", {"path": "/category/children", "category_id": 7})]
+    assert fake.calls == [("get_category_children", {"category_id": 7})]
+    assert result.categories == []
 
 
 async def test_release_series_default_limit(monkeypatch):
@@ -366,14 +363,14 @@ async def test_bls_all_surveys_and_survey_info(monkeypatch):
 
 
 async def test_bis_dataflows_wraps_list(monkeypatch):
-    """get_dataflows returns a list, which _serialize cannot handle directly."""
+    """A bare list yields no structuredContent, so the tool wraps it."""
     fake = RecordingBisClient()
     _patch_bis(monkeypatch, fake)
 
     result = await server.bis_dataflows()
 
     assert fake.calls == [("get_dataflows", {"agency": "BIS"})]
-    assert result["dataflows"][0]["id"] == "WS_TC"
+    assert result.dataflows[0].id == "WS_TC"
 
 
 async def test_bis_datastructure_omits_codes_by_default(monkeypatch):
@@ -383,10 +380,10 @@ async def test_bis_datastructure_omits_codes_by_default(monkeypatch):
 
     result = await server.bis_datastructure(dsd_id="BIS_TOTAL_CREDIT")
 
-    codelist = result["codelists"]["CL_FREQ"]
-    assert codelist["codes"] == {}
-    assert codelist["code_count"] == 2
-    assert [d["id"] for d in result["dimensions"]] == ["FREQ"]
+    codelist = result.codelists["CL_FREQ"]
+    assert codelist.codes == {}
+    assert codelist.code_count == 2               # the count survives the omission
+    assert [d.id for d in result.dimensions] == ["FREQ"]
 
 
 async def test_bis_datastructure_include_codes(monkeypatch):
@@ -395,7 +392,7 @@ async def test_bis_datastructure_include_codes(monkeypatch):
 
     result = await server.bis_datastructure(dsd_id="BIS_TOTAL_CREDIT", include_codes=True)
 
-    assert result["codelists"]["CL_FREQ"]["codes"] == {"M": "Monthly", "A": "Annual"}
+    assert result.codelists["CL_FREQ"].codes == {"M": "Monthly", "A": "Annual"}
 
 
 async def test_bis_series_data_passes_params(monkeypatch):
@@ -434,31 +431,31 @@ class RecordingCdcClient:
         self.calls: list[tuple[str, dict[str, Any]]] = []
 
     async def discover(self, query: str = "", *, category: Any = None, limit: int = 20) -> Any:
-        from lib.clients.models.cdc import CdcCatalogEntry
+        from clients.models.cdc import CdcCatalogEntry
 
         self.calls.append(("discover", {"query": query, "category": category, "limit": limit}))
         return [CdcCatalogEntry(id="w9j2-ggv5", name="Life expectancy")]
 
     async def categories(self) -> Any:
-        from lib.clients.models.cdc import CdcCategory
+        from clients.models.cdc import CdcCategory
 
         self.calls.append(("categories", {}))
         return [CdcCategory(category="National Center for Health Statistics", count=287)]
 
     async def tags(self) -> Any:
-        from lib.clients.models.cdc import CdcTag
+        from clients.models.cdc import CdcTag
 
         self.calls.append(("tags", {}))
         return [CdcTag(tag="mortality", count=117)]
 
     async def columns(self, dataset_id: str) -> Any:
-        from lib.clients.models.cdc import CdcColumn, CdcDataset
+        from clients.models.cdc import CdcColumn, CdcDataset
 
         self.calls.append(("columns", {"dataset_id": dataset_id}))
         return CdcDataset(id=dataset_id, name="LE", columns=[CdcColumn(field_name="year")])
 
     async def query(self, dataset_id: str, **params: Any) -> Any:
-        from lib.clients.models.cdc import CdcDataResponse
+        from clients.models.cdc import CdcDataResponse
 
         self.calls.append(("query", {"dataset_id": dataset_id, **params}))
         return CdcDataResponse(dataset_id=dataset_id, rows=[{"year": "1900"}])
@@ -466,20 +463,20 @@ class RecordingCdcClient:
 
 def _patch_cdc(monkeypatch, fake: RecordingCdcClient) -> None:
     async def fake_call_cdc(handler):
-        return server._serialize(await handler(fake))
+        return await handler(fake)
 
     monkeypatch.setattr(server, "_call_cdc", fake_call_cdc)
 
 
 async def test_cdc_discover_wraps_list(monkeypatch):
-    """discover returns a list, which _serialize cannot handle directly."""
+    """A bare list yields no structuredContent, so the tool wraps it."""
     fake = RecordingCdcClient()
     _patch_cdc(monkeypatch, fake)
 
     result = await server.cdc_discover(query="life expectancy")
 
     assert fake.calls == [("discover", {"query": "life expectancy", "category": None, "limit": 20})]
-    assert result["datasets"][0]["id"] == "w9j2-ggv5"
+    assert result.datasets[0].id == "w9j2-ggv5"
 
 
 async def test_cdc_dataset_columns(monkeypatch):
@@ -489,21 +486,57 @@ async def test_cdc_dataset_columns(monkeypatch):
     result = await server.cdc_dataset_columns(dataset_id="w9j2-ggv5")
 
     assert fake.calls == [("columns", {"dataset_id": "w9j2-ggv5"})]
-    assert result["columns"][0]["field_name"] == "year"
+    assert result.columns[0].field_name == "year"
 
 
-async def test_cdc_series_data_passes_soql(monkeypatch):
+async def test_cdc_series_data_builds_soql_from_named_facets(monkeypatch):
+    """The caller names facets; the server owns every column name and literal."""
     fake = RecordingCdcClient()
     _patch_cdc(monkeypatch, fake)
 
-    result = await server.cdc_series_data(dataset_id="w9j2-ggv5", where="year>2000", limit=5)
+    result = await server.cdc_series_data(
+        dataset_id="w9j2-ggv5", concept="life_expectancy",
+        race="black", sex="female", year_start=1950, year_end=2000, limit=5,
+    )
 
     name, params = fake.calls[0]
     assert name == "query"
     assert params["dataset_id"] == "w9j2-ggv5"
-    assert params["where"] == "year>2000"
+    # canonical tokens became this dataset's literals
+    assert set(params["where"].split(" AND ")) == {
+        "race='Black'", "sex='Female'", "year >= '1950'", "year <= '2000'",
+    }
+    assert params["select"] == "year AS year, average_life_expectancy AS value"
     assert params["limit"] == 5
-    assert result["rows"][0]["year"] == "1900"
+    # typed response model -> the tool advertises a real output schema
+    assert result.rows[0].year == "1900"
+    assert result.row_count == len(result.rows)
+    assert result.where == params["where"]      # provenance: an output, not an input
+
+
+async def test_cdc_series_data_rejects_soql_injection_through_a_facet():
+    """Facet values are validated against a vocabulary, never interpolated raw."""
+    with pytest.raises(cdc_query.CdcQueryError, match="not valid"):
+        await server.cdc_series_data(
+            dataset_id="w9j2-ggv5", concept="life_expectancy",
+            race="all' OR 1=1 --",
+        )
+
+
+async def test_cdc_series_data_names_valid_values_on_a_bad_token():
+    """An error has to be actionable: the enums are a union across datasets."""
+    with pytest.raises(cdc_query.CdcQueryError) as excinfo:
+        await server.cdc_series_data(
+            dataset_id="w9j2-ggv5", concept="life_expectancy", race="hispanic",
+        )
+    assert "all, black, white" in str(excinfo.value)
+
+
+async def test_cdc_dataset_facets_reports_the_per_dataset_subset():
+    result = await server.cdc_dataset_facets(
+        dataset_id="w9j2-ggv5", concept="life_expectancy"
+    )
+    assert result.facets["race"] == ["all", "black", "white"]
 
 
 async def test_cdc_categories(monkeypatch):
@@ -513,8 +546,8 @@ async def test_cdc_categories(monkeypatch):
     result = await server.cdc_categories()
 
     assert fake.calls == [("categories", {})]
-    assert result["categories"][0]["category"] == "National Center for Health Statistics"
-    assert result["categories"][0]["count"] == 287
+    assert result.categories[0].category == "National Center for Health Statistics"
+    assert result.categories[0].count == 287
 
 
 async def test_cdc_tags(monkeypatch):
@@ -524,4 +557,138 @@ async def test_cdc_tags(monkeypatch):
     result = await server.cdc_tags()
 
     assert fake.calls == [("tags", {})]
-    assert result["tags"][0]["tag"] == "mortality"
+    assert result.tags[0].tag == "mortality"
+
+
+# --- time-series source tools ------------------------------------------------
+
+
+class RecordingTimeSeriesSourceClient:
+    """Fake TimeSeriesSourceClient returning the real pydantic models."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    @staticmethod
+    def _ref(**over: Any) -> Any:
+        from mcp_server.timeseries_source_models import TimeSeriesRef
+
+        base = dict(
+            source="cdc_wonder",
+            native_id="cdc/alcohol_induced/wonder/national/age_adjusted",
+            title="Alcohol-induced deaths, age-adjusted rate, United States",
+            frequency="Annual",
+            units="deaths per 100,000",
+            observation_count=26,
+        )
+        base.update(over)
+        return TimeSeriesRef(**base)
+
+    async def list_series(self, source: Any = None) -> Any:
+        self.calls.append(("list_series", {"source": source}))
+        return [self._ref()]
+
+    async def list_stale(self, source: Any = None) -> Any:
+        self.calls.append(("list_stale", {"source": source}))
+        return [self._ref(native_id="cdc/life_expectancy/nvsr/race=all/sex=both",
+                          source="cdc_nvsr", stale=True)]
+
+    async def get_series(self, source: str, native_id: str, frequency: Any = None) -> Any:
+        from mcp_server.timeseries_source_models import Observation, TimeSeriesRecord
+
+        self.calls.append(
+            ("get_series", {"source": source, "native_id": native_id, "frequency": frequency})
+        )
+        return TimeSeriesRecord(
+            **self._ref().model_dump(),
+            metadata={"observation_count": 1},
+            observations=[Observation(date="1999-01-01", value="7.1", deaths=19469)],
+        )
+
+
+def _patch_timeseries_source(monkeypatch, fake: RecordingTimeSeriesSourceClient) -> None:
+    async def fake_call(handler):
+        payload = await handler(fake)
+        return (server.TimeSeriesRefList(series=payload)
+                if isinstance(payload, list) else payload)
+
+    monkeypatch.setattr(server, "_call_timeseries_source", fake_call)
+
+
+async def test_timeseries_source_list_wraps_series(monkeypatch):
+    """A bare list yields no structuredContent, so the tool wraps it."""
+    fake = RecordingTimeSeriesSourceClient()
+    _patch_timeseries_source(monkeypatch, fake)
+
+    result = await server.timeseries_source_list()
+
+    assert fake.calls == [("list_series", {"source": None})]
+    assert result.series[0].source == "cdc_wonder"
+
+
+async def test_timeseries_source_list_passes_source_filter(monkeypatch):
+    fake = RecordingTimeSeriesSourceClient()
+    _patch_timeseries_source(monkeypatch, fake)
+
+    await server.timeseries_source_list(source="cdc_nvsr")
+
+    assert fake.calls == [("list_series", {"source": "cdc_nvsr"})]
+
+
+async def test_timeseries_source_data_passes_frequency(monkeypatch):
+    fake = RecordingTimeSeriesSourceClient()
+    _patch_timeseries_source(monkeypatch, fake)
+
+    result = await server.timeseries_source_data(
+        source="cdc_wonder", native_id="a/b", frequency="Annual"
+    )
+
+    assert fake.calls == [
+        ("get_series", {"source": "cdc_wonder", "native_id": "a/b", "frequency": "Annual"})
+    ]
+    # observations survive, including the extra WONDER keys the model allows
+    assert result.observations[0].value == "7.1"
+    assert result.observations[0].model_dump()["deaths"] == 19469
+
+
+async def test_timeseries_source_stale_returns_flagged_series(monkeypatch):
+    fake = RecordingTimeSeriesSourceClient()
+    _patch_timeseries_source(monkeypatch, fake)
+
+    result = await server.timeseries_source_stale()
+
+    assert fake.calls == [("list_stale", {"source": None})]
+    assert result.series[0].stale is True
+
+
+async def test_dataset_facets_needs_a_concept_only_when_it_changes_the_answer():
+    """The registry is keyed by (dataset_id, concept) because neither is unique
+    alone, but the facet vocabulary is usually shared across a dataset's
+    concepts. Demanding one that cannot change the answer is friction."""
+    # w9j2-ggv5 serves life_expectancy and mortality with identical facets
+    shared = await server.cdc_dataset_facets(dataset_id="w9j2-ggv5")
+    explicit = await server.cdc_dataset_facets(
+        dataset_id="w9j2-ggv5", concept="life_expectancy"
+    )
+    assert shared.facets == explicit.facets == {"race": ["all", "black", "white"],
+                                                "sex": ["both", "female", "male"]}
+
+    # hksd-2xuw genuinely differs: alcohol_consumption has no breakdowns
+    with pytest.raises(cdc_query.CdcQueryError, match="different facets per concept"):
+        await server.cdc_dataset_facets(dataset_id="hksd-2xuw")
+
+    consumption = await server.cdc_dataset_facets(
+        dataset_id="hksd-2xuw", concept="alcohol_consumption"
+    )
+    binge = await server.cdc_dataset_facets(
+        dataset_id="hksd-2xuw", concept="alcohol_binge"
+    )
+    assert sorted(consumption.facets) == ["state"]
+    assert "race" in binge.facets
+
+
+async def test_fetching_still_requires_the_concept():
+    """Relaxing the facets tool must not relax the data tool: w9j2-ggv5's two
+    concepts read different value columns, so a guess would return wrong data."""
+    with pytest.raises(cdc_query.CdcQueryError, match="serves several concepts"):
+        await server.cdc_series_data(dataset_id="w9j2-ggv5", race="all", sex="both")

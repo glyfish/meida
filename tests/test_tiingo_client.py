@@ -9,8 +9,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from lib.clients import TiingoClient, TiingoAPIError
-from lib.clients.models.tiingo import TiingoMeta, TiingoPriceSeries
+from clients import TiingoClient, TiingoAPIError
+from clients.models.tiingo import TiingoMeta, TiingoPriceSeries
 
 
 async def test_get_meta_sends_token_header(make_tiingo_client, tiingo_meta_payload):

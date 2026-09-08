@@ -10,8 +10,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from lib.clients import CdcAPIError, CdcClient
-from lib.clients.models.cdc import CdcDataResponse, CdcDataset
+from clients import CdcAPIError, CdcClient
+from clients.models.cdc import CdcDataResponse, CdcDataset
 
 
 async def test_query_builds_soql_and_parses_rows(make_cdc_client, load_cdc_fixture):

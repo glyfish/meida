@@ -13,9 +13,9 @@ from pathlib import Path
 
 import pytest
 
-from lib.clients import WonderAPIError
-from lib.clients.wonder import _build_request_xml, parse_data_table
-from lib.clients.models.wonder import WonderResponse
+from clients import WonderAPIError
+from clients.wonder import _build_request_xml, parse_data_table
+from clients.models.wonder import WonderResponse
 
 _FIXTURE = Path(__file__).parent / "fixtures" / "cdc" / "wonder" / "d76_alcohol_by_year.xml"
 

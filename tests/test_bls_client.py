@@ -11,8 +11,8 @@ import json
 import httpx
 import pytest
 
-from lib.clients import BlsAPIError
-from lib.clients.models.bls import BlsSeriesResponse, BlsSurveysResponse
+from clients import BlsAPIError
+from clients.models.bls import BlsSeriesResponse, BlsSurveysResponse
 
 
 async def test_series_data_builds_post_body(make_bls_client, load_bls_fixture):
@@ -232,7 +232,7 @@ async def test_backoff_delay_increases(make_bls_client, monkeypatch):
     async def fake_sleep(seconds: float) -> None:
         delays.append(seconds)
 
-    monkeypatch.setattr("lib.clients.bls.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr("clients.bls.asyncio.sleep", fake_sleep)
 
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(500, text="boom")
@@ -257,7 +257,7 @@ async def test_client_without_key_omits_registrationkey():
         return httpx.Response(200, json={"status": "REQUEST_SUCCEEDED", "Results": {"series": []}})
 
     http = httpx.AsyncClient(transport=httpx.MockTransport(handler), base_url="https://bls.test/publicAPI/v2")
-    from lib.clients import BlsClient
+    from clients import BlsClient
 
     client = BlsClient(api_key="", base_url="https://bls.test/publicAPI/v2", client=http)
     async with client:

@@ -9,8 +9,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from lib.clients import FredClient, FredAPIError
-from lib.clients.models.fred import (
+from clients import FredClient, FredAPIError
+from clients.models.fred import (
     CategoryResponse,
     ObservationsResponse,
     ReleasesResponse,
@@ -99,3 +99,25 @@ async def test_owns_client_flag_when_injected(make_fred_client):
     """A caller-supplied client is not owned (so aclose leaves it to the caller)."""
     client = make_fred_client(lambda request: httpx.Response(200, json={}))
     assert client._owns_client is False
+
+
+async def test_category_response_does_not_require_a_realtime_window(make_fred_client):
+    """FRED's category endpoints send only {"categories": [...]}.
+
+    ``CategoryResponse`` used to inherit ``realtime_start``/``realtime_end`` as
+    required from ``FredResponse``, so every real call to
+    ``get_category_children`` raised ValidationError -- invisible because the
+    test fixture invented the two fields. Series and release responses do carry
+    them and still require them.
+    """
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={
+            "categories": [{"id": 32991, "name": "Money, Banking, & Finance",
+                            "parent_id": 0}]
+        })
+
+    async with make_fred_client(handler) as client:
+        result = await client.get_category_children(0)
+
+    assert result.realtime_start is None and result.realtime_end is None
+    assert [c.name for c in result.categories] == ["Money, Banking, & Finance"]

@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from lib.clients.models.tiingo import TiingoMeta, TiingoPrice, TiingoPriceSeries
+from clients.models.tiingo import TiingoMeta, TiingoPrice, TiingoPriceSeries
 
 
 def test_price_maps_camel_case_aliases():

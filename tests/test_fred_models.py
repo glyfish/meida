@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from pydantic import ValidationError
 
-from lib.clients.models.fred import (
+from clients.models.fred import (
     Category,
     CategoryResponse,
     Release,

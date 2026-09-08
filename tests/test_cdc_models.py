@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from lib.clients.models.cdc import (
+from clients.models.cdc import (
     CdcCatalogEntry,
     CdcColumn,
     CdcDataResponse,

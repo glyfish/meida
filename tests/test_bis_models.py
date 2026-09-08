@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from lib.clients.models.bis import (
+from clients.models.bis import (
     BisCodelist,
     BisDataResponse,
     BisDataStructure,

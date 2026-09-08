@@ -16,7 +16,7 @@ from typing import Any, Callable
 import httpx
 import pytest
 
-from lib.clients import BisClient, BlsClient, CdcClient, FredClient, TiingoClient
+from clients import BisClient, BlsClient, CdcClient, FredClient, TiingoClient
 
 HttpHandler = Callable[[httpx.Request], httpx.Response]
 
@@ -165,9 +165,11 @@ def load_cdc_fixture() -> Callable[[str], Any]:
 
 @pytest.fixture
 def fred_category_payload() -> dict[str, Any]:
+    # Deliberately no realtime_start/realtime_end: FRED's category endpoints do
+    # not send them, unlike /series and /releases. The fixture used to invent
+    # them, which is why get_category_children passed its test while failing
+    # against the live API on every call.
     return {
-        "realtime_start": "2024-01-01",
-        "realtime_end": "2024-01-01",
         "categories": [
             {"id": 125, "name": "Trade Balance", "parent_id": 13},
             {"id": 32992, "name": "National Accounts", "parent_id": 18},

@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from lib.clients.models.bls import (
+from clients.models.bls import (
     BlsSeriesResponse,
     BlsSurveysResponse,
     Footnote,

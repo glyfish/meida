@@ -10,8 +10,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from lib.clients import BisAPIError, BisClient
-from lib.clients.models.bis import BisDataResponse, BisDataStructure
+from clients import BisAPIError, BisClient
+from clients.models.bis import BisDataResponse, BisDataStructure
 
 
 async def test_get_dataflows_parses_structure(make_bis_client, load_bis_fixture):
