@@ -7,7 +7,32 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(r['resource']['id'],'|',r['resource']['name']\\) for r in d['results']]\")",
       "Bash(curl -s \"https://data.cdc.gov/api/views/489q-934x.json\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(c['fieldName'],'|',c['name'],'|',c['dataTypeName']\\) for c in d['columns']]\")",
-      "Bash(python3 /private/tmp/claude-501/-Users-troy-Develop-gly-fish-meida/9f1af693-e4a7-4c7d-8f06-bcff173fd26f/scratchpad/run_export.py)"
+      "Bash(python3 /private/tmp/claude-501/-Users-troy-Develop-gly-fish-meida/9f1af693-e4a7-4c7d-8f06-bcff173fd26f/scratchpad/run_export.py)",
+      "Read(//private/tmp/**)",
+      "WebFetch(domain:www.cms.gov)",
+      "Bash(curl -s \"https://data.cms.gov/data-api/v1/dataset/1829fdb3-a6f9-4036-856a-3af1f7828c8c/data/stats\")",
+      "Bash(curl -s \"https://data.cms.gov/data-api/v1/dataset/1829fdb3-a6f9-4036-856a-3af1f7828c8c/data?size=2\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -sL -o nhe_res.zip -w \"resident-state-estimates.zip: %{http_code} size=%{size_download}\\\\n\" \"https://www.cms.gov/research-statistics-data-and-systems/statistics-trends-and-reports/nationalhealthexpenddata/downloads/resident-state-estimates.zip\")",
+      "Bash(unzip -l nhe_res.zip)",
+      "Bash(unzip -o -q nhe_res.zip US_PER_CAPITA20.CSV MEDICAID_ENROLLMENT20.CSV -d nhe_state_out)",
+      "WebSearch",
+      "Bash(curl -s -o /dev/null -w 'data.cms.gov/resource/: %{http_code}\\\\n' 'https://data.cms.gov/resource/97k6-zzx3.json?$limit=1')",
+      "Bash(curl -s -o /dev/null -w 'healthdata SODA: %{http_code}\\\\n' 'https://healthdata.gov/resource/anag-cw7u.json?$limit=1')",
+      "Bash(curl -sL -o /dev/null -w \"provider-data /api/1: %{http_code} size=%{size_download}\\\\n\" \"https://data.cms.gov/provider-data/api/1\")",
+      "Bash(/Users/troy/.pyenv/versions/meida-3.14.7/bin/python -c ' *)",
+      "Bash(cd /Users/troy/Develop/gly.fish && ls navi/lib/ 2>/dev/null && echo \"=== clients ===\" && find navi/lib -maxdepth 3 -type d | head -30 *)",
+      "Read(//Users/troy/Develop/gly.fish/**)",
+      "Bash(cd /Users/troy/Develop/gly.fish && ls navi/lib/clients/ && echo \"=== CDC client shape ===\" && head -60 navi/lib/clients/cdc.py 2>/dev/null || ls navi/lib/clients/*.py)",
+      "Bash(curl -s \"https://api.us.socrata.com/api/catalog/v1?domains=healthdata.gov&limit=1\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('resultSetSize:', d.get\\('resultSetSize'\\)\\)\")",
+      "Bash(curl -s \"https://api.us.socrata.com/api/catalog/v1?domains=data.cdc.gov&limit=1\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('data.cdc.gov control:', d.get\\('resultSetSize'\\)\\)\")",
+      "Bash(curl -s \"https://data.cms.gov/data-api/v1/dataset/a55f0f6a-6f10-40aa-9c48-cd1b6ba51ff7/data?size=1\")",
+      "Bash(curl -s \"https://api.us.socrata.com/api/catalog/v1?domains=healthdata.gov&limit=10\")",
+      "Bash(curl -s \"https://data.medicaid.gov/api/1/metastore/schemas/dataset/items?limit=400\" -o mcd.json)",
+      "Bash(curl -s -o mcd_enroll.csv -w \"http=%{http_code} size=%{size_download}\\\\n\" \"https://download.medicaid.gov/data/pi-dataset-august-2026-release.csv\")",
+      "Bash(curl -s \"https://data.cms.gov/data-api/v1/dataset/1829fdb3-a6f9-4036-856a-3af1f7828c8c/data?size=6588&column=State,Year,Platform\")"
     ]
   }
 }
