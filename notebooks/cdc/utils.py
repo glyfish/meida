@@ -182,6 +182,43 @@ async def get_dataset_facets(
     return facets
 
 
+def _repo_root() -> str:
+    """meida's repo root, so ``clients`` resolves from a notebook kernel."""
+    from pathlib import Path
+    return str(Path(__file__).resolve().parents[2])
+
+
+async def query_rows(
+    dataset_id: str,
+    where: str | None = None,
+    select: str | None = None,
+    order: str | None = None,
+    limit: int = 1000,
+) -> list[dict[str, Any]]:
+    """Raw SoQL against one dataset, through ``CdcClient`` rather than MCP.
+
+    ``get_rows`` goes over MCP and returns exactly ``{year, value}`` -- one
+    series, its facets named rather than queried. That is deliberate: no SoQL
+    crosses the wire, and the server owns each dataset's column names.
+
+    Exploration needs the other thing: arbitrary columns, several series in one
+    response, grouping by a column the tool has no argument for. SoQL still
+    exists for that -- it just lives in the client now, which is the layer that
+    always spoke it. Use this for a question the tool's facets cannot express,
+    and ``get_rows`` for fetching a series someone will actually consume.
+    """
+    import sys
+    if _repo_root() not in sys.path:
+        sys.path.append(_repo_root())
+    from clients import CdcClient   # lazy: only exploration notebooks need it
+
+    async with CdcClient() as client:
+        response = await client.query(
+            dataset_id, where=where, select=select, order=order, limit=limit
+        )
+    return response.rows
+
+
 async def get_rows(
     dataset_id: str,
     concept: str | None = None,
