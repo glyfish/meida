@@ -18,7 +18,7 @@ from lib.env import get_bls_api_key, get_bls_base_url
 from lib.logger import get_logger
 from .models.bls import BlsSeriesResponse, BlsSurveysResponse
 
-logger = get_logger("navi.clients.bls")
+logger = get_logger("meida.clients.bls")
 
 DEFAULT_MAX_ATTEMPTS = 3
 DEFAULT_BACKOFF_SECONDS = 0.5

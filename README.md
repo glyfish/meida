@@ -1,10 +1,16 @@
 # meida
 
-An MCP server and Jupyter notebook workspace for exploring economic and financial data. Built on top of [navi](../navi/README.md), which provides the API clients, statistical models, and environment configuration.
+An MCP server and Jupyter notebook workspace for exploring economic and financial data.
+meida owns the vendor API clients (`clients/`) and a Postgres database for sources
+that cannot be fetched per request. It builds on [navi](../navi/README.md) for the
+statistical models, plotting and environment configuration.
 
 ## What's here
 
-- **`mcp_server/`** — [FastMCP](https://github.com/jlowin/fastmcp) server exposing FRED, Tiingo, and BLS tools over SSE on `http://localhost:8080`
+- **`mcp_server/`** — [FastMCP](https://github.com/jlowin/fastmcp) server exposing 29 tools
+  over SSE on `http://localhost:8080`: FRED, Tiingo, BLS, BIS and CDC Socrata fetched
+  live, plus stored CDC WONDER/NVSR series and the series catalog that spans both
+- **`clients/`** — async HTTP clients for the six providers, and their wire models
 - **`notebooks/fred/`** — notebooks for browsing FRED categories, series metadata, and observations
 - **`notebooks/tiingo/`** — notebooks for Tiingo end-of-day price data
 - **`notebooks/bls/`** — notebooks for browsing BLS surveys and time series
@@ -47,7 +53,7 @@ pip install -r requirements.txt
 ### 4. Start the MCP server
 
 ```bash
-python mcp_server/server.py
+python -m mcp_server.server
 ```
 
 The server listens on `http://localhost:8080/sse`.
