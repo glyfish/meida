@@ -9,3 +9,11 @@ ipython
 ipykernel
 mcp<2                    # 2.0 drops the SSE transport this server runs on
 python-lsp-server[all]   # language server behind jupyter-lsp (successor of python-language-server)
+
+# time-series source database (meida owns it: schema, migrations, client)
+SQLAlchemy
+alembic
+psycopg[binary]          # v3 — ships wheels; psycopg2 has no macOS wheel and needs pg_config
+
+# catalog descriptions (notebooks/cdc/descriptions.py)
+anthropic

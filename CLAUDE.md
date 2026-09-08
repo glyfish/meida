@@ -3,7 +3,8 @@
 @../sefer/overview.md
 @../sefer/conventions.md
 
-Exposes navi's data clients as MCP tools and builds the metadata catalogs
+Owns the vendor data clients (`clients/`), exposes them as MCP tools, and
+builds the metadata catalogs
 (FRED, Tiingo, BLS, BIS). Reference docs live in `sefer/meida/`.
 
 ## Environment & commands
