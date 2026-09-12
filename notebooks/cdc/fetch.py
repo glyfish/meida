@@ -1,5 +1,11 @@
 """Download the raw CDC files that :mod:`nvsr_series` and :mod:`wonder_series` parse.
 
+Two sources, two very different constraints. NVSR is a bulk FTP pull behind a
+rate-based bot filter; WONDER is an XML-POST API throttled to roughly one
+query every two minutes, so a full refresh of its nine concepts across both
+database vintages takes about forty minutes and is not something to do by
+accident.
+
 NVSR has no API. It publishes life tables as Excel workbooks on an FTP tree
 named by *volume number*, not data year, so the year -> directory mapping in
 :mod:`nvsr_series` is the only thing that finds next year's files. Everything
@@ -31,11 +37,15 @@ import sys
 import time
 import urllib.parse
 from pathlib import Path
-from typing import Iterable
+import json
+from typing import Any, Iterable, Sequence
 
 from curl_cffi import requests
 
+import wonder_codes as wcodes
 from nvsr_series import DATA_DIR, STATE_VOLUMES, US_VOLUMES
+
+WONDER_DIR = Path(__file__).parent / "data" / "wonder"
 
 BASE = "https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Publications/NVSR"
 
@@ -164,6 +174,70 @@ def fetch_all(data_dir: Path = DATA_DIR) -> dict[str, dict[int, dict[str, int]]]
     """Everything NVSR publishes that the builders read. Safe to re-run."""
     return {"national": fetch_national(data_dir=data_dir),
             "state": fetch_state(data_dir=data_dir)}
+
+
+# --- WONDER -----------------------------------------------------------------
+
+async def fetch_wonder(concepts: Iterable[str] | None = None,
+                       databases: Sequence[str] = wcodes.DATABASES,
+                       data_dir: Path = WONDER_DIR,
+                       *, refresh: bool = False) -> dict[str, Any]:
+    """Pull each concept from each database vintage, and write the summary.
+
+    Cached by default: a concept already on disk is skipped, because at one
+    query per two minutes a needless refresh of all nine costs forty minutes.
+    Pass ``refresh=True`` to re-pull deliberately -- worth doing occasionally,
+    since WONDER revises: re-running this today moves eight of drug-induced's
+    twenty-two years by one or two deaths.
+
+    The summary records what was actually sent. Several concepts include codes
+    WONDER refuses -- the NCHS pseudo-codes ``*U01``-``*U03``, and the
+    non-existent gaps in the diseases-of-heart range -- so ``dropped_codes``
+    is how the resulting series stays honest about departing from the
+    published definition.
+    """
+    from clients import WonderClient          # lazy: only the WONDER path needs it
+
+    data_dir.mkdir(parents=True, exist_ok=True)
+    wanted = sorted(concepts if concepts is not None else wcodes.CODE_SETS)
+    summary_path = data_dir / "_download_summary.json"
+    # carry the previous run forward: wonder_series reads dropped_codes out of
+    # this file to record each series' deviation from the published definition,
+    # so a cached run must not blank what an earlier pull recorded
+    previous: dict[str, Any] = (json.loads(summary_path.read_text())
+                                if summary_path.exists() else {})
+    summary: dict[str, Any] = {}
+
+    async with WonderClient() as client:      # self-throttles between requests
+        for concept in wanted:
+            stem = wcodes.FILE_STEM.get(concept, concept)
+            entry = {"citation": wcodes.CITATIONS.get(concept, ""),
+                     "num_codes": len(wcodes.CODE_SETS[concept]), "databases": {}}
+            summary[concept] = entry
+            for database in databases:
+                target = data_dir / f"{stem}_{database}.json"
+                if target.exists() and not refresh:
+                    was = (previous.get(concept, {}).get("databases", {}) or {}).get(database)
+                    entry["databases"][database] = was or {
+                        "status": "cached", "variant": "unknown", "dropped_codes": []}
+                    continue
+                try:
+                    out = await wcodes.query(concept, client, database)
+                except Exception as exc:      # noqa: BLE001 -- recorded, not raised
+                    entry["databases"][database] = {"status": "error",
+                                                    "error": str(exc)}
+                    print(f"  {concept:20s} {database}  ERROR {exc}", file=sys.stderr)
+                    continue
+                rows = [r if isinstance(r, dict) else r.model_dump() for r in out["rows"]]
+                target.write_text(json.dumps(rows, indent=2) + "\n")
+                entry["databases"][database] = {"status": "ok",
+                                                "variant": out["variant"],
+                                                "dropped_codes": out["dropped_codes"]}
+                print(f"  {concept:20s} {database}  {len(rows)} years, "
+                      f"sent {len(out['codes_sent'])}, dropped {out['dropped_codes']}")
+
+    summary_path.write_text(json.dumps(summary, indent=1) + "\n")
+    return summary
 
 
 if __name__ == "__main__":
