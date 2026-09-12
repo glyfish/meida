@@ -741,3 +741,57 @@ def test_compose_period_leaves_other_datasets_alone():
     assert cdc_query.compose_period("w9j2-ggv5", "life_expectancy", rows) == rows
     assert cdc_query.compose_period("9j2v-jamp", "suicide", rows) == rows
     assert cdc_query.compose_period("489q-934x", "suicide", rows) == rows
+
+
+# --- the registry's own consistency ------------------------------------------
+
+#: Columns that carry a bare year and nothing finer. A spec whose period is
+#: sub-annual cannot identify an observation with one of these alone.
+_BARE_YEAR_COLUMNS = {"year", "yearstart", "yearend", "year_num"}
+
+
+def test_sub_annual_specs_can_actually_identify_a_period():
+    """A declared frequency must be expressible by the columns selected.
+
+    xkb8-kh2a said ``frequency="monthly"`` while selecting only ``year``, so
+    twelve rows a year came back sharing one label -- twelve points claiming
+    the same period. Nothing caught it because nothing compared the two
+    halves of the spec against each other.
+
+    Annual specs are fine with a bare year column. Anything finer needs either
+    a second column (``month_field``) or a time column that already encodes the
+    sub-annual part, the way 489q-934x's ``year_and_quarter`` does.
+    """
+    from mcp_server.cdc_datasets import REGISTRY
+
+    offenders = [
+        (spec.dataset_id, spec.concept, spec.frequency, spec.time_field)
+        for spec in REGISTRY
+        if spec.frequency != "annual"
+        and not spec.month_field
+        and spec.time_field in _BARE_YEAR_COLUMNS
+    ]
+    assert not offenders, (
+        "these specs claim a sub-annual frequency but select only a year "
+        f"column, so their rows cannot be told apart: {offenders}"
+    )
+
+
+def test_the_split_period_spec_is_still_wired():
+    """Guards the fix itself: dropping month_field would silently restore the
+    bug, since every other part of the pipeline keeps working."""
+    from mcp_server.cdc_datasets import REGISTRY, _select
+
+    spec = next(s for s in REGISTRY if s.dataset_id == "xkb8-kh2a")
+    assert spec.frequency == "monthly"
+    assert spec.month_field == "month"
+    assert spec.month_field in _select(spec)
+
+
+def test_annual_specs_do_not_carry_a_month_field():
+    """The inverse mistake: a month column on an annual series would compose
+    labels the catalog's coverage bounds do not match."""
+    from mcp_server.cdc_datasets import REGISTRY
+
+    assert not [s.dataset_id for s in REGISTRY
+                if s.frequency == "annual" and s.month_field]
