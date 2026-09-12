@@ -298,6 +298,42 @@ class VsrrSpec:
 STUB = StubSpec()
 VSRR = VsrrSpec()
 
+#: The nation as a facet value. ``state`` holds postal codes and there is no
+#: postal code for the country, so national series carry ``geography`` instead.
+NATIONAL = "national"
+
+#: Full jurisdiction name -> postal code. Socrata's single-year life-expectancy
+#: datasets spell states out ("New Mexico") where every other CDC dataset uses
+#: the code, so a catalog built straight from them files those series under a
+#: vocabulary nothing else searches. Normalising here keeps one key, one
+#: spelling: see :func:`postal_code`.
+POSTAL_BY_NAME: dict[str, str] = {
+    "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR",
+    "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE",
+    "District of Columbia": "DC", "Florida": "FL", "Georgia": "GA", "Hawaii": "HI",
+    "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA",
+    "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME",
+    "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN",
+    "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE",
+    "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM",
+    "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH",
+    "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI",
+    "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX",
+    "Utah": "UT", "Vermont": "VT", "Virginia": "VA", "Washington": "WA",
+    "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY",
+}
+
+
+def postal_code(area: str) -> str | None:
+    """Postal code for a jurisdiction, or None where it is not one.
+
+    Returns None for "United States", which these datasets list beside the
+    states -- the caller files that under :data:`NATIONAL` instead of
+    inventing a code for it.
+    """
+    return POSTAL_BY_NAME.get(area.strip())
+
+
 
 #: Postal codes appearing across CDC's state-level datasets. Wider than the 50
 #: states: DC, the territories (GU, PR, VI), the national rollup ``US``, and

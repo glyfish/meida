@@ -30,7 +30,7 @@ import yaml
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from mcp_server.cdc_datasets import (      # noqa: E402
-    MONTH_NUMBER, REGISTRY, Spec, _col, _eq, _select, _slug,
+    MONTH_NUMBER, NATIONAL, REGISTRY, Spec, _col, _eq, _select, _slug, postal_code,
 )
 
 
@@ -232,6 +232,17 @@ LE_SNAPSHOTS = [   # (year, dataset_id, geo_column, value_column)
 _LE_SEX = {"Total": "total", "Male": "male", "Female": "female"}
 
 
+def _geo_facet(area: str) -> dict[str, str]:
+    """``{"state": "NM"}`` or ``{"geography": "national"}``.
+
+    These four datasets spell jurisdictions out where the rest of CDC uses
+    postal codes, so filing them under ``area`` put 156 series in a vocabulary
+    no other search touches.
+    """
+    code = postal_code(area)
+    return {"state": code} if code else {"geography": NATIONAL}
+
+
 def build_le_snapshots(members: dict[tuple[str, str], dict[str, tuple]]) -> list[dict[str, Any]]:
     """``members``: (area, sex) -> {year: (dataset_id, geo_col, value_col, geo_value)}.
     Emits one series per (area, sex) with a multi-source union recipe (one
@@ -249,7 +260,7 @@ def build_le_snapshots(members: dict[tuple[str, str], dict[str, tuple]]) -> list
             "concept": "life_expectancy", "unit": "years", "frequency": "annual",
             "cadence": "irregular", "provisional": False, "live": False,
             "title": f"life expectancy at birth ({area}, {canon})",
-            "facets": {"area": area, "sex": canon},
+            "facets": {**_geo_facet(area), "sex": canon},
             "observation_start": min(yrs), "observation_end": max(yrs),
             "sources": sources,   # multi-part union recipe
         })

@@ -41,7 +41,12 @@ import json
 import re
 import zipfile
 from pathlib import Path
+import sys as _sys
 from typing import Any, Iterator
+
+
+_sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from mcp_server.cdc_datasets import NATIONAL      # noqa: E402
 
 DATA_DIR = Path(__file__).parent / "data" / "nvsr"
 SOURCE = "cdc_nvsr"
@@ -363,7 +368,7 @@ def build_national(data_dir: Path = DATA_DIR) -> list[dict[str, Any]]:
             native_id=f"cdc/life_expectancy/nvsr/race={race}/sex={sex}",
             title=(f"Life expectancy at birth, United States "
                    f"({RACE_LABELS[race]}, {SEX_LABELS[sex]})"),
-            facets={"race": race, "sex": sex, "geography": "United States"},
+            facets={"race": race, "sex": sex, "geography": NATIONAL},
             points=pts,
         )
         for (race, sex), pts in sorted(points.items())
@@ -385,7 +390,8 @@ def build_state(data_dir: Path = DATA_DIR) -> list[dict[str, Any]]:
         _record(
             native_id=f"cdc/life_expectancy/nvsr/state={state}/sex={sex}",
             title=f"Life expectancy at birth, {state} ({SEX_LABELS[sex]})",
-            facets={"state": state, "sex": sex, "geography": state},
+            # no geography: it only ever repeated state, so it split searches
+            facets={"state": state, "sex": sex},
             points=pts,
         )
         for (state, sex), pts in sorted(points.items())

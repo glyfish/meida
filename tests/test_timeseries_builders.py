@@ -262,6 +262,23 @@ def test_build_national_keeps_the_two_schemas_apart(tmp_path):
     assert [o["date"][:4] for o in white["observations"]] == ["2018"]
 
 
+def test_state_series_do_not_repeat_the_jurisdiction(tmp_path):
+    """geography only ever echoed state, which split searches across two keys."""
+    _state_year(tmp_path, 2022, {"HI": (79.9, 77.4, 82.2)})
+    rec = ns.build_state(tmp_path)[0]
+    facets = rec["metadata"][ns.SOURCE]
+    assert facets["state"] == ["HI"]
+    assert "geography" not in facets
+
+
+def test_national_series_carry_the_national_token(tmp_path):
+    d = tmp_path / "us" / "2024"
+    d.mkdir(parents=True)
+    _xlsx(d, "Table01.xlsx", {"G4": 78.971})
+    rec = ns.build_national(tmp_path)[0]
+    assert rec["metadata"][ns.SOURCE]["geography"] == ["national"]
+
+
 def _state_year(tmp_path, year, values):
     """Write one state-year: ``values`` is ``{postal: (both, male, female)}``."""
     d = tmp_path / "state" / str(year)

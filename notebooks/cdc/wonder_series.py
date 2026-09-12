@@ -23,7 +23,12 @@ from __future__ import annotations
 import json
 from datetime import date
 from pathlib import Path
+import sys as _sys
 from typing import Any, Iterable
+
+
+_sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from mcp_server.cdc_datasets import NATIONAL      # noqa: E402
 
 DATA_DIR = Path(__file__).parent / "data" / "wonder"
 SOURCE = "cdc_wonder"
@@ -180,7 +185,7 @@ def build_series(concept_key: str, *, data_dir: Path = DATA_DIR) -> dict[str, An
             "concept": [spec["concept"]],
             "definition": [spec["definition"]],
             "databases": ["D76", "D158"],
-            "geography": ["United States"],
+            "geography": [NATIONAL],
             "measure": ["age-adjusted rate, 2000 US standard population"],
             "observation_start_int": [int(start[:4] + "0101")],
             "observation_end_int": [int(end[:4] + "0101")],

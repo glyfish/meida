@@ -105,7 +105,7 @@ async def show_columns(dataset_id: str) -> list[dict[str, Any]]:
 #: Facet keys the catalog carries. Used to reject a mistyped keyword rather
 #: than silently forwarding it as a filter that matches nothing.
 FACET_KEYS = {"state", "race", "sex", "age", "drug", "rate_type", "period",
-              "geography", "area", "measure"}
+              "geography", "measure"}
 
 
 async def search_catalog(

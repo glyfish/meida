@@ -112,6 +112,22 @@ def test_group_soql_backticks_reserved_and_adds_location():
     assert sel2.startswith("locationabbr")               # location prepended for stratified+location
 
 
+def test_le_snapshots_file_the_nation_under_geography():
+    """These datasets list "United States" beside the states; it has no code."""
+    members = {("United States", "Total"): {
+        "2018": ("a5a8-jsrq", "state", "leb", "United States")}}
+    e = C.build_le_snapshots(members)[0]
+    assert e["facets"] == {"geography": "national", "sex": "total"}
+    assert "state" not in e["facets"]
+
+
+def test_every_le_snapshot_area_resolves():
+    """A name that does not map would silently fall through to `national`."""
+    from mcp_server.cdc_datasets import POSTAL_BY_NAME, STATES
+    assert set(POSTAL_BY_NAME.values()) <= set(STATES)
+    assert len(POSTAL_BY_NAME) == 51            # 50 states + DC, no nation
+
+
 def test_le_snapshot_union_recipe():
     members = {("Montana", "Total"): {
         "2018": ("a5a8-jsrq", "state", "leb", "Montana"),
@@ -119,7 +135,9 @@ def test_le_snapshot_union_recipe():
         "2021": ("it4f-frdc", "area", "leb", "Montana"),
     }}
     e = C.build_le_snapshots(members)[0]
-    assert e["facets"] == {"area": "Montana", "sex": "total"}
+    # the facet is the postal code even though the recipe still spells it out:
+    # SoQL queries the dataset's own vocabulary, search uses the catalog's
+    assert e["facets"] == {"state": "MT", "sex": "total"}
     assert e["observation_start"] == "2018" and e["observation_end"] == "2021"
     assert [s["select"] for s in e["sources"]] == [
         "'2018' AS year, leb AS value",
