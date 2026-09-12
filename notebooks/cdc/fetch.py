@@ -206,7 +206,9 @@ async def fetch_wonder(concepts: Iterable[str] | None = None,
     # so a cached run must not blank what an earlier pull recorded
     previous: dict[str, Any] = (json.loads(summary_path.read_text())
                                 if summary_path.exists() else {})
-    summary: dict[str, Any] = {}
+    # start from the previous run, so fetching one concept does not drop the
+    # other eight from the file the builders read
+    summary: dict[str, Any] = dict(previous)
 
     async with WonderClient() as client:      # self-throttles between requests
         for concept in wanted:
