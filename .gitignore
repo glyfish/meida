@@ -31,6 +31,7 @@ notebooks/bls/data/
 notebooks/bis/data/
 
 # Exported CDC series catalog (regenerable; consumed by the yada project)
+notebooks/voteview/data/
 notebooks/cdc/data/
 # ...except the normalized WONDER/NVSR series, which are tracked on purpose.
 # Both sources are rebuildable now (notebooks/cdc/downloads.ipynb), so this is
