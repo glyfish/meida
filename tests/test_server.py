@@ -692,3 +692,52 @@ async def test_fetching_still_requires_the_concept():
     concepts read different value columns, so a guess would return wrong data."""
     with pytest.raises(cdc_query.CdcQueryError, match="serves several concepts"):
         await server.cdc_series_data(dataset_id="w9j2-ggv5", race="all", sex="both")
+
+
+# --- split-period datasets ----------------------------------------------------
+
+
+def test_split_period_dataset_selects_both_columns():
+    """xkb8-kh2a is monthly but keys observations by year AND month.
+
+    Selecting the time field alone returned twelve rows sharing one label --
+    twelve points claiming the same period, in arbitrary order.
+    """
+    query = cdc_query.build("xkb8-kh2a", "drug_overdose", state="OH", drug="heroin")
+
+    assert query["select"] == "year, month, data_value AS value"
+    # Socrata cannot order these: `year` alone leaves months arbitrary, and
+    # adding `month` sorts alphabetically (April, August, December).
+    assert query["order"] is None
+
+
+def test_compose_period_folds_and_sorts():
+    rows = [{"year": "2020", "month": "March", "value": "439"},
+            {"year": "2020", "month": "January", "value": "492"},
+            {"year": "2021", "month": "February", "value": "281"}]
+
+    out = cdc_query.compose_period("xkb8-kh2a", "drug_overdose", rows)
+
+    assert [(r["year"], r["value"]) for r in out] == [
+        ("2020-01", "492"), ("2020-03", "439"), ("2021-02", "281")]
+
+
+def test_compose_period_drops_an_unrecognised_month():
+    """A month we cannot map would sort wrongly while looking like a real
+    period, so it is dropped rather than published."""
+    rows = [{"year": "2020", "month": "January", "value": "1"},
+            {"year": "2020", "month": "Smarch", "value": "2"},
+            {"year": "2020", "month": None, "value": "3"}]
+
+    out = cdc_query.compose_period("xkb8-kh2a", "drug_overdose", rows)
+
+    assert [r["year"] for r in out] == ["2020-01"]
+
+
+def test_compose_period_leaves_other_datasets_alone():
+    """Only a dataset declaring a month_field is touched."""
+    rows = [{"year": "2018", "value": "78.7"}]
+
+    assert cdc_query.compose_period("w9j2-ggv5", "life_expectancy", rows) == rows
+    assert cdc_query.compose_period("9j2v-jamp", "suicide", rows) == rows
+    assert cdc_query.compose_period("489q-934x", "suicide", rows) == rows

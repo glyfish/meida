@@ -30,7 +30,7 @@ import yaml
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from mcp_server.cdc_datasets import (      # noqa: E402
-    REGISTRY, Spec, _col, _eq, _select, _slug,
+    MONTH_NUMBER, REGISTRY, Spec, _col, _eq, _select, _slug,
 )
 
 
@@ -294,8 +294,27 @@ def build_vsrr() -> list[dict[str, Any]]:
 # =========================================================================== #
 
 async def _span(client, dataset_id: str, time_field: str,
-                base_where: tuple[str, ...]) -> tuple[str | None, str | None]:
+                base_where: tuple[str, ...],
+                month_field: str | None = None) -> tuple[str | None, str | None]:
+    """The dataset's first and last period.
+
+    ``min()``/``max()`` on the time column is enough where one column is the
+    period. It is not for a split-period dataset: min(year) says nothing about
+    which month within that year, and max() over month *names* sorts
+    alphabetically. So those enumerate the distinct pairs -- at most a few
+    hundred rows -- and compose the bounds here.
+    """
     where = " AND ".join(base_where) if base_where else None
+    if month_field:
+        resp = await client.query(
+            dataset_id, select=f"{time_field}, {month_field}",
+            group=f"{time_field}, {month_field}", where=where, limit=50_000)
+        periods = sorted(
+            f"{r[time_field]}-{MONTH_NUMBER[r[month_field]]}"
+            for r in resp.rows
+            if r.get(time_field) and r.get(month_field) in MONTH_NUMBER
+        )
+        return (periods[0], periods[-1]) if periods else (None, None)
     resp = await client.query(dataset_id, select=f"min({time_field}) as a, max({time_field}) as b",
                               where=where, limit=1)
     row = resp.rows[0] if resp.rows else {}
@@ -316,8 +335,8 @@ async def export_cdc_catalog(client, output_dir: str | Path) -> dict[str, Any]:
     out.mkdir(parents=True, exist_ok=True)
     groups: dict[str, list[dict[str, Any]]] = {}
 
-    async def stamp(entries, dataset_id, time_field, base_where):
-        a, b = await _span(client, dataset_id, time_field, base_where)
+    async def stamp(entries, dataset_id, time_field, base_where, month_field=None):
+        a, b = await _span(client, dataset_id, time_field, base_where, month_field)
         for e in entries:
             e.setdefault("observation_start", a)
             e.setdefault("observation_end", b)
@@ -328,7 +347,8 @@ async def export_cdc_catalog(client, output_dir: str | Path) -> dict[str, Any]:
         rows = (await client.query(spec.dataset_id, select=sel, group=sel,
                                    where=where, limit=50_000)).rows
         entries = build(spec, rows)
-        await stamp(entries, spec.dataset_id, spec.time_field, spec.base_where)
+        await stamp(entries, spec.dataset_id, spec.time_field, spec.base_where,
+                    spec.month_field)
         groups.setdefault(spec.dataset_id, []).extend(entries)
 
     # special: suicide history (stub)

@@ -113,6 +113,12 @@ class Spec:
     strat_category_col: str | None = None                          # stratified mode
     strat_value_col: str | None = None
     location_col: str | None = None          # stratified datasets that also vary by state
+    # Set when the period needs two columns. xkb8-kh2a is monthly but splits the
+    # period across `year` and `month`, so selecting time_field alone returns
+    # twelve rows sharing one label. Socrata cannot concatenate them -- there is
+    # no concat() and || silently yields nothing -- so both are selected and the
+    # label is composed after the fetch.
+    month_field: str | None = None
     overall: tuple[str, str] | None = None    # (category literal, value literal)
     breakdowns: dict[str, Breakdown] = field(default_factory=dict)  # stratified mode
     rate_type: RateType | None = None
@@ -133,7 +139,7 @@ REGISTRY: list[Spec] = [
 
     Spec(dataset_id="xkb8-kh2a", concept="drug_overdose", unit="deaths (12-mo-ending count)",
          frequency="monthly", cadence="R/P1M", provisional=True,
-         time_field="year", value_field="data_value", mode="cross",
+         time_field="year", month_field="month", value_field="data_value", mode="cross",
          facets={"state": Facet("state", {}, dynamic=True),
                  "drug": Facet("indicator", XKB8_DRUG)}),
 
@@ -199,7 +205,23 @@ def _slug(text: str) -> str:
     return str(text).lower().replace(" ", "_").replace(",", "").replace(">=", "ge")
 
 
+#: xkb8-kh2a writes month names, not numbers, so they neither sort nor parse.
+MONTH_NUMBER: dict[str, str] = {
+    "January": "01", "February": "02", "March": "03", "April": "04",
+    "May": "05", "June": "06", "July": "07", "August": "08",
+    "September": "09", "October": "10", "November": "11", "December": "12",
+}
+
+
 def _select(spec: Spec) -> str:
+    """The two-column contract: one time label, one value.
+
+    A dataset whose period spans two columns selects both -- the label is
+    composed after the fetch, since Socrata has no string concatenation.
+    """
+    if spec.month_field:
+        return (f"{spec.time_field}, {spec.month_field}, "
+                f"{spec.value_field} AS value")
     return f"{spec.time_field} AS year, {spec.value_field} AS value"
 
 

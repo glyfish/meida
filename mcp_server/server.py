@@ -550,7 +550,11 @@ async def cdc_series_data(
         return await client.query(**query)
 
     payload = await _call_cdc(handler)
-    rows = [CdcSeriesPoint(**row) for row in payload.rows]
+    # xkb8-kh2a splits its period across two columns, so the label is composed
+    # here rather than by Socrata, which cannot concatenate. Every other
+    # dataset's rows pass through unchanged.
+    rows = [CdcSeriesPoint(**row)
+            for row in cdc_query.compose_period(dataset_id, concept, payload.rows)]
     return CdcSeriesResponse(
         dataset_id=dataset_id, concept=concept, where=query["where"],
         row_count=len(rows), rows=rows,

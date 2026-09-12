@@ -21,7 +21,9 @@ from __future__ import annotations
 
 from typing import Any, Literal, Mapping
 
-from .cdc_datasets import REGISTRY, STATES, STUB, VSRR, Spec, _eq, _select
+from .cdc_datasets import (
+    MONTH_NUMBER, REGISTRY, STATES, STUB, VSRR, Spec, _eq, _select,
+)
 
 #: Facet parameters the tool accepts. These names are also the catalog's
 #: ``facets`` metadata keys -- deliberately identical, so a value read off a
@@ -301,13 +303,56 @@ def build(
     if year_end is not None:
         where.append(f"{TIME_ALIAS} <= '{int(year_end)}'")
 
+    # A split-period dataset cannot be ordered by the server: `year` alone
+    # leaves the months arbitrary, and adding `month` sorts them alphabetically
+    # -- April, August, December. compose_period sorts after composing.
+    month_field = getattr(_spec_or_none(dataset_id, concept), "month_field", None)
     return {
         "dataset_id": dataset_id,
         "select": select,
         "where": " AND ".join(where),
-        "order": TIME_ALIAS,
+        "order": None if month_field else TIME_ALIAS,
         "limit": limit,
     }
+
+
+def _spec_or_none(dataset_id: str, concept: str | None) -> Spec | None:
+    """The registry Spec, or None for the two special-cased datasets."""
+    if dataset_id in (STUB.dataset_id, VSRR.dataset_id):
+        return None
+    try:
+        return _spec_for(dataset_id, concept)
+    except CdcQueryError:
+        return None
+
+
+def compose_period(dataset_id: str, concept: str | None,
+                   rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Fold a split period into one sortable label, and sort by it.
+
+    Only ``xkb8-kh2a`` needs this today: it publishes monthly but splits the
+    period across ``year`` and ``month``, so the raw rows carry twelve
+    identical ``year`` values per year. Left alone they reach a caller as
+    twelve points claiming the same period, in whatever order Socrata returned
+    them -- the failure this exists to prevent.
+
+    Rows for every other dataset pass through untouched.
+    """
+    spec = _spec_or_none(dataset_id, concept)
+    if spec is None or not spec.month_field:
+        return rows
+
+    composed: list[dict[str, Any]] = []
+    for row in rows:
+        year = str(row.get(spec.time_field) or "").strip()
+        month = MONTH_NUMBER.get(str(row.get(spec.month_field) or "").strip())
+        if not year or month is None:
+            # An unrecognised month would sort wrongly and read as a real
+            # period; drop it rather than publish a label we cannot stand behind.
+            continue
+        composed.append({"year": f"{year}-{month}", "value": row.get("value")})
+    composed.sort(key=lambda r: r["year"])
+    return composed
 
 
 def vocabulary(dataset_id: str, concept: str | None = None) -> dict[str, list[str]]:
