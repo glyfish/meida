@@ -7,12 +7,10 @@ wrong local tree, and the parser then reads whatever landed.
 """
 from __future__ import annotations
 
-import pathlib
-import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "notebooks" / "cdc"))
+from notebook_modules import load
 
-import fetch as F  # noqa: E402
+F = load("cdc", "fetch")
 
 
 def _links(*names: str) -> str:

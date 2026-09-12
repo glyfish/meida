@@ -10,13 +10,12 @@ from __future__ import annotations
 import csv
 import json
 import pathlib
-import sys
 
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "notebooks" / "voteview"))
+from notebook_modules import load
 
-import fetch as F  # noqa: E402
+F = load("voteview", "fetch")
 
 HEADER = ("congress,chamber,icpsr,state_abbrev,party_code,district_code,"
           "bioname,nominate_dim1")

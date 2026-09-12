@@ -12,14 +12,12 @@ failure these guard against day to day.
 """
 from __future__ import annotations
 
-import pathlib
-import sys
 
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "notebooks" / "cdc"))
+from notebook_modules import load
 
-import wonder_codes as wc  # noqa: E402
+wc = load("cdc", "wonder_codes")
 
 
 def test_every_set_matches_the_original_pulls_count():

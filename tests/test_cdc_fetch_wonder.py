@@ -12,15 +12,14 @@ from __future__ import annotations
 
 import asyncio
 import json
-import pathlib
 import sys
 
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "notebooks" / "cdc"))
+from notebook_modules import load
 
-import fetch as F  # noqa: E402
-import wonder_codes as wc  # noqa: E402
+F = load("cdc", "fetch")
+wc = load("cdc", "wonder_codes")
 
 
 class _Row(dict):
