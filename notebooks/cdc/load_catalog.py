@@ -58,8 +58,10 @@ def _retrieval(entry: dict[str, Any]) -> dict[str, Any]:
     ``catalog_timeseries`` writes an explicit block for the stored (WONDER and
     NVSR) entries. Socrata entries carry none, so it is derived here from what
     a ``cdc_series_data`` call actually needs: the dataset and the facets.
-    Entries with no ``dataset_id`` are the ``le_snapshots`` group, which needs
-    several sub-queries unioned and so has no single-call route yet.
+
+    Every catalogued series now has a route. The ``tool: None`` fallback stays
+    as a guard -- an entry that reaches it is a bug in the generator, not a
+    known gap -- and is asserted against in the tests.
     """
     if entry.get("retrieval"):
         return dict(entry["retrieval"])

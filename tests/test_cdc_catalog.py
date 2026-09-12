@@ -105,43 +105,30 @@ def test_vsrr_column_melt():
     assert e["provisional"] is True
 
 
+def test_every_entry_has_a_dataset_id_to_route_on():
+    """The `tool: None` branch in load_catalog is a guard now, not a case.
+
+    It existed for `le_snapshots`, which catalogued 156 state life-expectancy
+    series assembled from four single-year datasets and so had no single-call
+    route. NVSR publishes the same numbers -- those Socrata datasets are the
+    state life tables rounded to one decimal -- and once 2018-2021 was
+    downloaded the stored series covered them with a year to spare, so the
+    group was deleted rather than given a union tool. An entry reaching that
+    branch again means the generator emitted something unroutable.
+    """
+    import load_catalog as L
+
+    produced = C.build_vsrr()
+    for spec in C.REGISTRY:
+        produced += C.build(spec, [{}])
+    assert produced, "nothing built -- the guard would pass vacuously"
+
+    for entry in produced:
+        assert entry.get("dataset_id"), entry["series_id"]
+        assert L._retrieval(entry)["tool"] == "cdc_series_data", entry["series_id"]
+
 def test_group_soql_backticks_reserved_and_adds_location():
     sel, where = C.group_soql(_spec("suicide", "w26f-tf3h"))
     assert "`group`" in sel
     sel2, _ = C.group_soql(_spec("chronic_liver_mortality", "hksd-2xuw"))
     assert sel2.startswith("locationabbr")               # location prepended for stratified+location
-
-
-def test_le_snapshots_file_the_nation_under_geography():
-    """These datasets list "United States" beside the states; it has no code."""
-    members = {("United States", "Total"): {
-        "2018": ("a5a8-jsrq", "state", "leb", "United States")}}
-    e = C.build_le_snapshots(members)[0]
-    assert e["facets"] == {"geography": "national", "sex": "total"}
-    assert "state" not in e["facets"]
-
-
-def test_every_le_snapshot_area_resolves():
-    """A name that does not map would silently fall through to `national`."""
-    from mcp_server.cdc_datasets import POSTAL_BY_NAME, STATES
-    assert set(POSTAL_BY_NAME.values()) <= set(STATES)
-    assert len(POSTAL_BY_NAME) == 51            # 50 states + DC, no nation
-
-
-def test_le_snapshot_union_recipe():
-    members = {("Montana", "Total"): {
-        "2018": ("a5a8-jsrq", "state", "leb", "Montana"),
-        "2020": ("ss2j-8ajj", "state", "le", "Montana"),
-        "2021": ("it4f-frdc", "area", "leb", "Montana"),
-    }}
-    e = C.build_le_snapshots(members)[0]
-    # the facet is the postal code even though the recipe still spells it out:
-    # SoQL queries the dataset's own vocabulary, search uses the catalog's
-    assert e["facets"] == {"state": "MT", "sex": "total"}
-    assert e["observation_start"] == "2018" and e["observation_end"] == "2021"
-    assert [s["select"] for s in e["sources"]] == [
-        "'2018' AS year, leb AS value",
-        "'2020' AS year, le AS value",     # 2020 uses the `le` column, not `leb`
-        "'2021' AS year, leb AS value",
-    ]
-    assert e["sources"][2]["where"] == "area='Montana' AND sex='Total'"   # 2021 uses `area`

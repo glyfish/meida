@@ -30,7 +30,7 @@ import yaml
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from mcp_server.cdc_datasets import (      # noqa: E402
-    MONTH_NUMBER, NATIONAL, REGISTRY, Spec, _col, _eq, _select, _slug, postal_code,
+    MONTH_NUMBER, REGISTRY, Spec, _col, _eq, _select, _slug,
 )
 
 
@@ -224,49 +224,6 @@ def build_suicide_history(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
-# --- 2. LE state snapshots: union 4 single-year datasets into per-(area,sex) series ---
-LE_SNAPSHOTS = [   # (year, dataset_id, geo_column, value_column)
-    ("2018", "a5a8-jsrq", "state", "leb"), ("2019", "ncvk-7amm", "state", "leb"),
-    ("2020", "ss2j-8ajj", "state", "le"),  ("2021", "it4f-frdc", "area", "leb"),
-]
-_LE_SEX = {"Total": "total", "Male": "male", "Female": "female"}
-
-
-def _geo_facet(area: str) -> dict[str, str]:
-    """``{"state": "NM"}`` or ``{"geography": "national"}``.
-
-    These four datasets spell jurisdictions out where the rest of CDC uses
-    postal codes, so filing them under ``area`` put 156 series in a vocabulary
-    no other search touches.
-    """
-    code = postal_code(area)
-    return {"state": code} if code else {"geography": NATIONAL}
-
-
-def build_le_snapshots(members: dict[tuple[str, str], dict[str, tuple]]) -> list[dict[str, Any]]:
-    """``members``: (area, sex) -> {year: (dataset_id, geo_col, value_col, geo_value)}.
-    Emits one series per (area, sex) with a multi-source union recipe (one
-    cdc_series_data call per year, merged downstream)."""
-    out = []
-    for (area, sex), yrs in members.items():
-        canon = _LE_SEX.get(sex)
-        if canon is None:
-            continue
-        sources = [{"dataset_id": ds, "where": f"{_eq(geo_col, gv)} AND {_eq('sex', sex)}",
-                    "select": f"'{yr}' AS year, {val_col} AS value"}
-                   for yr, (ds, geo_col, val_col, gv) in sorted(yrs.items())]
-        out.append({
-            "series_id": f"cdc/life_expectancy/state_snapshots/{_slug(area)}/sex={canon}",
-            "concept": "life_expectancy", "unit": "years", "frequency": "annual",
-            "cadence": "irregular", "provisional": False, "live": False,
-            "title": f"life expectancy at birth ({area}, {canon})",
-            "facets": {**_geo_facet(area), "sex": canon},
-            "observation_start": min(yrs), "observation_end": max(yrs),
-            "sources": sources,   # multi-part union recipe
-        })
-    return out
-
-
 # --- 3. VSRR 489q-934x: state/sex live in wide columns -> pick the value column ---
 _VSRR_CAUSES = {"Suicide": "suicide", "Drug overdose": "drug_overdose",
                 "Chronic liver disease and cirrhosis": "chronic_liver_mortality"}
@@ -374,16 +331,6 @@ async def export_cdc_catalog(client, output_dir: str | Path) -> dict[str, Any]:
     causes = ",".join(f"'{c}'" for c in _VSRR_CAUSES)
     await stamp(vsrr, "489q-934x", "year_and_quarter", (f"cause_of_death in({causes})",))
     groups.setdefault("489q-934x", []).extend(vsrr)
-
-    # special: LE snapshots (union) -- entries already carry their span
-    members: dict[tuple[str, str], dict[str, tuple]] = {}
-    for yr, ds, geo_col, val_col in LE_SNAPSHOTS:
-        rows = (await client.query(ds, select=f"{geo_col},sex", group=f"{geo_col},sex", limit=500)).rows
-        for r in rows:
-            gv, sx = r.get(geo_col), r.get("sex")
-            if gv and sx:
-                members.setdefault((gv, sx), {})[yr] = (ds, geo_col, val_col, gv)
-    groups["le_snapshots"] = build_le_snapshots(members)
 
     # write per-group files + index
     index = []

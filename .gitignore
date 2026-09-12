@@ -32,3 +32,9 @@ notebooks/bis/data/
 
 # Exported CDC series catalog (regenerable; consumed by the yada project)
 notebooks/cdc/data/
+# ...except the normalized WONDER/NVSR series. The rest of this tree is
+# regenerable from an API; these are not -- 936 NVSR workbooks pulled by
+# hand off a bot-filtered FTP host with no year -> volume mapping, so
+# losing them costs a day of re-downloading. 224K is cheap insurance.
+!notebooks/cdc/data/timeseries/
+!notebooks/cdc/data/timeseries/*.jsonl
