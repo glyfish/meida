@@ -27,13 +27,11 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from lib.env import get_meida_db_url
 
 TABLE_NAME = "series_catalog"
-SOURCE = "cdc"
-DEFAULT_DIR = Path(__file__).parent / "data"
 
 
-def read_catalog(directory: Path = DEFAULT_DIR) -> Iterator[dict[str, Any]]:
-    """Yield every entry across the per-dataset catalog files."""
-    for path in sorted(directory.glob("cdc_series_*.yaml")):
+def read_catalog(directory: Path, source: str) -> Iterator[dict[str, Any]]:
+    """Yield every entry across one source's per-group catalog files."""
+    for path in sorted(directory.glob(f"{source}_series_*.yaml")):
         doc = yaml.safe_load(path.read_text())
         for entry in doc.get("series", []):
             yield entry
@@ -73,9 +71,9 @@ def _retrieval(entry: dict[str, Any]) -> dict[str, Any]:
     return {"tool": None, "note": "multi-query union; no single-call route"}
 
 
-def _row(entry: dict[str, Any], now: datetime) -> dict[str, Any]:
+def _row(entry: dict[str, Any], source: str, now: datetime) -> dict[str, Any]:
     return {
-        "source": SOURCE,
+        "source": source,
         "series_id": entry["series_id"],
         "dataset_id": entry.get("dataset_id"),
         "concept": entry.get("concept"),
@@ -94,18 +92,24 @@ def _row(entry: dict[str, Any], now: datetime) -> dict[str, Any]:
 
 
 def load(
-    directory: Path = DEFAULT_DIR,
+    directory: Path,
+    source: str,
     db_url: str | None = None,
     *,
     prune: bool = True,
     now: datetime | None = None,
 ) -> dict[str, int]:
-    """Upsert the catalog, returning counts of what was written and removed."""
+    """Upsert one source's catalog, returning counts written and removed.
+
+    *source* is both the namespace written to the rows and the scope of the
+    prune, so passing the wrong one deletes another source's entries wholesale.
+    It also selects the files: ``<source>_series_*.yaml``.
+    """
     now = now or datetime.now(timezone.utc)
-    rows = [_row(entry, now) for entry in read_catalog(directory)]
+    rows = [_row(entry, source, now) for entry in read_catalog(directory, source)]
     if not rows:
         raise FileNotFoundError(
-            f"no cdc_series_*.yaml under {directory} -- regenerate the catalog first"
+            f"no {source}_series_*.yaml under {directory} -- regenerate the catalog first"
         )
 
     engine = sa.create_engine(db_url or get_meida_db_url())
@@ -124,7 +128,7 @@ def load(
         removed = 0
         if prune:
             result = conn.execute(sa.delete(table).where(
-                table.c.source == SOURCE,
+                table.c.source == source,
                 table.c.series_id.notin_([r["series_id"] for r in rows]),
             ))
             removed = result.rowcount or 0
@@ -133,4 +137,6 @@ def load(
 
 
 if __name__ == "__main__":
-    print(load())
+    import sys
+
+    print(load(Path(sys.argv[1]), sys.argv[2]))

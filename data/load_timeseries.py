@@ -24,7 +24,6 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from lib.env import get_meida_db_url
 
 TABLE_NAME = "time_series_source"
-DEFAULT_DIR = Path(__file__).parent / "data" / "timeseries"
 
 
 def read_jsonl(path: Path) -> Iterator[dict[str, Any]]:
@@ -79,8 +78,13 @@ def load_file(path: Path, engine: sa.Engine, *, now: datetime | None = None) -> 
     return len(rows)
 
 
-def load_all(directory: Path = DEFAULT_DIR, db_url: str | None = None) -> dict[str, int]:
-    """Load every ``.jsonl`` in *directory*. Returns per-file counts."""
+def load_all(directory: Path, db_url: str | None = None) -> dict[str, int]:
+    """Load every ``.jsonl`` in *directory*. Returns per-file counts.
+
+    *directory* is required: each source keeps its own build output under
+    ``notebooks/<source>/data/timeseries``, and a default pointing at one of
+    them is how the wrong source gets loaded.
+    """
     engine = sa.create_engine(db_url or get_meida_db_url())
     try:
         return {p.name: load_file(p, engine) for p in sorted(directory.glob("*.jsonl"))}
@@ -89,5 +93,7 @@ def load_all(directory: Path = DEFAULT_DIR, db_url: str | None = None) -> dict[s
 
 
 if __name__ == "__main__":
-    for name, count in load_all().items():
+    import sys
+
+    for name, count in load_all(Path(sys.argv[1])).items():
         print(f"{name}: {count} series")

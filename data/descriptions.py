@@ -25,10 +25,14 @@ from typing import Any, Iterable
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 KEY_PATH = REPO_ROOT / ".keys" / ".anthropic_key"
-DATA_DIR = Path(__file__).parent / "data"
-SIDECAR = DATA_DIR / "descriptions.yaml"
+#: Each source keeps its sidecar beside its catalog files.
+SIDECAR_NAME = "descriptions.yaml"
+
+
+def sidecar_for(data_dir: Path) -> Path:
+    return Path(data_dir) / SIDECAR_NAME
 
 MODEL = "claude-opus-5"
 
@@ -58,7 +62,7 @@ def ensure_api_key() -> None:
 
     Mirrors yada's ``.keys/`` convention, but resolves the path from the repo
     root rather than the working directory -- this module runs from
-    ``notebooks/cdc/``, where a relative ``.keys/...`` would not resolve.
+    a notebook directory, where a relative ``.keys/...`` would not resolve.
     """
     if os.environ.get("ANTHROPIC_API_KEY"):
         return
@@ -152,33 +156,38 @@ def generate(
     return out
 
 
-def load_sidecar(path: Path = SIDECAR) -> dict[str, str]:
+def load_sidecar(path: Path) -> dict[str, str]:
     return yaml.safe_load(path.read_text()) or {} if path.exists() else {}
 
 
-def save_sidecar(descriptions: dict[str, str], path: Path = SIDECAR) -> None:
+def save_sidecar(descriptions: dict[str, str], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(yaml.safe_dump(descriptions, sort_keys=True, default_flow_style=False,
                                    allow_unicode=True, width=88))
 
 
-def read_catalog(data_dir: Path = DATA_DIR) -> dict[str, list[dict[str, Any]]]:
-    """Read every ``cdc_series_*.yaml`` group file as ``{group: [entries]}``."""
+def read_catalog(data_dir: Path, source: str) -> dict[str, list[dict[str, Any]]]:
+    """Read one source's ``<source>_series_*.yaml`` files as ``{group: [entries]}``."""
     catalog: dict[str, list[dict[str, Any]]] = {}
-    for path in sorted(data_dir.glob("cdc_series_*.yaml")):
+    for path in sorted(Path(data_dir).glob(f"{source}_series_*.yaml")):
         doc = yaml.safe_load(path.read_text())
         catalog[doc["group"]] = doc["series"]
     return catalog
 
 
-def apply_to_catalog(data_dir: Path = DATA_DIR, path: Path = SIDECAR) -> int:
-    """Merge sidecar descriptions into the group files. Returns entries updated."""
-    descriptions = load_sidecar(path)
+def apply_to_catalog(data_dir: Path, source: str, path: Path | None = None) -> int:
+    """Merge sidecar descriptions into the group files. Returns entries updated.
+
+    Run this after every catalog export and before loading: the export writes
+    the group files afresh with no ``description``, so loading without this
+    step blanks the column for every series.
+    """
+    descriptions = load_sidecar(path or sidecar_for(data_dir))
     if not descriptions:
         raise DescriptionError(f"no descriptions at {path}")
 
     updated = 0
-    for file in sorted(data_dir.glob("cdc_series_*.yaml")):
+    for file in sorted(Path(data_dir).glob(f"{source}_series_*.yaml")):
         doc = yaml.safe_load(file.read_text())
         for entry in doc["series"]:
             text = descriptions.get(bucket_key(doc["group"], entry))
@@ -193,10 +202,16 @@ def apply_to_catalog(data_dir: Path = DATA_DIR, path: Path = SIDECAR) -> int:
 if __name__ == "__main__":
     import sys
 
-    refresh = "--refresh" in sys.argv
-    contexts = buckets(read_catalog())
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if len(args) != 2:
+        raise SystemExit("usage: python -m data.descriptions <data_dir> <source> [--refresh]")
+    data_dir, source = Path(args[0]), args[1]
+    sidecar = sidecar_for(data_dir)
+
+    contexts = buckets(read_catalog(data_dir, source))
     print(f"{sum(c['series_count'] for c in contexts.values())} series -> {len(contexts)} buckets")
-    descriptions = generate(contexts, existing=load_sidecar(), refresh=refresh)
-    save_sidecar(descriptions)
-    print(f"wrote {len(descriptions)} descriptions -> {SIDECAR}")
-    print(f"applied to {apply_to_catalog()} catalog entries")
+    descriptions = generate(contexts, existing=load_sidecar(sidecar),
+                            refresh="--refresh" in sys.argv)
+    save_sidecar(descriptions, sidecar)
+    print(f"wrote {len(descriptions)} descriptions -> {sidecar}")
+    print(f"applied to {apply_to_catalog(data_dir, source)} catalog entries")

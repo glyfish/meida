@@ -116,7 +116,7 @@ def test_every_entry_has_a_dataset_id_to_route_on():
     group was deleted rather than given a union tool. An entry reaching that
     branch again means the generator emitted something unroutable.
     """
-    import load_catalog as L
+    from data import load_catalog as L
 
     produced = C.build_vsrr()
     for spec in C.REGISTRY:
