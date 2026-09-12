@@ -173,6 +173,52 @@ def test_build_national_groups_years_into_one_series(tmp_path):
     assert rec["observations"][0]["value"] == "76.3702"      # full precision, as a string
 
 
+def _state_year(tmp_path, year, values):
+    """Write one state-year: ``values`` is ``{postal: (both, male, female)}``."""
+    d = tmp_path / "state" / str(year)
+    d.mkdir(parents=True, exist_ok=True)
+    for state, (both, male, female) in values.items():
+        for n, val in [(1, both), (2, male), (3, female), (4, 0.05)]:
+            _xlsx(d, f"{state}{n}.xlsx", {"G4": val})
+    return d
+
+
+def test_verify_state_accepts_a_well_formed_year(tmp_path):
+    _state_year(tmp_path, 2022, {"HI": (79.9, 77.4, 82.2), "MS": (70.9, 67.6, 74.4)})
+    assert ns.verify_state(tmp_path) == {2022: 2}
+
+
+def test_verify_state_catches_a_shuffled_sex_mapping(tmp_path):
+    """{ST}1/2/3 carry no labels, so a swap is silent -- except in the ordering."""
+    _state_year(tmp_path, 2022, {"HI": (79.9, 82.2, 77.4)})    # male and female swapped
+    with pytest.raises(ns.NvsrSeriesError, match="female > both > male"):
+        ns.verify_state(tmp_path)
+
+
+def test_verify_state_catches_a_misread_cell(tmp_path):
+    _state_year(tmp_path, 2022, {"HI": (79.9, 77.4, 82.2)})
+    _xlsx(tmp_path / "state" / "2022", "HI1.xlsx", {"G4": 0.24})    # the SE table's value
+    with pytest.raises(ns.NvsrSeriesError, match="outside 60-95"):
+        ns.verify_state(tmp_path)
+
+
+def test_verify_state_requires_all_three_life_tables(tmp_path):
+    d = tmp_path / "state" / "2022"
+    d.mkdir(parents=True)
+    _xlsx(d, "HI1.xlsx", {"G4": 79.9})
+    with pytest.raises(ns.NvsrSeriesError, match="missing female, male"):
+        ns.verify_state(tmp_path)
+
+
+def test_verify_state_brackets_the_national_value(tmp_path):
+    """A systematic offset keeps the ordering but moves the states off the nation."""
+    _state_year(tmp_path, 2021, {"HI": (79.9, 77.4, 82.2), "MS": (77.9, 75.6, 80.4)})
+    (tmp_path / "us" / "2021").mkdir(parents=True)
+    _xlsx(tmp_path / "us" / "2021", "Table01.xlsx", {"G4": 76.3702})
+    with pytest.raises(ns.NvsrSeriesError, match="outside the state range"):
+        ns.verify_state(tmp_path)
+
+
 def test_build_state_skips_the_standard_error_table(tmp_path):
     d = tmp_path / "state" / "2022"
     d.mkdir(parents=True)

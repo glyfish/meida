@@ -149,6 +149,61 @@ def verify_national(data_dir: Path = DATA_DIR) -> dict[int, float]:
     return got
 
 
+def verify_state(data_dir: Path = DATA_DIR) -> dict[int, int]:
+    """Check the state parse structurally. Returns ``{year: jurisdictions}``.
+
+    There is no state equivalent of :data:`PUBLISHED_E0` -- NVSR publishes 51
+    jurisdictions per year, too many to transcribe -- so this guard is weaker
+    than :func:`verify_national` by necessity. It leans on three facts that a
+    misread cell or a shuffled ``{ST}N`` mapping cannot satisfy:
+
+    * ``female > both > male`` holds in every US state life table ever
+      published, so it catches a row offset and a sex mislabelling alike;
+    * ``e0`` sits between 60 and 95 years in all of them;
+    * where the matching national table is on disk, the national ``e0`` falls
+      inside the state range -- a systematic offset moves the states off it.
+    """
+    by_year: dict[int, dict[str, dict[str, float]]] = {}
+    for year, state, table, path in _state_files(data_dir):
+        sex = STATE_TABLES.get(table)
+        if sex is None:                       # {ST}4 -- standard errors
+            continue
+        value = life_expectancy_at_birth(path)
+        if value is None:
+            raise NvsrSeriesError(f"no e0 at {E0_COL}{E0_ROW} in {path}")
+        if not 60.0 <= value <= 95.0:
+            raise NvsrSeriesError(
+                f"{year} {state} {sex}: e0 {value:.2f} outside 60-95 -- "
+                f"check {E0_COL}{E0_ROW} in {path.name}"
+            )
+        by_year.setdefault(year, {}).setdefault(state, {})[sex] = value
+
+    national = {year: life_expectancy_at_birth(path)
+                for year, table, path in _national_files(data_dir) if table == 1}
+
+    for year, states in sorted(by_year.items()):
+        for state, sexes in sorted(states.items()):
+            if set(sexes) != set(STATE_TABLES.values()):
+                missing = sorted(set(STATE_TABLES.values()) - set(sexes))
+                raise NvsrSeriesError(f"{year} {state}: missing {', '.join(missing)}")
+            if not sexes["female"] > sexes["both"] > sexes["male"]:
+                raise NvsrSeriesError(
+                    f"{year} {state}: e0 not female > both > male "
+                    f"({sexes['female']:.2f}, {sexes['both']:.2f}, {sexes['male']:.2f}) "
+                    f"-- the {{ST}}1/2/3 mapping or the cell is wrong"
+                )
+        us = national.get(year)
+        if us is not None:
+            both = [s["both"] for s in states.values()]
+            if not min(both) <= us <= max(both):
+                raise NvsrSeriesError(
+                    f"{year}: national e0 {us:.2f} outside the state range "
+                    f"{min(both):.2f}-{max(both):.2f}"
+                )
+
+    return {year: len(states) for year, states in sorted(by_year.items())}
+
+
 def _record(native_id: str, title: str, facets: dict[str, str],
             points: list[tuple[int, float]]) -> dict[str, Any]:
     points.sort()
@@ -232,4 +287,5 @@ def build_all(data_dir: Path = DATA_DIR, *, verify: bool = True) -> list[dict[st
     """Build national and state series, checking the parse first by default."""
     if verify:
         verify_national(data_dir)
+        verify_state(data_dir)
     return build_national(data_dir) + build_state(data_dir)
