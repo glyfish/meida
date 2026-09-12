@@ -15,11 +15,22 @@ a later, wrong one -- that mistake returns 56.2 for 2021 instead of 76.4, a
 plausible number with nothing to flag it. Position is checked against the
 published values in :func:`verify_national`.
 
-**The files do not say who they are about.** ``Table07.xlsx`` carries no title
-cell and its sheet is named "Table 1"; the demographic group exists only in the
-report's captions. :data:`NATIONAL_TABLES` encodes that mapping, verified
-against NVSR 75-05's Table A. Getting it wrong silently relabels one
-population as another.
+**Most files say who they are about, but not all.** A caption sits in the
+workbook's shared strings -- "Table 7. Life table for the non-Hispanic white
+population: United States, 2018" -- which :func:`read_caption` reads. 12 of
+120 national tables carry none, so :data:`NATIONAL_TABLES` stays as the
+fallback; where both exist they are checked against each other, which turns a
+mislabelling into an error instead of a wrong series.
+
+**The race schema changed in 2019.** The 2018 volume ships 12 tables covering
+four groups -- total, Hispanic, non-Hispanic white, non-Hispanic black -- and
+2019 onward ship 18 covering six, having added American Indian/Alaska Native
+and Asian. The orders differ as well: 2018 puts white at tables 7-9 and black
+at 10-12, where the six-group schema puts American Indian there and pushes
+black and white out to 13-18. Applying the wrong year's map does not fail, it
+relabels. NCHS moved from bridged-race to single-race categories at the same
+boundary, so 2018's `white_nh` and 2019's are near-identical numbers drawn
+from slightly different populations.
 
 State files add a third: ``{ST}4`` is a **standard-error** table, not a life
 table, so a jurisdiction contributes three series, not four.
@@ -52,6 +63,15 @@ NATIONAL_TABLES: dict[int, tuple[str, str]] = {
     16: ("white_nh", "both"), 17: ("white_nh", "male"),  18: ("white_nh", "female"),
 }
 
+#: The 2018 volume's four-group schema -- white before black, the reverse of
+#: :data:`NATIONAL_TABLES`, which is why the year has to pick the map.
+NATIONAL_TABLES_2018: dict[int, tuple[str, str]] = {
+    1: ("all", "both"),        2: ("all", "male"),        3: ("all", "female"),
+    4: ("hispanic", "both"),   5: ("hispanic", "male"),   6: ("hispanic", "female"),
+    7: ("white_nh", "both"),   8: ("white_nh", "male"),   9: ("white_nh", "female"),
+    10: ("black_nh", "both"), 11: ("black_nh", "male"),  12: ("black_nh", "female"),
+}
+
 #: {ST}1/2/3 are life tables; {ST}4 is standard errors and is skipped.
 STATE_TABLES: dict[int, str] = {1: "both", 2: "male", 3: "female"}
 
@@ -74,7 +94,8 @@ STATE_VOLUMES: dict[int, str] = {
 }
 
 #: Published national e0, for the guard in :func:`verify_national`.
-PUBLISHED_E0 = {2021: 76.4, 2022: 77.5, 2023: 78.4, 2024: 79.0}
+PUBLISHED_E0 = {2018: 78.7, 2019: 78.8, 2020: 77.0,
+                2021: 76.4, 2022: 77.5, 2023: 78.4, 2024: 79.0}
 
 
 class NvsrSeriesError(RuntimeError):
@@ -100,6 +121,94 @@ def read_cell(xlsx: Path, row: int, col: str) -> float | None:
         return float(match.group(1))
     except ValueError:
         return None
+
+
+#: Caption phrase -> race token. Checked longest-first, so "non-Hispanic white"
+#: is matched before "hispanic" -- the substring that would otherwise swallow it.
+_CAPTION_RACE: list[tuple[str, str]] = [
+    ("american indian", "aian_nh"),
+    ("asian", "asian_nh"),
+    ("black", "black_nh"),
+    ("white", "white_nh"),
+    ("hispanic", "hispanic"),
+    ("total population", "all"),
+]
+
+
+def read_caption(xlsx: Path) -> str | None:
+    """The workbook's "Life table for ..." title, or None where it has none.
+
+    The caption lives in shared strings rather than a cell, so it survives in
+    the XML even though the sheet shows no title. 2024's captions carry a
+    trailing "Spreadsheet version available from:" line, cut here.
+    """
+    try:
+        with zipfile.ZipFile(xlsx) as z:
+            if "xl/sharedStrings.xml" not in z.namelist():
+                return None
+            blob = z.read("xl/sharedStrings.xml").decode("utf-8", errors="replace")
+    except (OSError, KeyError, zipfile.BadZipFile) as exc:
+        raise NvsrSeriesError(f"cannot read {xlsx}: {exc}") from exc
+
+    match = re.search(r"<t[^>]*>\s*Table\s*\d+\.\s*(Life table for [^<]+)</t>", blob)
+    if not match:
+        return None
+    return match.group(1).splitlines()[0].strip()
+
+
+def parse_caption(caption: str) -> tuple[str, str] | None:
+    """``(race, sex)`` from a caption, or None if it does not look like one.
+
+    The wording drifts between volumes -- "non-Hispanic White" in 2019, "White,
+    non-Hispanic" in 2021, lowercase in 2022 -- so this matches on content
+    rather than an exact phrase.
+    """
+    text = caption.lower()
+    if "life table for" not in text:
+        return None
+
+    sex = "male" if "males" in text else "female" if "females" in text else "both"
+    # "males"/"females" overlap: check the longer one first
+    if "females" in text:
+        sex = "female"
+
+    race = None
+    for phrase, token in _CAPTION_RACE:
+        if phrase == "hispanic":
+            # bare Hispanic only once the non-Hispanic groups are ruled out
+            if "non-hispanic" not in text and "hispanic" in text:
+                race = token
+            break
+        if phrase in text:
+            race = token
+            break
+    if race is None:
+        race = "all" if "total population" in text or "life table for males" in text \
+            or "life table for females" in text else None
+    return (race, sex) if race else None
+
+
+def national_group(year: int, table: int, xlsx: Path) -> tuple[str, str] | None:
+    """``(race, sex)`` for a national table, from the caption where there is one.
+
+    The caption is authoritative; the year's map covers the 12 tables that
+    carry none. When both are available they must agree -- a disagreement means
+    the volume reordered its tables again, which is the failure that would
+    otherwise pass silently.
+    """
+    mapping = NATIONAL_TABLES_2018 if year <= 2018 else NATIONAL_TABLES
+    mapped = mapping.get(table)
+
+    caption = read_caption(xlsx)
+    parsed = parse_caption(caption) if caption else None
+    if parsed is None:
+        return mapped
+    if mapped is not None and mapped != parsed:
+        raise NvsrSeriesError(
+            f"{year} table {table}: caption says {parsed}, the {year} map says "
+            f"{mapped} -- {caption!r}"
+        )
+    return parsed
 
 
 def life_expectancy_at_birth(xlsx: Path) -> float | None:
@@ -242,7 +351,7 @@ def build_national(data_dir: Path = DATA_DIR) -> list[dict[str, Any]]:
     """One series per (race, sex), with an observation per published year."""
     points: dict[tuple[str, str], list[tuple[int, float]]] = {}
     for year, table, path in _national_files(data_dir):
-        group = NATIONAL_TABLES.get(table)
+        group = national_group(year, table, path)
         if group is None:
             continue
         value = life_expectancy_at_birth(path)

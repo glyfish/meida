@@ -173,6 +173,95 @@ def test_build_national_groups_years_into_one_series(tmp_path):
     assert rec["observations"][0]["value"] == "76.3702"      # full precision, as a string
 
 
+def _xlsx_captioned(tmp_path, name, e0, caption):
+    """A workbook carrying a shared-strings caption, as the real volumes do."""
+    path = _xlsx(tmp_path, name, {"G4": e0})
+    with zipfile.ZipFile(path, "a") as z:
+        z.writestr("xl/sharedStrings.xml",
+                   '<?xml version="1.0"?><sst><si><t>' + caption + "</t></si></sst>")
+    return path
+
+
+def test_caption_is_read_from_shared_strings(tmp_path):
+    p = _xlsx_captioned(tmp_path, "Table07.xlsx", 78.6,
+                        "Table 7. Life table for the non-Hispanic white population: "
+                        "United States, 2018")
+    assert ns.read_caption(p).startswith("Life table for the non-Hispanic white")
+
+
+def test_a_workbook_without_a_caption_returns_none(tmp_path):
+    assert ns.read_caption(_xlsx(tmp_path, "Table07.xlsx", {"G4": 78.6})) is None
+
+
+@pytest.mark.parametrize("caption, expected", [
+    # the wording drifts between volumes; all four spellings appear on FTP
+    ("Life table for the non-Hispanic White population: United States, 2019",
+     ("white_nh", "both")),
+    ("Life table for White, non-Hispanic males: United States, 2021",
+     ("white_nh", "male")),
+    ("Life table for the black, non-Hispanic population: United States, 2022",
+     ("black_nh", "both")),
+    ("Life table for the American Indian and Alaska Native, non-Hispanic population: "
+     "United States, 2024", ("aian_nh", "both")),
+    ("Life table for the Asian, non-Hispanic females: United States, 2023",
+     ("asian_nh", "female")),
+    # bare Hispanic must not be swallowed by the non-Hispanic groups, nor vice versa
+    ("Life table for the Hispanic population: United States, 2024", ("hispanic", "both")),
+    ("Life table for Hispanic females: United States, 2024", ("hispanic", "female")),
+    ("Life table for the total population: United States, 2024", ("all", "both")),
+    ("Life table for males: United States, 2024", ("all", "male")),
+    ("Life table for females: United States, 2024", ("all", "female")),
+])
+def test_parse_caption_handles_every_spelling_on_ftp(caption, expected):
+    assert ns.parse_caption(caption) == expected
+
+
+def test_2018_uses_its_own_table_order(tmp_path):
+    """2018 puts white at 7-9; the six-group schema puts American Indian there."""
+    assert ns.NATIONAL_TABLES_2018[7] == ("white_nh", "both")
+    assert ns.NATIONAL_TABLES[7] == ("aian_nh", "both")
+    assert len(ns.NATIONAL_TABLES_2018) == 12
+
+
+def test_national_group_prefers_the_caption_over_the_map(tmp_path):
+    """A 2018 table read with the six-group map would come back aian_nh."""
+    p = _xlsx_captioned(tmp_path, "Table07.xlsx", 78.6,
+                        "Table 7. Life table for the non-Hispanic white population: "
+                        "United States, 2018")
+    assert ns.national_group(2018, 7, p) == ("white_nh", "both")
+
+
+def test_national_group_falls_back_to_the_map(tmp_path):
+    """12 of 120 tables carry no caption, so the map cannot go away."""
+    p = _xlsx(tmp_path, "Table13.xlsx", {"G4": 74.8})
+    assert ns.national_group(2019, 13, p) == ("black_nh", "both")
+
+
+def test_national_group_raises_when_caption_and_map_disagree(tmp_path):
+    """The failure that would otherwise be a silently relabelled series."""
+    p = _xlsx_captioned(tmp_path, "Table07.xlsx", 78.6,
+                        "Table 7. Life table for the non-Hispanic white population: "
+                        "United States, 2019")
+    with pytest.raises(ns.NvsrSeriesError, match="caption says"):
+        ns.national_group(2019, 7, p)      # the 2019 map says aian_nh
+
+
+def test_build_national_keeps_the_two_schemas_apart(tmp_path):
+    """2018 contributes to white_nh, not to aian_nh, despite sharing table 7."""
+    for year, caption_race in ((2018, "non-Hispanic white"),
+                               (2019, "American Indian or Alaska Native")):
+        d = tmp_path / "us" / str(year)
+        d.mkdir(parents=True)
+        _xlsx_captioned(d, "Table07.xlsx", 78.6 if year == 2018 else 71.8,
+                        f"Table 7. Life table for the non-Hispanic {caption_race} "
+                        f"population: United States, {year}")
+    recs = {r["native_id"]: r for r in ns.build_national(tmp_path)}
+    assert set(recs) == {"cdc/life_expectancy/nvsr/race=white_nh/sex=both",
+                         "cdc/life_expectancy/nvsr/race=aian_nh/sex=both"}
+    white = recs["cdc/life_expectancy/nvsr/race=white_nh/sex=both"]
+    assert [o["date"][:4] for o in white["observations"]] == ["2018"]
+
+
 def _state_year(tmp_path, year, values):
     """Write one state-year: ``values`` is ``{postal: (both, male, female)}``."""
     d = tmp_path / "state" / str(year)
