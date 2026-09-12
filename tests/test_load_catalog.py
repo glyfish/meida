@@ -1,4 +1,4 @@
-"""Tests for the shared catalog loader (``data/load_catalog.py``).
+"""Tests for the shared catalog loader (``db_import/load_catalog.py``).
 
 SQLite in-memory through ``db_url=``, the same seam the client tests use, so
 real SQL runs with no Postgres.
@@ -19,7 +19,7 @@ import pytest
 import sqlalchemy as sa
 import yaml
 
-from data import load_catalog as L
+from db_import import load_catalog as L
 
 
 @pytest.fixture

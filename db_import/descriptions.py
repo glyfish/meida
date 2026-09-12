@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if len(args) != 2:
-        raise SystemExit("usage: python -m data.descriptions <data_dir> <source> [--refresh]")
+        raise SystemExit("usage: python -m db_import.descriptions <data_dir> <source> [--refresh]")
     data_dir, source = Path(args[0]), args[1]
     sidecar = sidecar_for(data_dir)
 

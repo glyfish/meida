@@ -1,4 +1,4 @@
-"""Loaders that put built artifacts into Postgres.
+"""Getting built artifacts into Postgres.
 
 These were written for CDC and lived under ``notebooks/cdc/`` while it was the
 only source using them. They are not CDC-specific: every file-delivered source
@@ -9,4 +9,8 @@ source adds a builder and nothing else.
 The parameter that matters is ``source``. :func:`load_catalog.load` **prunes**
 rows that are absent from the files it just read, scoped to one source, so
 calling it with the wrong one deletes another source's catalog entirely.
+
+:mod:`descriptions` writes YAML rather than Postgres, but belongs here: the
+catalog export leaves every ``description`` empty, so it has to run between
+the export and the load or the column is blanked for every series.
 """

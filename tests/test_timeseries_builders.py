@@ -339,7 +339,7 @@ def test_build_state_skips_the_standard_error_table(tmp_path):
 # --- catalog entries and description bucketing -------------------------------
 
 import catalog_timeseries as ct    # noqa: E402
-from data import descriptions as desc      # noqa: E402
+from db_import import descriptions as desc      # noqa: E402
 
 
 def test_bucket_key_ignores_facet_values(): 
