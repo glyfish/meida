@@ -31,7 +31,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-DATA_DIR = Path(__file__).parent / "data" / "wonder"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "wonder"
 SUMMARY = DATA_DIR / "_download_summary.json"
 DATABASES = ("D76", "D158")
 

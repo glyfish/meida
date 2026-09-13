@@ -30,7 +30,7 @@ from typing import Any
 
 import yaml
 
-DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 #: ``2023 Q1`` -> the first month of that quarter.
 _QUARTER_MONTH = {"1": "01", "2": "04", "3": "07", "4": "10"}

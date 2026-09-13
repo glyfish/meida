@@ -185,7 +185,7 @@ async def get_dataset_facets(
 def _repo_root() -> str:
     """meida's repo root, so ``clients`` resolves from a notebook kernel."""
     from pathlib import Path
-    return str(Path(__file__).resolve().parents[2])
+    return str(Path(__file__).resolve().parents[3])
 
 
 async def query_rows(

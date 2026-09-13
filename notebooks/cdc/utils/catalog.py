@@ -28,7 +28,7 @@ import yaml
 # named facets, so none crosses the wire) and a second copy here would let the
 # tool's accepted vocabulary drift from the catalog's ``facets`` metadata keys.
 import sys as _sys
-_sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+_sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from mcp_server.cdc_datasets import (      # noqa: E402
     MONTH_NUMBER, REGISTRY, Spec, _col, _eq, _select, _slug,
 )

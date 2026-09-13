@@ -27,10 +27,10 @@ import sys as _sys
 from typing import Any, Iterable
 
 
-_sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+_sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from mcp_server.cdc_datasets import NATIONAL      # noqa: E402
 
-DATA_DIR = Path(__file__).parent / "data" / "wonder"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "wonder"
 SOURCE = "cdc_wonder"
 
 #: D76 covers 1999-2020, D158 2018-2024. Splice at the last D76 year.

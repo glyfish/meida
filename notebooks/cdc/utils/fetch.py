@@ -42,10 +42,10 @@ from typing import Any, Iterable, Sequence
 
 from curl_cffi import requests
 
-import wonder_codes as wcodes
-from nvsr_series import DATA_DIR, STATE_VOLUMES, US_VOLUMES
+from . import wonder_codes as wcodes
+from .nvsr_series import DATA_DIR, STATE_VOLUMES, US_VOLUMES
 
-WONDER_DIR = Path(__file__).parent / "data" / "wonder"
+WONDER_DIR = Path(__file__).resolve().parents[1] / "data" / "wonder"
 
 BASE = "https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Publications/NVSR"
 

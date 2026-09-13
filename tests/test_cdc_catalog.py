@@ -7,12 +7,9 @@ location dimension, and the three special-case handlers.
 """
 from __future__ import annotations
 
-import pathlib
-import sys
+from notebook_modules import load
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "notebooks" / "cdc"))
-
-import catalog as C  # noqa: E402
+C = load("cdc/utils", "catalog")
 
 AA_W26F = "Deaths per 100,000 resident population, age adjusted"
 AA_9J2V = "Deaths per 100,000 resident population, age-adjusted"

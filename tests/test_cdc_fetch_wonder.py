@@ -18,8 +18,8 @@ import pytest
 
 from notebook_modules import load
 
-F = load("cdc", "fetch")
-wc = load("cdc", "wonder_codes")
+F = load("cdc/utils", "fetch")
+wc = load("cdc/utils", "wonder_codes")
 
 
 class _Row(dict):

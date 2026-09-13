@@ -16,13 +16,10 @@ from pathlib import Path
 
 import pytest
 
-import sys
+from notebook_modules import load
 
-_CDC = Path(__file__).resolve().parents[1] / "notebooks" / "cdc"
-sys.path.insert(0, str(_CDC))
-
-import nvsr_series as ns          # noqa: E402
-import wonder_series as ws        # noqa: E402
+ns = load("cdc/utils", "nvsr_series")
+ws = load("cdc/utils", "wonder_series")
 
 
 # --- WONDER: stitching -------------------------------------------------------
@@ -143,7 +140,7 @@ def test_alcohol_resolves_to_its_code_set_name(tmp_path):
 
 def test_every_concept_maps_onto_a_code_set():
     """Guards the three naming schemes against drifting apart again."""
-    import wonder_codes as wc
+    wc = load("cdc/utils", "wonder_codes")
     for stem in ws.CONCEPTS:
         assert ws._CODES_NAME.get(stem, stem) in wc.CODE_SETS, stem
 
@@ -394,7 +391,7 @@ def test_build_state_skips_the_standard_error_table(tmp_path):
 
 # --- catalog entries and description bucketing -------------------------------
 
-import catalog_timeseries as ct    # noqa: E402
+ct = load("cdc/utils", "catalog_timeseries")
 from db_import import descriptions as desc      # noqa: E402
 
 

@@ -17,7 +17,7 @@ import pytest
 
 from notebook_modules import load
 
-wc = load("cdc", "wonder_codes")
+wc = load("cdc/utils", "wonder_codes")
 
 
 def test_every_set_matches_the_original_pulls_count():

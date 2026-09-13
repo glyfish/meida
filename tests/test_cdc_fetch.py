@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from notebook_modules import load
 
-F = load("cdc", "fetch")
+F = load("cdc/utils", "fetch")
 
 
 def _links(*names: str) -> str:

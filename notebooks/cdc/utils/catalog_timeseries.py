@@ -29,10 +29,10 @@ from typing import Any
 
 import yaml
 
-import nvsr_series as ns
-import wonder_series as ws
+from . import nvsr_series as ns
+from . import wonder_series as ws
 
-DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 #: Group keys in the catalog index, and their output files.
 WONDER_GROUP = "wonder"
