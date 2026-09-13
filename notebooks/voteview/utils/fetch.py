@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 BASE = "https://voteview.com/static/data/out"
-DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 #: name -> (remote path, approximate MB). Sizes are for the size gate below.
 FILES: dict[str, tuple[str, float]] = {
@@ -61,9 +61,16 @@ class VoteviewFetchError(RuntimeError):
     """Raised for an unknown file name or a refused oversized download."""
 
 
-def _get(url: str) -> bytes:
+def _get(url: str) -> tuple[bytes, str | None]:
+    """Return the body and the server's ``Last-Modified``.
+
+    The manifest used to record the local mtime, which says when *we* fetched
+    rather than when Voteview published. It rebuilds its static tree nightly,
+    so a file can be hours newer than the copy on disk with nothing recording
+    that.
+    """
     with urllib.request.urlopen(url, timeout=TIMEOUT) as r:
-        return r.read()
+        return r.read(), r.headers.get("Last-Modified")
 
 
 def fetch(names: Iterable[str] = DEFAULT, data_dir: Path = DATA_DIR,
@@ -95,17 +102,18 @@ def fetch(names: Iterable[str] = DEFAULT, data_dir: Path = DATA_DIR,
         if size_mb > SIZE_GATE_MB and name not in set(names):
             raise VoteviewFetchError(f"{name} is ~{size_mb:.0f} MB; ask for it by name")
 
-        blob = _get(f"{BASE}/{path}")
+        blob, published = _get(f"{BASE}/{path}")
         target.write_bytes(blob)
-        out[name] = {"status": "downloaded", "bytes": len(blob), "path": str(target)}
+        out[name] = {"status": "downloaded", "bytes": len(blob),
+                     "path": str(target), "published": published}
         time.sleep(PAUSE)
 
     manifest = data_dir / "_manifest.json"
     previous = json.loads(manifest.read_text()) if manifest.exists() else {}
     previous.update({
         name: {"bytes": info["bytes"],
-               "modified": time.strftime("%Y-%m-%dT%H:%M:%S",
-                                         time.gmtime(Path(info["path"]).stat().st_mtime))}
+               "published": info.get("published") or previous.get(name, {}).get("published"),
+               "fetched": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
         for name, info in out.items()})
     manifest.write_text(json.dumps(previous, indent=1, sort_keys=True) + "\n")
     return out

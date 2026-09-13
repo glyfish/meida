@@ -15,7 +15,7 @@ import pytest
 
 from notebook_modules import load
 
-F = load("voteview", "fetch")
+F = load("voteview/utils", "fetch")
 
 HEADER = ("congress,chamber,icpsr,state_abbrev,party_code,district_code,"
           "bioname,nominate_dim1")
@@ -72,11 +72,19 @@ def test_a_cached_file_is_not_refetched(tmp_path, monkeypatch):
 
 
 def test_fetch_writes_a_manifest(tmp_path, monkeypatch):
-    monkeypatch.setattr(F, "_get", lambda url: b"congress\n1\n")
+    """The manifest records the SERVER's Last-Modified, not our download time.
+
+    Voteview rebuilds its static tree nightly, so a file on disk can be hours
+    behind with nothing recording it. The previous manifest stored the local
+    mtime, which only ever said when we fetched."""
+    monkeypatch.setattr(F, "_get",
+                        lambda url: (b"congress\n1\n", "Sun, 13 Sep 2026 06:13:58 GMT"))
     monkeypatch.setattr(F, "PAUSE", 0)
     F.fetch(["parties"], data_dir=tmp_path)
     manifest = json.loads((tmp_path / "_manifest.json").read_text())
     assert manifest["parties"]["bytes"] == len(b"congress\n1\n")
+    assert manifest["parties"]["published"] == "Sun, 13 Sep 2026 06:13:58 GMT"
+    assert "fetched" in manifest["parties"]
 
 
 # --- the panel checks ---------------------------------------------------------
