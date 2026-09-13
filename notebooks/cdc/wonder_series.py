@@ -175,7 +175,7 @@ def build_series(concept_key: str, *, data_dir: Path = DATA_DIR) -> dict[str, An
     observations = [_observation(r) for r in rows]
     start, end = observations[0]["date"], observations[-1]["date"]
 
-    summary = _summary(data_dir).get(concept_key, {})
+    summary = _summary(data_dir, concept_key)
     dropped = _dropped_codes(summary)
 
     metadata: dict[str, Any] = {
@@ -215,9 +215,51 @@ def build_series(concept_key: str, *, data_dir: Path = DATA_DIR) -> dict[str, An
     }
 
 
-def _summary(data_dir: Path) -> dict[str, Any]:
+#: file stem -> the name wonder_codes and the download summary use.
+_CODES_NAME = {"alcohol": "alcohol_induced"}
+
+
+class WonderSummaryError(RuntimeError):
+    """Raised when the pull summary cannot account for a concept being built."""
+
+
+def _summary(data_dir: Path, concept_key: str) -> dict[str, Any]:
+    """One concept's entry from the download summary. Absence is an error.
+
+    ``_download_summary.json`` is the only record of which codes WONDER
+    refused, and those refusals are what each series' ``excluded_codes``
+    discloses -- suicide, homicide, firearm and the despair composite all omit
+    terrorism-reclassified deaths because the finder rejects the NCHS
+    pseudo-codes. Unlike the raw pulls it is **not cheaply rebuildable**: it
+    costs a ~40 minute throttled re-pull, and it has been silently truncated
+    twice by partial fetches writing over it.
+
+    So a missing entry stops the build. Falling through to ``excluded_codes:
+    null`` would publish a series claiming to match its published definition
+    when it does not, and that is worse than not building it.
+    """
+    # Three naming schemes meet here. CONCEPTS is keyed by file stem
+    # ("alcohol", "chronic_liver"); each entry's "concept" is the series name
+    # ("alcohol_induced", "chronic_liver_mortality"); and the summary is keyed
+    # by wonder_codes' code-set name, which equals the stem except for alcohol.
+    # Eight of the nine coincide, which is why alcohol's entry was simply never
+    # found and a rejection there could not have reached excluded_codes.
+    name = _CODES_NAME.get(concept_key, concept_key)
     path = data_dir / "_download_summary.json"
-    return json.loads(path.read_text()) if path.exists() else {}
+    if not path.exists():
+        raise WonderSummaryError(
+            f"no _download_summary.json under {data_dir} -- it records which codes "
+            f"WONDER refused, and the series cannot disclose their deviation without "
+            f"it. Re-run fetch.fetch_wonder() (throttled, ~40 min)."
+        )
+    summary = json.loads(path.read_text())
+    if name not in summary:
+        raise WonderSummaryError(
+            f"{name!r} is missing from _download_summary.json, which lists "
+            f"{sorted(summary)}. A partial fetch can overwrite the file with only the "
+            f"concepts it pulled; restore it or re-run fetch.fetch_wonder()."
+        )
+    return summary[name]
 
 
 def _dropped_codes(summary: dict[str, Any]) -> set[str]:

@@ -33,11 +33,3 @@ notebooks/bis/data/
 # Exported CDC series catalog (regenerable; consumed by the yada project)
 notebooks/voteview/data/
 notebooks/cdc/data/
-# ...except the normalized WONDER/NVSR series, which are tracked on purpose.
-# Both sources are rebuildable now (notebooks/cdc/downloads.ipynb), so this is
-# not about losing them -- it is that NCHS revises published data in place.
-# Re-running the pipeline today already moves eight of drug-induced's
-# twenty-two years by a death or two. Tracked, an upstream revision arrives as
-# a reviewable diff; untracked, the numbers just quietly change.
-!notebooks/cdc/data/timeseries/
-!notebooks/cdc/data/timeseries/*.jsonl

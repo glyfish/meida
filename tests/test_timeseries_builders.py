@@ -55,9 +55,22 @@ def test_check_overlap_flags_disagreement():
     assert ws.check_overlap(_rows([(2019, 10.4)]), _rows([(2019, 11.0)])) == [2019]
 
 
+def _summary_for(tmp_path, *concepts, dropped=()):
+    """Write the pull summary the builder now requires.
+
+    Keyed by wonder_codes' names, which is what fetch_wonder writes -- note
+    "alcohol_induced", not the "alcohol" file stem.
+    """
+    (tmp_path / "_download_summary.json").write_text(json.dumps({
+        c: {"databases": {db: {"dropped_codes": list(dropped)} for db in ("D76", "D158")}}
+        for c in concepts
+    }))
+
+
 def test_build_series_rejects_disagreeing_overlap(tmp_path):
     (tmp_path / "alcohol_D76.json").write_text(json.dumps(_rows([(2019, 10.4), (2020, 13.1)])))
     (tmp_path / "alcohol_D158.json").write_text(json.dumps(_rows([(2020, 99.9), (2021, 14.4)])))
+    _summary_for(tmp_path, "alcohol_induced")
     with pytest.raises(ws.WonderSeriesError, match="disagree"):
         ws.build_series("alcohol", data_dir=tmp_path)
 
@@ -65,6 +78,7 @@ def test_build_series_rejects_disagreeing_overlap(tmp_path):
 def test_build_series_shape_and_string_values(tmp_path):
     (tmp_path / "alcohol_D76.json").write_text(json.dumps(_rows([(1999, 7.1), (2020, 13.1)])))
     (tmp_path / "alcohol_D158.json").write_text(json.dumps(_rows([(2020, 13.1), (2021, 14.4)])))
+    _summary_for(tmp_path, "alcohol_induced")
     rec = ws.build_series("alcohol", data_dir=tmp_path)
 
     assert rec["source"] == "cdc_wonder"
@@ -90,6 +104,48 @@ def test_build_series_records_excluded_codes(tmp_path):
     meta = ws.build_series("suicide", data_dir=tmp_path)["metadata"]["cdc_wonder"]
     assert meta["excluded_codes"] == ["*U03"]
     assert "terrorism" in meta["exclusion_note"][0]
+
+
+def test_the_summary_is_required_rather_than_optional(tmp_path):
+    """It is the only record of what WONDER refused, and it is not rebuildable
+    cheaply -- a ~40 minute throttled re-pull. Falling through to
+    excluded_codes: null would publish a series claiming to match its published
+    definition when it does not."""
+    (tmp_path / "suicide_D76.json").write_text(json.dumps(_rows([(2020, 13.5)])))
+    (tmp_path / "suicide_D158.json").write_text(json.dumps(_rows([(2021, 14.1)])))
+    with pytest.raises(ws.WonderSummaryError, match="no _download_summary.json"):
+        ws.build_series("suicide", data_dir=tmp_path)
+
+
+def test_a_truncated_summary_is_caught(tmp_path):
+    """A partial fetch overwrote this file with one concept, twice."""
+    (tmp_path / "suicide_D76.json").write_text(json.dumps(_rows([(2020, 13.5)])))
+    (tmp_path / "suicide_D158.json").write_text(json.dumps(_rows([(2021, 14.1)])))
+    _summary_for(tmp_path, "cardiometabolic")
+    with pytest.raises(ws.WonderSummaryError, match="missing from _download_summary"):
+        ws.build_series("suicide", data_dir=tmp_path)
+
+
+def test_alcohol_resolves_to_its_code_set_name(tmp_path):
+    """The stem is "alcohol", the summary key is "alcohol_induced".
+
+    They differ for exactly this one concept, so its summary entry was never
+    found and a rejection there could not have reached excluded_codes. Every
+    other concept coincides, which is why it went unnoticed.
+    """
+    assert ws._CODES_NAME["alcohol"] == "alcohol_induced"
+    (tmp_path / "alcohol_D76.json").write_text(json.dumps(_rows([(2020, 13.1)])))
+    (tmp_path / "alcohol_D158.json").write_text(json.dumps(_rows([(2021, 14.4)])))
+    _summary_for(tmp_path, "alcohol_induced", dropped=["X45"])
+    meta = ws.build_series("alcohol", data_dir=tmp_path)["metadata"]["cdc_wonder"]
+    assert meta["excluded_codes"] == ["X45"]
+
+
+def test_every_concept_maps_onto_a_code_set():
+    """Guards the three naming schemes against drifting apart again."""
+    import wonder_codes as wc
+    for stem in ws.CONCEPTS:
+        assert ws._CODES_NAME.get(stem, stem) in wc.CODE_SETS, stem
 
 
 def test_unknown_concept_raises():
@@ -370,6 +426,7 @@ def test_wonder_catalog_entry_carries_provenance_and_retrieval(tmp_path):
     wdir.mkdir()
     (wdir / "alcohol_D76.json").write_text(json.dumps(_rows([(1999, 7.1), (2020, 13.1)])))
     (wdir / "alcohol_D158.json").write_text(json.dumps(_rows([(2020, 13.1), (2021, 14.4)])))
+    _summary_for(wdir, "alcohol_induced")
 
     (entry,) = [e for e in ct.wonder_entries(data_dir=tmp_path)
                 if e["concept"] == "alcohol_induced"]
