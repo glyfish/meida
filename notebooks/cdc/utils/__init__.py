@@ -12,6 +12,16 @@ from datetime import datetime
 import numpy
 
 from lib.mcp_client import MCPClient, MCPClientConfig
+# ``environment`` is a plain module in meida's root, not an installed package --
+# unlike navi's ``lib``, which pip resolves from anywhere. A kernel started in
+# this notebook's directory would not find it, so anchor the root here instead
+# of asking every notebook to append it.
+import sys as _sys
+from pathlib import Path as _Path
+_MEIDA_ROOT = str(_Path(__file__).resolve().parents[3])
+if _MEIDA_ROOT not in _sys.path:
+    _sys.path.insert(0, _MEIDA_ROOT)
+
 from environment import get_mcp_url
 
 MCP_URL = get_mcp_url()
@@ -509,6 +519,24 @@ def plot_cdc_arrays(values: numpy.ndarray, dates: numpy.ndarray, **kwargs: Any) 
     curve(values, dates, **kwargs)
 
 
+def stamp_source(*series: dict[str, Any], figure: Any = None) -> None:
+    """Print the native_ids the figure was drawn from, along its bottom edge.
+
+    A plot of stored data should say which rows it is: the title says what the
+    measure means, this says what to ask the database for to get the same
+    numbers back. Grouped plots list every id, in the order they were passed.
+    """
+    from matplotlib import pyplot  # lazy: pulls in matplotlib
+
+    ids = [str(s.get("native_id") or s.get("series_id") or "?") for s in series]
+    if not ids:
+        return
+    fig = figure or pyplot.gcf()
+    fig.subplots_adjust(bottom=max(0.12, 0.06 + 0.035 * len(ids)))
+    fig.text(0.995, 0.005, "\n".join(ids), ha="right", va="bottom",
+             fontsize=7, family="monospace", alpha=0.65)
+
+
 def plot_stored_series(series: dict[str, Any], **kwargs: Any) -> None:
     """Plot one stored (WONDER or NVSR) series with the project style.
 
@@ -523,6 +551,7 @@ def plot_stored_series(series: dict[str, Any], **kwargs: Any) -> None:
     kwargs.setdefault("xlabel", "Year")
     kwargs.setdefault("ylabel", series.get("units") or "value")
     curve(values, dates, **kwargs)
+    stamp_source(series)
 
 
 def plot_stored_series_group(
@@ -552,6 +581,7 @@ def plot_stored_series_group(
     pyplot.title(title)
     if series_list:      # legend() warns when there is nothing labelled to show
         pyplot.legend()
+    stamp_source(*series_list)
 
 
 async def column_values(dataset_id: str, column: str) -> list[dict[str, Any]]:

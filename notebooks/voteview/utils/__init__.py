@@ -12,6 +12,16 @@ from typing import Any
 
 import numpy
 
+# ``environment`` is a plain module in meida's root, not an installed package --
+# unlike navi's ``lib``, which pip resolves from anywhere. A kernel started in
+# this notebook's directory would not find it, so anchor the root here instead
+# of asking every notebook to append it.
+import sys as _sys
+from pathlib import Path as _Path
+_MEIDA_ROOT = str(_Path(__file__).resolve().parents[3])
+if _MEIDA_ROOT not in _sys.path:
+    _sys.path.insert(0, _MEIDA_ROOT)
+
 from environment import get_mcp_url
 from lib.mcp_client import MCPClient, MCPClientConfig
 
@@ -94,15 +104,50 @@ def to_arrays(series: dict[str, Any]) -> tuple[numpy.ndarray, numpy.ndarray]:
             numpy.array([float(o["value"]) for o in obs]))
 
 
+def break_gaps(years: numpy.ndarray, values: numpy.ndarray) -> tuple[numpy.ndarray, numpy.ndarray]:
+    """Reindex onto the full two-year grid, NaN where a Congress is missing.
+
+    A gated Congress has no value -- ``party_predicts_position`` declines to
+    compare a large median against a rump. Plotted as-is the line joins the
+    Congresses either side of the hole, drawing a segment through values that
+    were deliberately not computed. NaN breaks the line instead, so the absence
+    is visible as absence.
+    """
+    if len(years) < 2:
+        return years, values
+    grid = numpy.arange(int(years[0]), int(years[-1]) + 1, 2)
+    known = dict(zip(years.tolist(), values.tolist()))
+    return grid, numpy.array([known.get(int(y), numpy.nan) for y in grid])
+
+
+def stamp_source(*series: dict[str, Any], figure: Any = None) -> None:
+    """Print the native_ids the figure was drawn from, along its bottom edge.
+
+    A plot of stored data should say which rows it is. The title says what the
+    measure means; this says what to ask the database for to get the same
+    numbers back.
+    """
+    from matplotlib import pyplot
+
+    ids = [str(s.get("native_id") or s.get("series_id") or "?") for s in series]
+    if not ids:
+        return
+    fig = figure or pyplot.gcf()
+    fig.subplots_adjust(bottom=max(0.12, 0.06 + 0.035 * len(ids)))
+    fig.text(0.995, 0.005, "\n".join(ids), ha="right", va="bottom",
+             fontsize=7, family="monospace", alpha=0.65)
+
+
 def plot_series(series: dict[str, Any], **kwargs: Any) -> None:
     """Plot one stored series with the project style."""
     from lib.plots import curve
 
-    years, values = to_arrays(series)
+    years, values = break_gaps(*to_arrays(series))
     kwargs.setdefault("title", series.get("title") or series.get("native_id"))
     kwargs.setdefault("xlabel", "Year")
     kwargs.setdefault("ylabel", series.get("units") or "value")
     curve(values, years, **kwargs)
+    stamp_source(series)
 
 
 def plot_group(series_list: list[dict[str, Any]], labels: list[str], title: str,
@@ -112,10 +157,11 @@ def plot_group(series_list: list[dict[str, Any]], labels: list[str], title: str,
 
     pyplot.figure(figsize=figsize)
     for series, label in zip(series_list, labels):
-        years, values = to_arrays(series)
+        years, values = break_gaps(*to_arrays(series))
         pyplot.plot(years, values, label=label, linewidth=2)
     pyplot.ylabel(ylabel or str(series_list[0].get("units") or "value") if series_list else "value")
     pyplot.xlabel("Year")
     pyplot.title(title)
     if series_list:
         pyplot.legend()
+    stamp_source(*series_list)
