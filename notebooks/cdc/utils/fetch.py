@@ -105,17 +105,30 @@ def _download(url: str, target: Path) -> bool:
     return False
 
 
-def _fetch_all(volume: str, pairs: list[tuple[str, str]], dest: Path) -> dict[str, int]:
+def _fetch_all(volume: str, pairs: list[tuple[str, str]], dest: Path,
+               *, refresh: bool = False) -> dict[str, Any]:
+    """Fetch one volume's files into *dest*.
+
+    With ``refresh`` the files are re-fetched and their bytes compared against
+    what was there. NCHS **replaces published workbooks in place** when it
+    corrects them -- the 2021 volume was re-issued in December 2023 without a
+    name change -- so a re-fetch that reported only "downloaded: 153" would
+    hide a correction. ``revised`` names the files whose contents actually
+    moved.
+    """
     dest.mkdir(parents=True, exist_ok=True)
-    got = 0
+    got, revised = 0, []
     for remote, local in pairs:
         target = dest / local
-        if target.exists():                        # idempotent: a re-run resumes
+        if target.exists() and not refresh:        # idempotent: a re-run resumes
             continue
+        before = target.read_bytes() if target.exists() else None
         if _download(f"{BASE}/{volume}/{urllib.parse.quote(remote)}", target):
             got += 1
+            if before is not None and target.read_bytes() != before:
+                revised.append(local)
             time.sleep(PAUSE)
-    return {"wanted": len(pairs), "downloaded": got,
+    return {"wanted": len(pairs), "downloaded": got, "revised": revised,
             "on_disk": len(list(dest.glob("*.xlsx")))}
 
 
@@ -149,31 +162,46 @@ def state_files(volume: str) -> list[tuple[str, str]]:
 
 
 def fetch_national(years: Iterable[int] | None = None,
-                   data_dir: Path = DATA_DIR) -> dict[int, dict[str, int]]:
-    """Download the national life tables. Defaults to every mapped year."""
+                   data_dir: Path = DATA_DIR,
+                   *, refresh: bool = False) -> dict[int, dict[str, Any]]:
+    """Download the national life tables. Defaults to every mapped year.
+
+    ``refresh=True`` re-fetches files already on disk and reports which ones
+    NCHS has changed. Without it there is no way to pick up a corrected
+    volume short of deleting the tree, which is a poor way to refresh data.
+    """
     out = {}
     for year in sorted(years if years is not None else US_VOLUMES):
         volume = US_VOLUMES[year]
-        out[year] = _fetch_all(volume, national_files(volume), data_dir / "us" / str(year))
+        out[year] = _fetch_all(volume, national_files(volume),
+                               data_dir / "us" / str(year), refresh=refresh)
         print(f"  {year} ({volume}): {out[year]}")
     return out
 
 
 def fetch_state(years: Iterable[int] | None = None,
-                data_dir: Path = DATA_DIR) -> dict[int, dict[str, int]]:
+                data_dir: Path = DATA_DIR,
+                *, refresh: bool = False) -> dict[int, dict[str, Any]]:
     """Download the per-state life tables. Defaults to every mapped year."""
     out = {}
     for year in sorted(years if years is not None else STATE_VOLUMES):
         volume = STATE_VOLUMES[year]
-        out[year] = _fetch_all(volume, state_files(volume), data_dir / "state" / str(year))
+        out[year] = _fetch_all(volume, state_files(volume),
+                               data_dir / "state" / str(year), refresh=refresh)
         print(f"  {year} ({volume}): {out[year]}")
     return out
 
 
-def fetch_all(data_dir: Path = DATA_DIR) -> dict[str, dict[int, dict[str, int]]]:
-    """Everything NVSR publishes that the builders read. Safe to re-run."""
-    return {"national": fetch_national(data_dir=data_dir),
-            "state": fetch_state(data_dir=data_dir)}
+def fetch_all(data_dir: Path = DATA_DIR,
+              *, refresh: bool = False) -> dict[str, dict[int, dict[str, Any]]]:
+    """Everything NVSR publishes that the builders read. Safe to re-run.
+
+    Without ``refresh`` this transfers nothing when the tree is complete -- it
+    still lists each volume directory to work out what it wants, which is 12
+    requests, but downloads no files.
+    """
+    return {"national": fetch_national(data_dir=data_dir, refresh=refresh),
+            "state": fetch_state(data_dir=data_dir, refresh=refresh)}
 
 
 # --- WONDER -----------------------------------------------------------------

@@ -68,9 +68,49 @@ def test_a_file_already_on_disk_is_not_refetched(monkeypatch, tmp_path):
     out = F._fetch_all("74-12", [("AK1.xlsx", "AK1.xlsx"), ("AK2.xlsx", "AK2.xlsx")], tmp_path)
 
     assert [u.rsplit("/", 1)[-1] for u in calls] == ["AK2.xlsx"]
-    assert out == {"wanted": 2, "downloaded": 1, "on_disk": 1}
+    assert out == {"wanted": 2, "downloaded": 1, "revised": [], "on_disk": 1}
 
 
 def test_pacing_is_not_quietly_lowered():
     """0.05s served 400 files and then every read timed out for the rest."""
     assert F.PAUSE >= 1.0
+
+
+# --- refresh ------------------------------------------------------------------
+
+def test_refresh_refetches_and_reports_what_changed(monkeypatch, tmp_path):
+    """NCHS replaces published workbooks in place -- the 2021 volume was
+    re-issued in December 2023 without a name change. A re-fetch that only
+    counted downloads would hide the correction."""
+    (tmp_path / "AK1.xlsx").write_bytes(b"old contents")
+    (tmp_path / "AK2.xlsx").write_bytes(b"unchanged")
+    served = {"AK1.xlsx": b"CORRECTED", "AK2.xlsx": b"unchanged"}
+
+    def fake(url, target):
+        target.write_bytes(served[target.name])
+        return True
+
+    monkeypatch.setattr(F, "_download", fake)
+    monkeypatch.setattr(F, "PAUSE", 0)
+    out = F._fetch_all("74-12", [("AK1.xlsx", "AK1.xlsx"), ("AK2.xlsx", "AK2.xlsx")],
+                       tmp_path, refresh=True)
+
+    assert out["downloaded"] == 2
+    assert out["revised"] == ["AK1.xlsx"]          # only the one whose bytes moved
+    assert (tmp_path / "AK1.xlsx").read_bytes() == b"CORRECTED"
+
+
+def test_without_refresh_nothing_is_refetched(monkeypatch, tmp_path):
+    """The default has to stay a no-op: this runs against a bot-filtered host."""
+    (tmp_path / "AK1.xlsx").write_bytes(b"present")
+    monkeypatch.setattr(F, "_download", lambda url, target: pytest.fail("refetched"))
+    out = F._fetch_all("74-12", [("AK1.xlsx", "AK1.xlsx")], tmp_path)
+    assert out == {"wanted": 1, "downloaded": 0, "revised": [], "on_disk": 1}
+
+
+def test_every_nvsr_entry_point_can_refresh():
+    """fetch_wonder had it and the NVSR side did not, so the only way to
+    re-pull a corrected workbook was to delete the tree."""
+    import inspect
+    for fn in (F.fetch_national, F.fetch_state, F.fetch_all):
+        assert "refresh" in inspect.signature(fn).parameters, fn.__name__
