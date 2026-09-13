@@ -6,7 +6,7 @@ from typing import Any, Mapping, Optional
 
 import httpx
 
-from lib.env import get_tiingo_api_key, get_tiingo_base_url
+from environment import get_tiingo_api_key, get_tiingo_base_url
 from .models.tiingo import TiingoMeta, TiingoPrice, TiingoPriceSeries
 
 

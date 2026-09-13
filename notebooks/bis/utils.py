@@ -28,7 +28,7 @@ import yaml
 
 from lib.mcp_client import MCPClient, MCPClientConfig
 from lib.utils import print_json_vertical
-from lib.env import get_mcp_url
+from environment import get_mcp_url
 
 if TYPE_CHECKING:  # navi's pydantic models, imported for annotations only --
     from clients.models.bis import (  # importing clients at module scope

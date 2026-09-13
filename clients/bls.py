@@ -14,7 +14,7 @@ from typing import Any, Awaitable, Callable, Mapping, Optional, Sequence
 
 import httpx
 
-from lib.env import get_bls_api_key, get_bls_base_url
+from environment import get_bls_api_key, get_bls_base_url
 from lib.logger import get_logger
 from .models.bls import BlsSeriesResponse, BlsSurveysResponse
 

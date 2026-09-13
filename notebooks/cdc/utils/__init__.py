@@ -12,7 +12,7 @@ from datetime import datetime
 import numpy
 
 from lib.mcp_client import MCPClient, MCPClientConfig
-from lib.env import get_mcp_url
+from environment import get_mcp_url
 
 MCP_URL = get_mcp_url()
 config = MCPClientConfig(url=MCP_URL)

@@ -12,7 +12,7 @@ from typing import Any
 
 import numpy
 
-from lib.env import get_mcp_url
+from environment import get_mcp_url
 from lib.mcp_client import MCPClient, MCPClientConfig
 
 MCP_URL = get_mcp_url()

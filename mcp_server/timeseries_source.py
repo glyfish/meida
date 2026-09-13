@@ -29,7 +29,7 @@ from typing import Any, Optional, Sequence
 
 import sqlalchemy as sa
 
-from lib.env import get_meida_db_url
+from environment import get_meida_db_url
 
 from .timeseries_source_models import Observation, TimeSeriesRecord, TimeSeriesRef
 

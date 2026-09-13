@@ -23,7 +23,7 @@ from typing import Any, Optional
 
 import sqlalchemy as sa
 
-from lib.env import get_meida_db_url
+from environment import get_meida_db_url
 
 from .series_catalog_models import CatalogEntry
 

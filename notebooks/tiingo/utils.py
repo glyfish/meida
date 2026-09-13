@@ -36,7 +36,7 @@ from pydantic import BaseModel
 from clients import TiingoClient
 from clients.models.tiingo import TiingoMeta, TiingoPriceSeries
 from lib.mcp_client import MCPClient, MCPClientConfig
-from lib.env import get_mcp_url
+from environment import get_mcp_url
 from lib.utils import print_json_vertical
 
 MCP_URL = get_mcp_url()

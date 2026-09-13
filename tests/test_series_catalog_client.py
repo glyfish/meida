@@ -231,7 +231,7 @@ async def test_a_concept_spanning_datasets_is_reported_per_dataset(client):
 @pytest.mark.asyncio
 async def test_series_catalog_facets():
     """Facet filtering uses JSONB ``@>``, which SQLite cannot stand in for."""
-    from lib.env import get_meida_db_url
+    from environment import get_meida_db_url
 
     try:
         engine = sa.create_engine(get_meida_db_url())

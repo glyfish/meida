@@ -6,7 +6,7 @@ from typing import Any, Mapping, MutableMapping, Optional
 
 import httpx
 
-from lib.env import get_fred_api_key, get_fred_base_url
+from environment import get_fred_api_key, get_fred_base_url
 from .models.fred import (
     CategoryResponse,
     ObservationsResponse,

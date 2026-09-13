@@ -23,7 +23,7 @@ from typing import Any, Mapping, Optional
 
 import httpx
 
-from lib.env import get_cdc_api_key, get_cdc_base_url
+from environment import get_cdc_api_key, get_cdc_base_url
 from .models.cdc import (
     CdcCatalogEntry,
     CdcCategory,

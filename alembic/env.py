@@ -12,7 +12,7 @@ config = context.config
 # meida owns this database. The URL comes from navi's accessor (MEIDA_DB_URL,
 # defaulting to the local meida database) rather than alembic.ini, so the
 # migration, the client and the MCP tools all resolve it the same way.
-from lib.env import get_meida_db_url  # noqa: E402  (prepend_sys_path = .)
+from environment import get_meida_db_url  # noqa: E402  (prepend_sys_path = .)
 
 config.set_main_option("sqlalchemy.url", get_meida_db_url())
 

@@ -17,7 +17,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 import httpx
 
-from lib.env import get_bis_base_url
+from environment import get_bis_base_url
 from .models.bis import (
     BisCodelist,
     BisDataResponse,

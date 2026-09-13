@@ -24,7 +24,7 @@ import sqlalchemy as sa
 import yaml
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from lib.env import get_meida_db_url
+from environment import get_meida_db_url
 
 TABLE_NAME = "series_catalog"
 

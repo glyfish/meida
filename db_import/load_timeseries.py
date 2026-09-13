@@ -29,7 +29,7 @@ from typing import Any, Iterator
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from lib.env import get_meida_db_url
+from environment import get_meida_db_url
 
 TABLE_NAME = "time_series_source"
 

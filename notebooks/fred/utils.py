@@ -25,7 +25,7 @@ import numpy
 
 from lib.mcp_client import MCPClient, MCPClientConfig
 from lib.utils import print_json_vertical
-from lib.env import get_mcp_url
+from environment import get_mcp_url
 
 if TYPE_CHECKING:  # typed-client models: annotations only, no runtime import
     from clients.models.fred import ObservationsResponse, Series
