@@ -89,11 +89,37 @@ async def explore_categories(root_id: int = 0, depth: int = 2):
                 queue.append((child["id"], level + 1))
 
 
+#: Where the category walks and the series merge persist their YAML. Both are
+#: relative to notebooks/fred/, are gitignored, and are what yada's
+#: fred_document_loader reads.
+CATEGORY_DATA = _Path(__file__).resolve().parent / "categories" / "category_data"
+SERIES_DATA = _Path(__file__).resolve().parent / "series" / "series_data"
+
+
+def _resolve(output_path: str, default_dir: _Path) -> _Path:
+    """A bare filename lands in *default_dir*; a path with a separator is used as given.
+
+    The category notebooks pass a bare ``fred_prices_32455.yaml``, which used to
+    be written beside the notebook and then moved into ``category_data/`` by
+    hand -- an undocumented step that left at least one file stranded in the
+    wrong directory. Resolving it here removes the step.
+    """
+    path = _Path(output_path)
+    return path if path.is_absolute() or path.parent != _Path(".") else default_dir / path
+
+
 async def find_leaf_categories(
     root_id: int = 0,
     root_name: str = "Root",
     output_path: str = "leaf_categories.yaml",
 ) -> None:
+    """Walk the FRED category tree from *root_id* and record every leaf.
+
+    Writes ``{leaf_id, leaf_name, path}`` per leaf to
+    ``categories/category_data/<output_path>`` -- a bare filename resolves
+    there. One ``fred_category_children`` call per node with a 2 second pause,
+    so a full branch is minutes of FRED's 120 req/min budget.
+    """
     leaves: list[dict[str, object]] = []
     queue: list[tuple[int, list[dict[str, object]]]] = [
         (root_id, [{"id": root_id, "name": root_name}])
@@ -129,21 +155,39 @@ async def find_leaf_categories(
                     )
                 )
 
-    with open(output_path, "w", encoding="utf-8") as fh:
+    target = _resolve(output_path, CATEGORY_DATA)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "w", encoding="utf-8") as fh:
         payload = json.loads(json.dumps(leaves))
         yaml.safe_dump(payload, fh, sort_keys=False, allow_unicode=True)
-    print(f"Wrote {len(leaves)} leaf categories (with names) to {output_path}")
+    print(f"Wrote {len(leaves)} leaf categories (with names) to {target}")
 
 
 async def export_finance_category_series(input_path: str, output_path: str, delay_seconds: float = 2.0,) -> None:
-    """
-    Load finance category metadata, pull FRED series for each leaf, and persist to YAML.
+    """Merge a leaf-category file with FRED's series metadata for each leaf.
+
+    Reads ``categories/category_data/<input_path>``, calls
+    ``fred_category_series`` per leaf, and writes
+    ``series/series_data/<output_path>`` as
+    ``[{category_id, category_name, seriess: [...]}]``. Bare filenames resolve
+    into those directories.
+
+    **Metadata only** -- no observations. Each series record carries id, title,
+    coverage bounds, frequency, units, seasonal adjustment, last_updated,
+    popularity and notes. This is what yada's ``fred_document_loader`` indexes.
+
+    One API call per leaf with *delay_seconds* between, so a branch of 160
+    leaves is roughly six minutes.
+
+    The name is historical: it was written for the finance branch and is used
+    for all of them.
     """
 
     print(f"Reading categories from {input_path}")
     print(f"Writing series to {output_path}")
 
-    with open(input_path, "r", encoding="utf-8") as fh:
+    source = _resolve(input_path, CATEGORY_DATA)
+    with open(source, "r", encoding="utf-8") as fh:
         categories: list[dict[str, Any]] = yaml.safe_load(fh) or []
 
     print(f"Loaded {len(categories)} categories")
@@ -179,11 +223,13 @@ async def export_finance_category_series(input_path: str, output_path: str, dela
                 }
             )
 
-    with open(output_path, "w", encoding="utf-8") as fh:
+    target = _resolve(output_path, SERIES_DATA)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "w", encoding="utf-8") as fh:
         sanitized = json.loads(json.dumps(series_bundle))
         yaml.safe_dump(sanitized, fh, sort_keys=False, allow_unicode=True)
 
-    print(f"Wrote series data for {len(series_bundle)} categories to {output_path}")
+    print(f"Wrote series data for {len(series_bundle)} categories to {target}")
 
 # --- tool results -------------------------------------------------------------
 
