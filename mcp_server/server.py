@@ -587,11 +587,11 @@ async def cdc_dataset_facets(
 @server.tool(
     name="timeseries_source_list",
     description=(
-        "List stored time series held in meida's database — sources that cannot be "
-        "fetched per request, currently CDC WONDER (cause-of-death rates: alcohol, "
-        "drug, suicide, homicide, firearm, chronic liver, deaths of despair) and CDC "
-        "NVSR (life expectancy / life tables). Returns identity and coverage without "
-        "observations, as {'series': [...]}. Optional 'source' filters to cdc_wonder or cdc_nvsr."
+        "List stored time series held in meida's database — sources with no live API, "
+        "so their values are stored rather than fetched per request: cause-of-death "
+        "rates, life expectancy, congressional polarization. Returns identity and "
+        "coverage without observations, as {'series': [...]}. Optional 'source' "
+        "narrows to one; call it without a source to see which sources exist."
     ),
 )
 async def timeseries_source_list(source: str | None = None) -> TimeSeriesRefList:
@@ -605,10 +605,9 @@ async def timeseries_source_list(source: str | None = None) -> TimeSeriesRefList
     name="timeseries_source_data",
     description=(
         "Return one stored time series in full, with its observations, from meida's "
-        "database (CDC WONDER cause-of-death rates, CDC NVSR life expectancy). "
-        "'source' is cdc_wonder or cdc_nvsr and 'native_id' is the series identifier "
-        "from timeseries_source_list. Pass 'frequency' only if an id is ambiguous. "
-        "Observation values are strings — cast as needed."
+        "database. 'source' and 'native_id' both come from timeseries_source_list — "
+        "call that first rather than guessing an id. Pass 'frequency' only if an id "
+        "is ambiguous. Observation values are strings — cast as needed."
     ),
 )
 async def timeseries_source_data(

@@ -122,7 +122,7 @@ def test_series_record_matches_the_storage_contract():
     assert rec["source"] == "voteview"
     assert rec["native_id"] == "voteview/median_gap/house"
     assert rec["frequency"] == "Biennial"
-    assert rec["ttl_days"] == 365
+    assert rec["ttl_days"] == vs.TTL_DAYS
     assert [o["date"] for o in rec["observations"]] == ["1887-01-01", "1891-01-01"]
     assert all(isinstance(o["value"], str) for o in rec["observations"])
     assert rec["observation_count"] == len(rec["observations"]) == 2
@@ -134,9 +134,18 @@ def test_congresses_map_to_the_year_they_convene():
 
 
 def test_one_ttl_for_every_series():
-    """All eight reduce from one CSV, so refreshing any one refetches them all."""
-    assert len({vs.TTL_DAYS}) == 1
-    assert vs.TTL_DAYS == 365
+    """All eight reduce from one CSV, so refreshing any one refetches them all.
+
+    A per-series TTL would schedule eight downloads of the same file at eight
+    different times, so the constant is shared and every record must carry it.
+    """
+    assert vs.TTL_DAYS == 30
+    panel = _panel({(c, ch, p): [v + i / 100 for i in range(20)]
+                    for c in (50, 52) for ch in ("House", "Senate")
+                    for p, v in ((D, -0.5), (R, 0.4))})
+    ttls = {vs.build_series(m, ch, scores=panel)["ttl_days"]
+            for m in vs.MEASURES for ch in vs.CHAMBERS}
+    assert ttls == {vs.TTL_DAYS}
 
 
 def test_unknown_measure_and_chamber_are_refused():

@@ -38,6 +38,11 @@ def catalog_entry(record: dict[str, Any]) -> dict[str, Any]:
         "facets": {"measure": meta["measure"][0], "chamber": meta["chamber"][0]},
         "observation_start": start,
         "observation_end": end,
+        # load_catalog maps `description`, not `definition` -- carrying it here
+        # means the prose survives into the catalog and is searchable, rather
+        # than being dropped at load. CDC generates these with an LLM; Voteview's
+        # are written by hand in MEASURES because there are eight of them.
+        "description": meta["definition"][0],
         "definition": meta["definition"][0],
         "sources": [{"kind": "voteview", "file": "HSall_members.csv",
                      "url": "https://voteview.com/static/data/out/members/HSall_members.csv"}],

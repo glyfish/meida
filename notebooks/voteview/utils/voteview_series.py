@@ -51,10 +51,15 @@ from .fetch import CHAMBERS, DATA_DIR, DEMOCRAT, REPUBLICAN, party_code
 
 SOURCE = "voteview"
 
-#: One point per Congress, and only the current one moves -- closed Congresses
-#: are never re-estimated. Voteview rebuilds its static tree nightly, but that
-#: is the site refreshing, not the data changing.
-TTL_DAYS = 365
+#: A month. Not because the data moves that fast -- the resolution is biennial
+#: and only the sitting Congress is re-estimated, so a year of drift would
+#: change little. It is that *looking* is cheap: one conditional request
+#: answers "has it changed?" in 0.18s and zero bytes, and the whole file is
+#: 6 MB. So the horizon is set to how often it is worth a glance, not to how
+#: long the data stays valid. Anything that actually matters at this
+#: resolution -- a chamber flipping, a realignment -- arrives via the news
+#: first and prompts a manual refresh.
+TTL_DAYS = 30
 
 #: A Congress convenes in January of an odd year and sits two years.
 def congress_year(congress: int) -> int:
