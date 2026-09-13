@@ -670,15 +670,17 @@ async def series_catalog_search(
         description="Facet values to match, e.g. {'state': 'TX', 'sex': 'male'}. "
                     "Matched by containment: an entry qualifies if it carries all "
                     "of these, whatever else it also has.")] = None,
-    active_only: Annotated[bool, Field(
-        description="Only series still being updated, judged per vintage so "
-                    "provisional data does not make final data look stale.")] = False,
     limit: int = 50,
 ) -> CatalogSearchResult:
+    # No ``active_only``. ``SeriesCatalogClient.search`` still supports it, but
+    # ``is_active`` is NULL on every catalog row -- the exporters have never
+    # written it, deferred with the document-store redesign -- so the filter can
+    # only ever return nothing. A switch that silently empties the result is
+    # worse than an absent one; restore it when the field is populated.
     async def handler(client: SeriesCatalogClient) -> Any:
         return await client.search(
             source=source, dataset_id=dataset_id, concept=concept,
-            facets=facets, active_only=active_only, limit=limit,
+            facets=facets, limit=limit,
         )
 
     entries, total = await _call_series_catalog(handler)

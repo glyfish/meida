@@ -118,3 +118,58 @@ def test_upsert_preserves_identity(tmp_path, db):
         after = c.execute(sa.text("SELECT catalog_id FROM series_catalog")).scalar()
     engine.dispose()
     assert before == after
+
+
+# --- date coercion ------------------------------------------------------------
+#
+# The exports carry three shapes, and ``date.fromisoformat`` accepts only one of
+# them. Handling just ``YYYY`` and full ISO left 442 rows -- 424 monthly, 18
+# quarterly -- with a null span and no error to say so.
+
+@pytest.mark.parametrize("text,expected", [
+    ("2019", "2019-01-01"),          # bare year, the common case
+    ("1900", "1900-01-01"),
+    ("2015-01", "2015-01-01"),       # fromisoformat rejects YYYY-MM outright
+    ("2015-12", "2015-12-01"),
+    ("2023 Q1", "2023-01-01"),       # quarters snap to the quarter's first month
+    ("2023 Q2", "2023-04-01"),
+    ("2023 Q3", "2023-07-01"),
+    ("2023 Q4", "2023-10-01"),
+    ("2023 q4", "2023-10-01"),       # BIS lowercases it in places
+    ("2023Q4", "2023-10-01"),        # and sometimes omits the space
+    ("1900-05-17", "1900-05-17"),    # a full date still passes through
+])
+def test_every_published_bound_shape_becomes_a_date(text, expected):
+    assert L._as_date(text).isoformat() == expected
+
+
+@pytest.mark.parametrize("text", ["", None, "junk", "2015-13", "2023 Q9", "20xx"])
+def test_unusable_bounds_are_none_rather_than_a_guess(text):
+    assert L._as_date(text) is None
+
+
+def test_monthly_and_quarterly_bounds_survive_the_load(tmp_path, db):
+    """The regression itself: these shapes used to land with a null span."""
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "cdc_series_g.yaml").write_text(yaml.safe_dump({
+        "group": "g",
+        "series": [
+            {"series_id": "cdc/q", "title": "q", "facets": {},
+             "observation_start": "2023 Q1", "observation_end": "2023 Q4"},
+            {"series_id": "cdc/m", "title": "m", "facets": {},
+             "observation_start": "2015-01", "observation_end": "2015-12"},
+            {"series_id": "cdc/y", "title": "y", "facets": {},
+             "observation_start": "2019", "observation_end": "2021"},
+        ],
+    }))
+    L.load(tmp_path, "cdc", db_url=db)
+
+    engine = sa.create_engine(db)
+    with engine.begin() as conn:
+        spans = {r[0]: (str(r[1]), str(r[2])) for r in conn.execute(sa.text(
+            "SELECT series_id, observation_start, observation_end FROM series_catalog"))}
+    engine.dispose()
+
+    assert spans["cdc/q"] == ("2023-01-01", "2023-10-01")
+    assert spans["cdc/m"] == ("2015-01-01", "2015-12-01")
+    assert spans["cdc/y"] == ("2019-01-01", "2021-01-01")

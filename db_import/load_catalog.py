@@ -16,6 +16,7 @@ fetch tools cannot serve.
 """
 from __future__ import annotations
 
+import re
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
@@ -37,14 +38,37 @@ def read_catalog(directory: Path, source: str) -> Iterator[dict[str, Any]]:
             yield entry
 
 
+#: ``2023 Q1`` -- BIS and a few CDC datasets publish quarterly bounds this way.
+_QUARTER = re.compile(r"(\d{4})\s*Q([1-4])", re.IGNORECASE)
+
+
 def _as_date(value: Any) -> date | None:
-    """Catalog bounds are ISO after ``normalize_catalog``, bare years before it."""
+    """A catalog bound as a real date, snapped to the first day of its period.
+
+    The exports carry three shapes and ``date.fromisoformat`` accepts only the
+    first two characters' worth of one of them::
+
+        2019      -> 2019-01-01
+        2015-01   -> 2015-01-01     fromisoformat rejects YYYY-MM
+        2023 Q1   -> 2023-01-01     fromisoformat rejects it outright
+
+    Handling only ``YYYY`` and full ISO nulled the coverage of 442 rows -- 424
+    monthly and 18 quarterly -- with no error, so they read as having no span
+    at all. Snapping to the period start matches the ``YYYYMM01`` convention
+    the BIS and BLS catalogs already use for their integer mirrors.
+    """
     if not value:
         return None
     text = str(value).strip()
     try:
         if len(text) == 4:
             return date(int(text), 1, 1)
+        quarter = _QUARTER.fullmatch(text)
+        if quarter:
+            year, number = quarter.groups()
+            return date(int(year), 3 * (int(number) - 1) + 1, 1)
+        if len(text) == 7 and text[4] == "-":
+            return date(int(text[:4]), int(text[5:]), 1)
         return date.fromisoformat(text[:10])
     except ValueError:
         return None
