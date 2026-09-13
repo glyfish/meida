@@ -47,7 +47,7 @@ class TimeSeriesRef(TimeSeriesSourceBaseModel):
     payload, cheaply, since the observations column dominates row size.
     """
 
-    source: str                          # ``cdc_wonder`` | ``cdc_nvsr``
+    source: str                          # the stored-source namespace, e.g. ``cdc_wonder``
     native_id: str
     title: str
     frequency: str                       # long form, e.g. ``Annual``
