@@ -12,6 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+import yaml
 
 from notebook_modules import load
 
@@ -91,10 +92,24 @@ def test_a_geacron_value_inside_its_period_is_flagged_as_such(tmp_path):
         (1820, False), (1821, True), (1822, True)]
 
 
-def test_a_sheet_without_the_three_row_layout_is_refused(tmp_path):
+def test_a_sheet_without_the_webmapper_header_is_refused(tmp_path):
     path = _book(tmp_path / "flat-historical.xlsx", [["ccode", "value"], [56, 1.0]])
-    with pytest.raises(workbook.WorkbookError, match="rows 1-3"):
+    with pytest.raises(workbook.WorkbookError, match="Webmapper code"):
         workbook.read(path)
+
+
+@pytest.mark.parametrize("above,layout,title,unit", [
+    ([["Real Wage"], ["baskets"]], "title, unit, header", "Real Wage", "baskets"),
+    ([["Working week"]], "title, header", "Working week", ""),
+    ([], "header", "", ""),
+])
+def test_all_three_deposit_layouts_are_read(tmp_path, above, layout, title, unit):
+    """The header is found by what it says; what sits above it is title and unit."""
+    path = _book(tmp_path / "x-historical.xlsx",
+                 [*above, HEADER, ["geacron/1", 1, None, "Aceh", 1820, 1822, 1.5]])
+    book = workbook.read(path)
+    assert (book["layout"], book["title"], book["unit"]) == (layout, title, unit)
+    assert book["polities"][0]["values"] == {1820: 1.5}
 
 
 # --- the working paper --------------------------------------------------------
@@ -234,3 +249,81 @@ def test_building_the_list_keeps_dois_already_resolved(tmp_path, monkeypatch):
     assert (out["Wage"]["decades_before_1946"], out["Votes"]["decades_before_1946"]) == (1, 0)
     datasets.build(tmp_path / "data", clio)
     assert sorted(calls) == ["10622/A", "10622/B"]         # each once: the second build resolved nothing
+
+
+# --- the working paper as named fields ----------------------------------------
+
+def _paper(tmp_path: Path, *lines: str, name: str = "p.docx") -> Path:
+    return _docx(tmp_path / name, list(lines))
+
+
+def test_a_numbered_chapter_inside_the_text_is_not_a_new_section(tmp_path):
+    """Income Inequality's paper numbers its own chapters after "17. Text"."""
+    m = documentation.metadata(_paper(tmp_path, "16. Sources", "Allen 2001",
+                                      "17. Text", "INTRODUCTION",
+                                      "2. INCOME INEQUALITY IN THE POST-1945 PERIOD", "Ginis rose."))
+    assert m["sources"] == "Allen 2001"
+    assert "POST-1945" in m["text"] and "Ginis rose." in m["text"]
+
+
+def test_the_authors_version_is_normalised_and_kept_apart_from_dataverse(tmp_path):
+    cases = {"1st version.": "1", "Version 1.0": "1", "2nd version.": "2", "2": "2", "na": None}
+    for i, (written, number) in enumerate(cases.items()):
+        m = documentation.metadata(_paper(tmp_path, "4. Version", written, name=f"v{i}.docx"))
+        assert (m["paper_version"], m["version_number"]) == (written, number)
+
+
+def test_a_split_section_seven_takes_the_unit_from_7b(tmp_path):
+    m = documentation.metadata(_paper(tmp_path, "7a. Unit of analysis", "Country",
+                                      "7b. Unit of measurement", "Index, 0-1."))
+    assert (m["unit"], m["unit_source"]) == ("Index, 0-1", "unit_of_measurement")
+
+
+def test_country_as_the_unit_of_analysis_is_not_a_unit(tmp_path):
+    """19 papers write "Country" there -- what is observed, not how it is measured."""
+    m = documentation.metadata(_paper(tmp_path, "7. Unit of analysis", "Country"))
+    assert (m["unit_of_analysis"], m["unit"]) == ("Country", None)
+
+
+def test_a_real_unit_of_analysis_is_used(tmp_path):
+    m = documentation.metadata(_paper(tmp_path, "7. Unit of analysis",
+                                      "Number of deaths per 100.000 inhabitants"))
+    assert (m["unit"], m["unit_source"]) == ("Number of deaths per 100.000 inhabitants", "unit_of_analysis")
+
+
+def test_keywords_become_a_list_and_a_wikipedia_abstract_is_marked(tmp_path):
+    m = documentation.metadata(_paper(tmp_path, "8. Keywords (5)", "Institutions, homicide rate; world",
+                                      "9. Abstract (200 words) Taken from Wikipedia:", "An abstract."))
+    assert m["keywords"] == ["Institutions", "homicide rate", "world"]
+    assert (m["abstract"], m["abstract_source"]) == ("An abstract.", "wikipedia")
+
+
+def _deposit(raw: Path, folder: str, title: str, papers: dict[str, list[str]]) -> None:
+    d = raw / folder; d.mkdir(parents=True)
+    _book(d / "x-historical.xlsx", [[title], ["a unit"], HEADER])
+    for name, lines in papers.items():
+        _docx(d / name, lines)
+
+
+def test_building_ties_each_paper_to_its_indicator_through_the_workbook(tmp_path):
+    data = tmp_path / "data"; raw = data / "raw"
+    (raw).mkdir(parents=True)
+    (data / "datasets.json").write_text(json.dumps({
+        "HomicideRates": {"name": "Homicide Rates", "doi": "10.34894/F2XDR7"},
+        "SocialSpending": {"name": "Social Spending", "doi": "10.34894/SS"},
+        "GDPperCapita": {"name": "GDP per Capita", "doi": "10.34894/GDP"}}))
+    _deposit(raw, "doi-10-60", "Homicide Rates", {"h.docx": ["1. Title", "Homicide", "4. Version", "2"]})
+    _deposit(raw, "doi-10-69", "Social Transfers", {"s.docx": ["1. Title", "Social Spending and the Welfare State"]})
+    _deposit(raw, "doi-10-68", "GDP per Capita", {
+        "old.docx": ["1. Title", "First Update", "3. Production date", "January 2013.", "4. Version", "na"],
+        "new.docx": ["1. Title", "The long view", "3. Production date", "January 2020.", "4. Version", "2"]})
+    d = raw / "doi-10-99"; d.mkdir()
+    _book(d / "y-historical.xlsx", [["Homicide Rates"], ["u"], HEADER])      # a workbook, no paper
+
+    report = documentation.build(data)
+    written = yaml.safe_load((data / "documentation.yaml").read_text())
+    assert written["homicide_rates"]["doi"] == "10.34894/F2XDR7"
+    assert written["social_spending"]["title"] == "Social Spending and the Welfare State"   # via the alias
+    assert written["gdp_per_capita"]["title"] == "The long view"                           # latest edition
+    assert written["gdp_per_capita"]["superseded"][0]["title"] == "First Update"
+    assert report["no_paper"] == ["doi-10-99"] and report["unmatched"] == []

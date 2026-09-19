@@ -43,17 +43,31 @@ def _year(text: str | None) -> int | None:
         return None
 
 
+#: Three layouts in the deposits, told apart by what sits above the header row:
+#: title and unit (most), title only (sheet "Sheet1"), or nothing at all.
+LAYOUTS = {2: "title, unit, header", 1: "title, header", 0: "header"}
+
+
 def read(path: Path) -> dict[str, Any]:
-    """Title, unit and one entry per polity-period, with its values by year."""
-    table = xlsx.rows(path, SHEET)
-    if len(table) < 3 or "A" not in table[2] or "start year" not in table[2].values():
-        raise WorkbookError(f"{path}: expected title, unit and header in rows 1-3")
-    header = table[2]
+    """Title, unit and one entry per polity-period, with its values by year.
+
+    The header row is found by what it says -- ``Webmapper code`` -- not by
+    position, and whatever sits above it is the title and the unit. ``title``
+    and ``unit`` are empty where a layout has none; ``layout`` says which.
+    """
+    names = xlsx.sheet_names(path)
+    table = xlsx.rows(path, SHEET if SHEET in names else names[0])
+    at = next((i for i, r in enumerate(table[:5])
+               if (r.get("A") or "").strip() == "Webmapper code"), None)
+    if at is None or at not in LAYOUTS:
+        raise WorkbookError(f"{path}: no 'Webmapper code' header in the first rows")
+    above = [(r.get("A") or "").strip() for r in table[:at]]
+    header = table[at]
     years = {col: int(text) for col, text in header.items() if text.strip().isdigit()}
     cols = {text.strip(): col for col, text in header.items() if col not in years}
 
     polities = []
-    for row in table[3:]:
+    for row in table[at + 1:]:
         code = (row.get(cols["Webmapper code"]) or "").strip()
         if not code:
             continue
@@ -73,8 +87,9 @@ def read(path: Path) -> dict[str, Any]:
             "border_end": _year(row.get(cols["end year"])),
             "values": values,
         })
-    return {"title": (table[0].get("A") or "").strip(),
-            "unit": (table[1].get("A") or "").strip(),
+    return {"title": above[0] if at >= 1 else "",
+            "unit": above[1] if at >= 2 else "",
+            "layout": LAYOUTS[at],
             "polities": polities}
 
 
