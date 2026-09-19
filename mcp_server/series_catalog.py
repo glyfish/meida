@@ -98,6 +98,7 @@ class SeriesCatalogClient:
         dataset_id: Optional[str] = None,
         concept: Optional[str] = None,
         facets: Optional[dict[str, Any]] = None,
+        timeseries_source: Optional[str] = None,
         active_only: bool = False,
         limit: int = 50,
     ) -> tuple[list[CatalogEntry], int]:
@@ -123,6 +124,11 @@ class SeriesCatalogClient:
             if facets:
                 # JSONB containment, which is what idx_sc_facets (GIN) serves.
                 clauses.append(table.c.facets.contains(facets))
+            if timeseries_source:
+                # The source timeseries_source_data serves the series under --
+                # cdc_nvsr, not the catalog's publisher-level "cdc". The only way
+                # to enumerate a stored source, since that tool takes ids.
+                clauses.append(table.c.retrieval.contains({"source": timeseries_source}))
             where = sa.and_(*clauses) if clauses else sa.true()
 
             with self._engine.connect() as conn:

@@ -174,31 +174,48 @@ class TimeSeriesSourceClient:
 
         Deliberately excludes the ``observations`` column -- it dominates row
         size, and a listing never needs it.
-        """
-        def _run() -> list[TimeSeriesRef]:
-            table = self._reflect()
-            stmt = sa.select(
-                table.c.source, table.c.native_id, table.c.title, table.c.frequency,
-                table.c.units, table.c.metadata, table.c.observation_start,
-                table.c.observation_end, table.c.expires_at,
-            ).order_by(table.c.source, table.c.native_id)
-            if source is not None:
-                stmt = stmt.where(table.c.source == source)
-            with self._engine.connect() as conn:
-                rows = conn.execute(stmt).all()
-            return [
-                TimeSeriesRef(
-                    source=r.source, native_id=r.native_id, title=r.title,
-                    frequency=r.frequency, units=r.units,
-                    observation_start=r.observation_start,
-                    observation_end=r.observation_end,
-                    observation_count=_observation_count(r.metadata, []),
-                    expires_at=r.expires_at, stale=self._is_stale(r.expires_at),
-                )
-                for r in rows
-            ]
 
-        return await asyncio.to_thread(_run)
+        For code, not for the MCP server: unbounded by design, and Clio-Infra
+        alone is 11,042 series. The tool takes ids -- see :meth:`describe`.
+        """
+        return await asyncio.to_thread(self._refs, source, None)
+
+    async def describe(self, native_ids: list[str],
+                       source: Optional[str] = None) -> list[TimeSeriesRef]:
+        """The series with these ids, without observations; unknown ids are absent.
+
+        What ``timeseries_source_list`` serves. Taking ids rather than a source
+        means no call can enumerate the table: finding series is the catalog's
+        job, and it is capped.
+        """
+        if not native_ids:
+            return []
+        return await asyncio.to_thread(self._refs, source, list(native_ids))
+
+    def _refs(self, source: Optional[str], native_ids: Optional[list[str]]) -> list[TimeSeriesRef]:
+        table = self._reflect()
+        stmt = sa.select(
+            table.c.source, table.c.native_id, table.c.title, table.c.frequency,
+            table.c.units, table.c.metadata, table.c.observation_start,
+            table.c.observation_end, table.c.expires_at,
+        ).order_by(table.c.source, table.c.native_id)
+        if source is not None:
+            stmt = stmt.where(table.c.source == source)
+        if native_ids is not None:
+            stmt = stmt.where(table.c.native_id.in_(native_ids))
+        with self._engine.connect() as conn:
+            rows = conn.execute(stmt).all()
+        return [
+            TimeSeriesRef(
+                source=r.source, native_id=r.native_id, title=r.title,
+                frequency=r.frequency, units=r.units,
+                observation_start=r.observation_start,
+                observation_end=r.observation_end,
+                observation_count=_observation_count(r.metadata, []),
+                expires_at=r.expires_at, stale=self._is_stale(r.expires_at),
+            )
+            for r in rows
+        ]
 
     async def list_stale(self, source: Optional[str] = None) -> list[TimeSeriesRef]:
         """List series past ``expires_at`` -- those due for a refresh.

@@ -99,24 +99,29 @@ async def _call_cdc(handler: Callable[[CdcClient], Awaitable[Any]]) -> Any:
         return await handler(client)
 
 
-#: A listing's default and ceiling. Before Clio-Infra everything stored was 188
-#: series; Clio alone is 11,042, some 827,000 tokens -- more than any model reading
-#: the result can hold. The catalog search caps at 200 for the same reason.
-LIST_LIMIT = 200
-LIST_MAX = 1000
+#: The stored-series tools never enumerate. Before Clio-Infra everything stored
+#: was 188 series; Clio alone is 11,042 -- a listing of it is 3.3 MB -- and the
+#: old description told a model to "call it without a source to see which
+#: sources exist". Finding series is series_catalog_search's job, capped and
+#: faceted; these tools take the ids it returns.
+MAX_IDS = 200
+STALE_LIMIT = 200
+STALE_MAX = 1000
 
 
-def _bounded(refs: list, prefix: str | None, limit: int) -> TimeSeriesRefList:
-    """At most *limit* of *refs*, with the total and a per-source count."""
-    sources: dict[str, int] = {}
-    for ref in refs:
-        sources[ref.source] = sources.get(ref.source, 0) + 1
-    if prefix:
-        refs = [r for r in refs if r.native_id.startswith(prefix)]
-    limit = max(1, min(int(limit), LIST_MAX))
+def _found(refs: list, requested: list[str]) -> TimeSeriesRefList:
+    """The series found, in the order asked, and the ids that were not."""
+    by_id = {r.native_id: r for r in refs}
+    ordered = [by_id[i] for i in dict.fromkeys(requested) if i in by_id]
+    return TimeSeriesRefList(series=ordered, total=len(set(requested)),
+                             returned=len(ordered),
+                             missing=[i for i in dict.fromkeys(requested) if i not in by_id])
+
+
+def _capped(refs: list, limit: int) -> TimeSeriesRefList:
+    limit = max(1, min(int(limit), STALE_MAX))
     shown = refs[:limit]
-    return TimeSeriesRefList(series=shown, total=len(refs), returned=len(shown),
-                             sources=dict(sorted(sources.items())))
+    return TimeSeriesRefList(series=shown, total=len(refs), returned=len(shown))
 
 
 async def _call_timeseries_source(
@@ -607,27 +612,24 @@ async def cdc_dataset_facets(
 @server.tool(
     name="timeseries_source_list",
     description=(
-        "List stored time series held in meida's database — sources with no live API, "
-        "so their values are stored rather than fetched per request: cause-of-death "
-        "rates, life expectancy, congressional polarization, and Clio-Infra's long-run "
-        "indicators by country. Returns identity and coverage without observations, as "
-        "{'series': [...], 'total', 'returned', 'sources'}. Capped at 'limit' (default "
-        "200) — compare 'total' with 'returned' to see truncation. 'sources' counts every "
-        "stored series by source, so a call with no arguments shows what exists. Narrow "
-        "with 'source' and a native_id 'prefix'; to find series by country, category or "
-        "facet, use series_catalog_search instead."
+        "Describe stored time series by id — identity, coverage and staleness, without "
+        "observations. Takes 1 to 200 native_ids; it does not enumerate. To find series, "
+        "use series_catalog_search (filter by 'timeseries_source', concept or facets) and "
+        "take the ids from each entry's 'retrieval' block. Returns {'series': [...], "
+        "'total', 'returned', 'missing'} — 'missing' lists ids not stored. For the "
+        "observations themselves, use timeseries_source_data."
     ),
 )
 async def timeseries_source_list(
-    source: str | None = None,
-    prefix: Annotated[str | None, Field(
-        description="Keep only series whose native_id starts with this, e.g. "
-                    "'clio/labourers_real_wage/' for one indicator's countries.")] = None,
-    limit: Annotated[int, Field(
-        description=f"Most series to return, 1-{LIST_MAX}. 'total' counts every match.")] = LIST_LIMIT,
+    native_ids: Annotated[list[str], Field(
+        min_length=1, max_length=MAX_IDS,
+        description=f"1 to {MAX_IDS} native_ids, from series_catalog_search's "
+                    "'retrieval' blocks.")],
+    source: Annotated[str | None, Field(
+        description="Only when an id is ambiguous across sources.")] = None,
 ) -> TimeSeriesRefList:
     async def handler(client: TimeSeriesSourceClient) -> Any:
-        return _bounded(await client.list_series(source=source), prefix, limit)
+        return _found(await client.describe(native_ids, source=source), native_ids)
 
     return await _call_timeseries_source(handler)
 
@@ -658,17 +660,19 @@ async def timeseries_source_data(
         "List stored series that are due for an update — past their refresh horizon. "
         "These sources have no live API (CDC WONDER is throttled behind a bot filter; "
         "NVSR is a manual annual download), so refreshing is a deliberate act rather "
-        "than an automatic re-fetch. Stale series are still served normally. Returns "
-        "{'series': [...], 'total', 'returned', 'sources'}, capped at 'limit' (default 200)."
+        "than an automatic re-fetch. Stale series are still served normally. Requires a "
+        "'source'. Returns {'series': [...], 'total', 'returned'}, capped at 'limit' "
+        "(default 200) — Clio-Infra's 11,042 series all fall due on the same day."
     ),
 )
 async def timeseries_source_stale(
-    source: str | None = None,
+    source: Annotated[str, Field(
+        description="The stored source to check, e.g. 'cdc_nvsr', 'clio'.")],
     limit: Annotated[int, Field(
-        description=f"Most series to return, 1-{LIST_MAX}. 'total' counts every match.")] = LIST_LIMIT,
+        description=f"Most series to return, 1-{STALE_MAX}. 'total' counts every stale one.")] = STALE_LIMIT,
 ) -> TimeSeriesRefList:
     async def handler(client: TimeSeriesSourceClient) -> Any:
-        return _bounded(await client.list_stale(source=source), None, limit)
+        return _capped(await client.list_stale(source=source), limit)
 
     return await _call_timeseries_source(handler)
 
@@ -684,16 +688,18 @@ async def _call_series_catalog(
 @server.tool(
     name="series_catalog_search",
     description=(
-        "Find which series exist, without fetching any data. Filters are exact, not "
-        "fuzzy: narrow by dataset_id, concept, and facet values (e.g. "
-        "{'state': 'TX', 'race': 'hispanic'}). Each result carries a 'retrieval' "
-        "block naming the tool that fetches it — cdc_series_data for live Socrata "
-        "series, timeseries_source_data for stored WONDER and NVSR ones — and a "
-        "'facets' block whose keys are exactly the arguments cdc_series_data takes. "
-        "'total' counts every match, so compare it against the entries returned to "
-        "tell a complete result from a truncated one. Descriptions are shared across "
-        "series that differ only by facet value, so filter on facets rather than "
-        "trying to pick a series out by its prose."
+        "Find which series exist, without fetching any data — the starting point for "
+        "every stored series, since the stored-series tools take ids rather than listing. "
+        "Filters are exact, not fuzzy: narrow by source, concept, dataset_id, "
+        "timeseries_source, and facet values (e.g. {'state': 'TX', 'race': 'hispanic'} "
+        "for CDC, {'country': 'united_kingdom', 'kind': 'measured'} for Clio-Infra). Each "
+        "result carries a 'retrieval' block naming the tool that fetches it and its "
+        "arguments — cdc_series_data for live Socrata series, whose facet keys are "
+        "exactly that tool's arguments; timeseries_source_data with a source and "
+        "native_id for stored ones. 'total' counts every match, so compare it against "
+        "the entries returned to tell a complete result from a truncated one. "
+        "Descriptions are shared across series that differ only by facet value, so "
+        "filter on facets rather than trying to pick a series out by its prose."
     ),
 )
 async def series_catalog_search(
@@ -706,6 +712,10 @@ async def series_catalog_search(
         description="Facet values to match, e.g. {'state': 'TX', 'sex': 'male'}. "
                     "Matched by containment: an entry qualifies if it carries all "
                     "of these, whatever else it also has.")] = None,
+    timeseries_source: Annotated[str | None, Field(
+        description="Only series served by timeseries_source_data under this source — "
+                    "'cdc_nvsr', 'cdc_wonder', 'voteview', 'clio'. The way to list a stored "
+                    "source, since the stored-series tools take ids.")] = None,
     limit: int = 50,
 ) -> CatalogSearchResult:
     # No ``active_only``. ``SeriesCatalogClient.search`` still supports it, but
@@ -716,7 +726,7 @@ async def series_catalog_search(
     async def handler(client: SeriesCatalogClient) -> Any:
         return await client.search(
             source=source, dataset_id=dataset_id, concept=concept,
-            facets=facets, limit=limit,
+            facets=facets, timeseries_source=timeseries_source, limit=limit,
         )
 
     entries, total = await _call_series_catalog(handler)

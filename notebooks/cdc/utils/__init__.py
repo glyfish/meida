@@ -444,14 +444,26 @@ async def show_tool_schema(tool_name: str) -> dict[str, Any]:
 # --- stored series (CDC WONDER and NVSR, served from meida's database) --------
 
 
-async def list_stored_series(source: str | None = None) -> list[dict[str, Any]]:
-    """List series held in meida's time-series database.
+async def list_stored_series(source: str) -> list[dict[str, Any]]:
+    """Every series one stored source holds -- ``cdc_wonder`` or ``cdc_nvsr``.
 
-    ``source`` filters to ``cdc_wonder`` or ``cdc_nvsr``; omit it for both.
-    Observations are excluded -- use :func:`get_stored_series` for those.
+    ``timeseries_source_list`` takes ids and never enumerates, so this follows
+    the path a model is meant to: ask the catalog which series the source
+    serves, then describe those ids. Observations are excluded -- use
+    :func:`get_stored_series` for those.
+
+    The catalog returns at most 200. CDC's stored sources are 171 and 9; one
+    larger than that raises rather than quietly returning part of itself.
     """
-    args = {"source": source} if source else {}
-    return _unwrap(await call_tool("timeseries_source_list", args))["series"]
+    found = _unwrap(await call_tool("series_catalog_search",
+                                    {"timeseries_source": source, "limit": 200}))
+    ids = [e["retrieval"]["native_id"] for e in found["entries"]]
+    if found["total"] > len(ids):
+        raise ValueError(f"{source} has {found['total']} series, more than one catalog "
+                         f"page -- narrow with series_catalog_search facets")
+    if not ids:
+        return []
+    return _unwrap(await call_tool("timeseries_source_list", {"native_ids": ids}))["series"]
 
 
 async def get_stored_series(source: str, native_id: str) -> dict[str, Any]:
@@ -463,14 +475,15 @@ async def get_stored_series(source: str, native_id: str) -> dict[str, Any]:
     )
 
 
-async def list_stale_series(source: str | None = None) -> list[dict[str, Any]]:
-    """List stored series past their refresh horizon.
+async def list_stale_series(source: str) -> list[dict[str, Any]]:
+    """Stored series of one source past their refresh horizon.
 
     These sources have no live API, so refreshing is a deliberate act -- this is
     the query that answers "what needs updating?" without a polling process.
+    The tool requires a source: a year after loading, all 11,042 Clio-Infra
+    series fall due on one day.
     """
-    args = {"source": source} if source else {}
-    return _unwrap(await call_tool("timeseries_source_stale", args))["series"]
+    return _unwrap(await call_tool("timeseries_source_stale", {"source": source}))["series"]
 
 
 def stored_series_to_arrays(

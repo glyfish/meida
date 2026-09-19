@@ -588,6 +588,11 @@ class RecordingTimeSeriesSourceClient:
         self.calls.append(("list_series", {"source": source}))
         return [self._ref()]
 
+    async def describe(self, native_ids: Any, source: Any = None) -> Any:
+        self.calls.append(("describe", {"native_ids": list(native_ids), "source": source}))
+        stored = {self._ref().native_id}
+        return [self._ref(native_id=i) for i in native_ids if i in stored]
+
     async def list_stale(self, source: Any = None) -> Any:
         self.calls.append(("list_stale", {"source": source}))
         return [self._ref(native_id="cdc/life_expectancy/nvsr/race=all/sex=both",
@@ -615,24 +620,28 @@ def _patch_timeseries_source(monkeypatch, fake: RecordingTimeSeriesSourceClient)
     monkeypatch.setattr(server, "_call_timeseries_source", fake_call)
 
 
-async def test_timeseries_source_list_wraps_series(monkeypatch):
+WONDER_ID = "cdc/alcohol_induced/wonder/national/age_adjusted"
+
+
+async def test_timeseries_source_list_describes_the_ids_given(monkeypatch):
     """A bare list yields no structuredContent, so the tool wraps it."""
     fake = RecordingTimeSeriesSourceClient()
     _patch_timeseries_source(monkeypatch, fake)
 
-    result = await server.timeseries_source_list()
+    result = await server.timeseries_source_list(native_ids=[WONDER_ID])
 
-    assert fake.calls == [("list_series", {"source": None})]
+    assert fake.calls == [("describe", {"native_ids": [WONDER_ID], "source": None})]
     assert result.series[0].source == "cdc_wonder"
+    assert (result.total, result.returned, result.missing) == (1, 1, [])
 
 
 async def test_timeseries_source_list_passes_source_filter(monkeypatch):
     fake = RecordingTimeSeriesSourceClient()
     _patch_timeseries_source(monkeypatch, fake)
 
-    await server.timeseries_source_list(source="cdc_nvsr")
+    await server.timeseries_source_list(native_ids=[WONDER_ID], source="cdc_nvsr")
 
-    assert fake.calls == [("list_series", {"source": "cdc_nvsr"})]
+    assert fake.calls == [("describe", {"native_ids": [WONDER_ID], "source": "cdc_nvsr"})]
 
 
 async def test_timeseries_source_data_passes_frequency(monkeypatch):
@@ -655,61 +664,55 @@ async def test_timeseries_source_stale_returns_flagged_series(monkeypatch):
     fake = RecordingTimeSeriesSourceClient()
     _patch_timeseries_source(monkeypatch, fake)
 
-    result = await server.timeseries_source_stale()
+    result = await server.timeseries_source_stale(source="cdc_nvsr")
 
-    assert fake.calls == [("list_stale", {"source": None})]
+    assert fake.calls == [("list_stale", {"source": "cdc_nvsr"})]
     assert result.series[0].stale is True
 
 
 class ManySeriesClient(RecordingTimeSeriesSourceClient):
-    """Clio-Infra-sized: enough series that an uncapped listing floods the reader."""
+    """Clio-Infra-sized: 11,042 stored series is what made listing dangerous."""
 
     def __init__(self, n: int = 450) -> None:
         super().__init__()
-        self.refs = ([self._ref(source="clio", native_id=f"clio/wage/c{i:03d}") for i in range(n)]
-                     + [self._ref(source="voteview", native_id="voteview/median_gap/house")])
-
-    async def list_series(self, source: Any = None) -> Any:
-        self.calls.append(("list_series", {"source": source}))
-        return [r for r in self.refs if source in (None, r.source)]
+        self.refs = [self._ref(source="clio", native_id=f"clio/wage/c{i:03d}", stale=True)
+                     for i in range(n)]
 
     async def list_stale(self, source: Any = None) -> Any:
         self.calls.append(("list_stale", {"source": source}))
-        return [r for r in self.refs if source in (None, r.source)]
+        return [r for r in self.refs if r.source == source]
 
 
-async def test_a_listing_is_capped_and_says_how_much_it_left_out(monkeypatch):
-    _patch_timeseries_source(monkeypatch, ManySeriesClient())
-    result = await server.timeseries_source_list()
-    assert (result.returned, result.total) == (server.LIST_LIMIT, 451)
-    assert len(result.series) == server.LIST_LIMIT
+async def _schema(tool: str) -> dict:
+    return next(t.inputSchema for t in await server.server.list_tools() if t.name == tool)
 
 
-async def test_a_bare_listing_still_says_which_sources_exist(monkeypatch):
-    """The call the description recommends must answer "what is stored" cheaply."""
-    _patch_timeseries_source(monkeypatch, ManySeriesClient())
-    result = await server.timeseries_source_list(limit=1)
-    assert result.sources == {"clio": 450, "voteview": 1}
+async def test_the_listing_tool_cannot_be_called_without_ids():
+    """The schema a model reads requires 1-200 ids -- there is no enumerate-everything call."""
+    schema = await _schema("timeseries_source_list")
+    assert "native_ids" in schema["required"]
+    ids = schema["properties"]["native_ids"]
+    assert (ids.get("minItems"), ids.get("maxItems")) == (1, server.MAX_IDS)
+    assert "prefix" not in schema["properties"] and "limit" not in schema["properties"]
 
 
-async def test_a_prefix_narrows_to_one_indicator(monkeypatch):
-    _patch_timeseries_source(monkeypatch, ManySeriesClient())
-    result = await server.timeseries_source_list(prefix="clio/wage/c01")
-    assert result.total == 10                               # c010..c019
-    assert all(r.native_id.startswith("clio/wage/c01") for r in result.series)
+async def test_ids_that_are_not_stored_are_named(monkeypatch):
+    _patch_timeseries_source(monkeypatch, RecordingTimeSeriesSourceClient())
+    result = await server.timeseries_source_list(native_ids=[WONDER_ID, "clio/nope/x", WONDER_ID])
+    assert (result.total, result.returned) == (2, 1)       # a repeated id counts once
+    assert result.missing == ["clio/nope/x"]
 
 
-async def test_the_limit_is_held_between_one_and_the_ceiling(monkeypatch):
-    _patch_timeseries_source(monkeypatch, ManySeriesClient(n=1500))
-    assert (await server.timeseries_source_list(limit=10**6)).returned == server.LIST_MAX
-    assert (await server.timeseries_source_list(limit=0)).returned == 1
-
-
-async def test_the_stale_listing_is_capped_too(monkeypatch):
+async def test_the_stale_listing_needs_a_source_and_is_capped(monkeypatch):
     """A year after loading, all 11,042 Clio series fall due on the same day."""
+    assert "source" in (await _schema("timeseries_source_stale"))["required"]
     _patch_timeseries_source(monkeypatch, ManySeriesClient())
-    result = await server.timeseries_source_stale()
-    assert (result.returned, result.total) == (server.LIST_LIMIT, 451)
+    result = await server.timeseries_source_stale(source="clio")
+    assert (result.returned, result.total) == (server.STALE_LIMIT, 450)
+
+
+async def test_catalog_search_can_list_a_stored_source():
+    assert "timeseries_source" in (await _schema("series_catalog_search"))["properties"]
 
 
 async def test_dataset_facets_needs_a_concept_only_when_it_changes_the_answer():

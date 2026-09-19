@@ -255,3 +255,29 @@ async def test_series_catalog_facets():
         )
         assert 0 < narrower_total <= total
         assert all(e.facets.get("rate_type") == "crude" for e in narrower)
+
+
+@pytest.mark.asyncio
+async def test_a_stored_source_is_listed_through_the_catalog():
+    """The stored-series tools take ids, so this filter is how a source is listed.
+
+    Against Postgres: it filters on the ``retrieval`` block, and the catalog files
+    NVSR under the publisher ``cdc`` while retrieval names ``cdc_nvsr`` -- which is
+    exactly why a source-level filter could not do it.
+    """
+    from environment import get_meida_db_url
+
+    try:
+        engine = sa.create_engine(get_meida_db_url())
+        with engine.connect() as conn:
+            conn.execute(sa.text("SELECT 1 FROM series_catalog LIMIT 1"))
+    except Exception as exc:                     # noqa: BLE001 -- any DB problem skips
+        pytest.skip(f"meida database not reachable: {type(exc).__name__}")
+
+    async with SeriesCatalogClient(engine=engine) as catalog:
+        nvsr, total = await catalog.search(timeseries_source="cdc_nvsr", limit=200)
+        assert total == len(nvsr) > 0
+        assert all(e.source == "cdc" and e.retrieval["source"] == "cdc_nvsr" for e in nvsr)
+        # the publisher filter alone would have mixed in live Socrata series
+        _, cdc_total = await catalog.search(source="cdc", limit=1)
+        assert cdc_total > total

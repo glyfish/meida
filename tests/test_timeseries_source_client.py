@@ -201,3 +201,25 @@ async def test_missing_table_raises_source_error():
     client = TimeSeriesSourceClient(engine=empty)
     with pytest.raises(TimeSeriesSourceError, match="cannot reflect"):
         await client.list_series()
+
+
+# --- describe: the ids-only lookup the MCP tool serves -------------------------
+
+async def test_describe_returns_only_the_ids_asked_for(client, engine):
+    _insert(engine, source_id="a", native_id="clio/wage/uk")
+    _insert(engine, source_id="b", native_id="clio/wage/us")
+    _insert(engine, source_id="c", native_id="clio/wage/fr")
+    refs = await client.describe(["clio/wage/us", "clio/wage/uk", "clio/wage/xx"])
+    assert sorted(r.native_id for r in refs) == ["clio/wage/uk", "clio/wage/us"]
+
+
+async def test_describe_with_no_ids_touches_nothing(client, engine):
+    _insert(engine, source_id="a", native_id="clio/wage/uk")
+    assert await client.describe([]) == []
+
+
+async def test_describe_can_be_narrowed_to_one_source(client, engine):
+    _insert(engine, source_id="a", source="cdc_wonder", native_id="shared/id")
+    _insert(engine, source_id="b", source="cdc_nvsr", native_id="shared/id")
+    refs = await client.describe(["shared/id"], source="cdc_nvsr")
+    assert [r.source for r in refs] == ["cdc_nvsr"]

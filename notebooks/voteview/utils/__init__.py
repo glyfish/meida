@@ -75,8 +75,15 @@ async def show_tool_schema(tool_name: str) -> dict[str, Any]:
 
 
 async def list_series() -> list[dict[str, Any]]:
-    """Voteview's stored series -- metadata only, no observations."""
-    return _unwrap(await call_tool("timeseries_source_list", {"source": SOURCE}))["series"]
+    """Voteview's stored series -- metadata only, no observations.
+
+    The catalog names the ids, then ``timeseries_source_list`` describes them:
+    that tool takes ids and never enumerates.
+    """
+    found = _unwrap(await call_tool("series_catalog_search",
+                                    {"timeseries_source": SOURCE, "limit": 200}))
+    ids = [e["retrieval"]["native_id"] for e in found["entries"]]
+    return _unwrap(await call_tool("timeseries_source_list", {"native_ids": ids}))["series"]
 
 
 async def get_series(native_id: str) -> dict[str, Any]:
