@@ -142,6 +142,7 @@ def build(data_dir: Path = DATA_DIR) -> dict[str, dict[str, Any]]:
             "production_date": panels.get("Production date"),
             **_citation(path),
             **m,
+            "kind": kind(entry["slug"] if "slug" in entry else file, {**entry, **m}),
             "published": {"start": entry.get("published_start"),
                           "count": published,
                           "end": entry.get("published_end")},
