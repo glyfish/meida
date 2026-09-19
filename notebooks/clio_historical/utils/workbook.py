@@ -71,11 +71,12 @@ def read(path: Path) -> dict[str, Any]:
         code = (row.get(cols["Webmapper code"]) or "").strip()
         if not code:
             continue
-        values = {}
+        values, texts = {}, {}
         for col, year in years.items():
             text = row.get(col)
             if text not in (None, ""):
                 values[year] = float(text)
+                texts[year] = text.strip()      # as written -- a stored value is a string
         ccode = _year(row.get(cols["ccode"]))
         polities.append({
             "code": code,
@@ -86,6 +87,7 @@ def read(path: Path) -> dict[str, Any]:
             "border_start": _year(row.get(cols["start year"])),
             "border_end": _year(row.get(cols["end year"])),
             "values": values,
+            "texts": texts,
         })
     return {"title": above[0] if at >= 1 else "",
             "unit": above[1] if at >= 2 else "",

@@ -339,3 +339,37 @@ def test_a_row_2_that_only_repeats_the_name_is_not_a_unit():
     read = [{"unit": "CO2  Emissions per capita"}]
     assert documentation._workbook_unit(read, "CO2 Emissions per Capita") is None
     assert documentation._workbook_unit([{"unit": "tonnes per person"}], "CO2 Emissions per Capita") == "tonnes per person"
+
+
+# --- historical-borders series ------------------------------------------------
+
+historical = load("clio_historical/utils", "historical_series")
+
+
+def test_the_main_sites_seven_figure_rounding_is_not_a_difference():
+    """14.44252 on the main site, 14.4425187753 on DataverseNL: the same number."""
+    assert historical.same_number(14.44252, 14.4425187753)
+    assert not historical.same_number(12.026, 14.754)          # the Netherlands kingdom row
+
+
+MAIN = {"Netherlands": {1820: 13.8, 1821: 14.2},
+        "Turkey": {1800: 12.0, 1801: 12.5},
+        "United States": {1925: 68.48}}
+
+
+@pytest.mark.parametrize("values,name,expected", [
+    ({1820: 13.8, 1821: 14.2}, "Netherlands", ("Netherlands", "same")),
+    ({1820: 13.8}, "Netherlands", ("Netherlands", "same")),
+    ({1820: 13.8, 1822: 15.0}, "Netherlands", ("Netherlands", "extends")),
+    ({1800: 12.0, 1801: 12.5}, "Ottoman", ("Turkey", "successor")),
+    ({1820: 14.754}, "Netherlands", ("Netherlands", "differs")),
+    ({1864: 3.0}, "Hong Kong", (None, "new")),
+])
+def test_every_series_is_related_to_the_main_site(values, name, expected):
+    assert historical.relate(values, name, MAIN) == expected
+
+
+def test_a_known_mislabelled_row_is_excluded_with_its_reason():
+    reason = historical.EXCLUDED[("labourers_real_wage", "geacron/236")]
+    assert "United States" in reason
+    assert {code for (_, code) in historical.EXCLUDED} == {f"geacron/{n}" for n in (236, 237, 238, 239)}
