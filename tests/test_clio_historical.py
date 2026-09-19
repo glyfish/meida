@@ -19,6 +19,7 @@ from notebook_modules import load
 workbook = load("clio_historical/utils", "workbook")
 documentation = load("clio_historical/utils", "documentation")
 accept = load("clio_historical/utils", "accept")
+inventory = load("clio_historical/utils", "inventory")
 
 HEADER = ["Webmapper code", "Webmapper numeric code", "ccode", "country name",
           "start year", "end year", "1820", "1821", "1822"]
@@ -110,6 +111,36 @@ def test_all_three_deposit_layouts_are_read(tmp_path, above, layout, title, unit
     book = workbook.read(path)
     assert (book["layout"], book["title"], book["unit"]) == (layout, title, unit)
     assert book["polities"][0]["values"] == {1820: 1.5}
+
+
+# --- the inventory ------------------------------------------------------------
+
+@pytest.mark.parametrize("section,stated", [
+    (None, False),
+    ("Central statistical agencies\nHistorical reconstructions\nEstimates\nConjectures", False),
+    ("i. Central statistical agencies.\nii. Historical reconstructions\niii. Estimates\niv. Conjectures", False),
+    ("Central statistical agencies\nEstimates\nBased on national censuses after 1870.", True),
+    ("Good", True),
+])
+def test_the_template_menu_alone_does_not_state_a_quality(section, stated):
+    """Half the papers keep the four grades as printed and never pick one."""
+    assert inventory.quality_stated(section) is stated
+
+
+def test_a_geacron_row_counts_only_values_inside_its_border_period(tmp_path):
+    """Hong Kong's post-1946 values sit on a period ending in 1945 -- listed, not its own."""
+    m = inventory.measure(_historical(
+        tmp_path,
+        ["geacron/1", 1, None, "Inside", 1820, 1822, 1.0, 2.0, 3.0],
+        ["geacron/2", 2, None, "Outside", 1700, 1819, 4.0, 5.0, None],
+        ["geacron/3", 3, None, "Empty", 1820, 1822],
+        ["cshapes/9", 9, 2, "Modern", 1946, 2012, 6.0, None, 7.0]))
+    g, c = m["geacron"], m["cshapes"]
+    assert (g["rows"], g["rows_with_values"], g["observations"]) == (3, 2, 3)
+    assert (g["start"], g["end"], g["rows_by_decade"]) == (1820, 1822, {"1820": 1})
+    # a modern-state row keeps its whole series, before its borders or not
+    assert (c["rows"], c["observations"], c["rows_by_decade"]) == (1, 2, {"1820": 1})
+    assert m["layout"] == "title, unit, header"
 
 
 # --- the working paper --------------------------------------------------------
