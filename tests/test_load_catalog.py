@@ -237,3 +237,26 @@ def test_clearing_descriptions_on_purpose_is_possible(tmp_path, db):
     _write_described(tmp_path, {"cdc/a": None})
     L.load(tmp_path, "cdc", db_url=db, allow_description_loss=True)
     assert _descriptions(db) == {"cdc/a": None}
+
+
+# --- batching -----------------------------------------------------------------
+#
+# Postgres binds at most 65,535 parameters per statement. Clio-Infra's 11,044
+# series would not fit one INSERT, and the prune's NOT IN bound one parameter
+# per series too. Shrinking BATCH to 2 makes every boundary reachable with a
+# handful of rows.
+
+def test_a_catalog_larger_than_one_batch_is_written_whole(tmp_path, db, monkeypatch):
+    monkeypatch.setattr(L, "BATCH", 2)
+    _write(tmp_path, "cdc", "g", [f"cdc/{i}" for i in range(5)])
+    assert L.load(tmp_path, "cdc", db_url=db)["written"] == 5
+    assert len(_rows(db)) == 5
+
+
+def test_the_prune_removes_series_across_batches(tmp_path, db, monkeypatch):
+    monkeypatch.setattr(L, "BATCH", 2)
+    _write(tmp_path, "cdc", "g", [f"cdc/{i}" for i in range(7)])
+    L.load(tmp_path, "cdc", db_url=db)
+    _write(tmp_path, "cdc", "g", ["cdc/0", "cdc/1"])
+    assert L.load(tmp_path, "cdc", db_url=db)["pruned"] == 5
+    assert _rows(db) == [("cdc", "cdc/0"), ("cdc", "cdc/1")]

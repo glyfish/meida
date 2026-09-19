@@ -29,6 +29,17 @@ from environment import get_meida_db_url
 
 TABLE_NAME = "series_catalog"
 
+#: Rows per statement -- Postgres binds at most 65,535 parameters per statement
+#: and a catalog row binds about fifteen. The prune's ``NOT IN`` bound one per
+#: series, so it had the same ceiling. See :mod:`load_timeseries`.
+BATCH = 1000
+
+
+def _chunks(items: list, size: int | None = None):
+    size = size or BATCH            # read at call time, so a test can shrink it
+    for start in range(0, len(items), size):
+        yield items[start:start + size]
+
 
 class DescriptionLossError(RuntimeError):
     """A load would overwrite stored descriptions with nothing."""
@@ -165,23 +176,29 @@ def load(
                     f"for them. Merge the sidecar first: "
                     f"db_import.descriptions.apply_to_catalog({str(directory)!r}, "
                     f"{source!r}). Nothing was written.")
-        stmt = pg_insert(table).values(rows)
-        conn.execute(stmt.on_conflict_do_update(
-            constraint="uq_sc_source_series",
-            # catalog_id and created_at are deliberately absent: a re-export
-            # must not break references or reset provenance.
-            set_={c: stmt.excluded[c] for c in (
-                "dataset_id", "concept", "title", "description", "units",
-                "frequency", "provisional", "is_active", "facets", "retrieval",
-                "observation_start", "observation_end", "updated_at")},
-        ))
+        for batch in _chunks(rows):
+            stmt = pg_insert(table).values(batch)
+            conn.execute(stmt.on_conflict_do_update(
+                constraint="uq_sc_source_series",
+                # catalog_id and created_at are deliberately absent: a re-export
+                # must not break references or reset provenance.
+                set_={c: stmt.excluded[c] for c in (
+                    "dataset_id", "concept", "title", "description", "units",
+                    "frequency", "provisional", "is_active", "facets", "retrieval",
+                    "observation_start", "observation_end", "updated_at")},
+            ))
         removed = 0
         if prune:
-            result = conn.execute(sa.delete(table).where(
-                table.c.source == source,
-                table.c.series_id.notin_([r["series_id"] for r in rows]),
-            ))
-            removed = result.rowcount or 0
+            # The set difference is taken here rather than as NOT IN (...), which
+            # would bind every exported id in one statement.
+            exported = {r["series_id"] for r in rows}
+            stale = [sid for (sid,) in conn.execute(
+                sa.select(table.c.series_id).where(table.c.source == source))
+                     if sid not in exported]
+            for batch in _chunks(stale):
+                result = conn.execute(sa.delete(table).where(
+                    table.c.source == source, table.c.series_id.in_(batch)))
+                removed += result.rowcount or 0
     engine.dispose()
     return {"written": len(rows), "pruned": removed}
 

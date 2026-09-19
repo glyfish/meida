@@ -33,6 +33,17 @@ from environment import get_meida_db_url
 
 TABLE_NAME = "time_series_source"
 
+#: Rows per INSERT. Postgres caps a statement at 65,535 bound parameters and a
+#: row binds about fourteen, so one statement holds ~4,600 series. Clio-Infra's
+#: 11,044 would not fit; CDC's 171 and Voteview's 8 never came close.
+BATCH = 1000
+
+
+def _chunks(items: list, size: int | None = None):
+    size = size or BATCH            # read at call time, so a test can shrink it
+    for start in range(0, len(items), size):
+        yield items[start:start + size]
+
 
 def read_jsonl(path: Path) -> Iterator[dict[str, Any]]:
     """Stream one series per line, so a large file never lands in memory at once."""
@@ -111,20 +122,21 @@ def load_file(path: Path, engine: sa.Engine, *,
 
     changes = _diff(table, rows, engine)
 
-    stmt = pg_insert(table).values(rows)
-    # created_at and source_id are deliberately untouched -- a refresh updates a
-    # series, it does not replace its identity.
-    stmt = stmt.on_conflict_do_update(
-        constraint="uq_tss_source_native_frequency",
-        set_={
-            c: stmt.excluded[c]
-            for c in ("title", "frequency", "units", "metadata", "observations",
-                      "observation_start", "observation_end", "ttl_days",
-                      "expires_at", "updated_at")
-        },
-    )
+    # One transaction, several statements: a load still lands whole or not at all.
     with engine.begin() as conn:
-        conn.execute(stmt)
+        for batch in _chunks(rows):
+            stmt = pg_insert(table).values(batch)
+            # created_at and source_id are deliberately untouched -- a refresh
+            # updates a series, it does not replace its identity.
+            conn.execute(stmt.on_conflict_do_update(
+                constraint="uq_tss_source_native_frequency",
+                set_={
+                    c: stmt.excluded[c]
+                    for c in ("title", "frequency", "units", "metadata", "observations",
+                              "observation_start", "observation_end", "ttl_days",
+                              "expires_at", "updated_at")
+                },
+            ))
     return {"series": len(rows), **changes}
 
 
