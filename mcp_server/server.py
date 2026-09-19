@@ -99,6 +99,26 @@ async def _call_cdc(handler: Callable[[CdcClient], Awaitable[Any]]) -> Any:
         return await handler(client)
 
 
+#: A listing's default and ceiling. Before Clio-Infra everything stored was 188
+#: series; Clio alone is 11,042, some 827,000 tokens -- more than any model reading
+#: the result can hold. The catalog search caps at 200 for the same reason.
+LIST_LIMIT = 200
+LIST_MAX = 1000
+
+
+def _bounded(refs: list, prefix: str | None, limit: int) -> TimeSeriesRefList:
+    """At most *limit* of *refs*, with the total and a per-source count."""
+    sources: dict[str, int] = {}
+    for ref in refs:
+        sources[ref.source] = sources.get(ref.source, 0) + 1
+    if prefix:
+        refs = [r for r in refs if r.native_id.startswith(prefix)]
+    limit = max(1, min(int(limit), LIST_MAX))
+    shown = refs[:limit]
+    return TimeSeriesRefList(series=shown, total=len(refs), returned=len(shown),
+                             sources=dict(sorted(sources.items())))
+
+
 async def _call_timeseries_source(
     handler: Callable[[TimeSeriesSourceClient], Awaitable[Any]],
 ) -> Any:
@@ -589,14 +609,25 @@ async def cdc_dataset_facets(
     description=(
         "List stored time series held in meida's database — sources with no live API, "
         "so their values are stored rather than fetched per request: cause-of-death "
-        "rates, life expectancy, congressional polarization. Returns identity and "
-        "coverage without observations, as {'series': [...]}. Optional 'source' "
-        "narrows to one; call it without a source to see which sources exist."
+        "rates, life expectancy, congressional polarization, and Clio-Infra's long-run "
+        "indicators by country. Returns identity and coverage without observations, as "
+        "{'series': [...], 'total', 'returned', 'sources'}. Capped at 'limit' (default "
+        "200) — compare 'total' with 'returned' to see truncation. 'sources' counts every "
+        "stored series by source, so a call with no arguments shows what exists. Narrow "
+        "with 'source' and a native_id 'prefix'; to find series by country, category or "
+        "facet, use series_catalog_search instead."
     ),
 )
-async def timeseries_source_list(source: str | None = None) -> TimeSeriesRefList:
+async def timeseries_source_list(
+    source: str | None = None,
+    prefix: Annotated[str | None, Field(
+        description="Keep only series whose native_id starts with this, e.g. "
+                    "'clio/labourers_real_wage/' for one indicator's countries.")] = None,
+    limit: Annotated[int, Field(
+        description=f"Most series to return, 1-{LIST_MAX}. 'total' counts every match.")] = LIST_LIMIT,
+) -> TimeSeriesRefList:
     async def handler(client: TimeSeriesSourceClient) -> Any:
-        return await client.list_series(source=source)
+        return _bounded(await client.list_series(source=source), prefix, limit)
 
     return await _call_timeseries_source(handler)
 
@@ -627,12 +658,17 @@ async def timeseries_source_data(
         "List stored series that are due for an update — past their refresh horizon. "
         "These sources have no live API (CDC WONDER is throttled behind a bot filter; "
         "NVSR is a manual annual download), so refreshing is a deliberate act rather "
-        "than an automatic re-fetch. Stale series are still served normally. Returns {'series': [...]}."
+        "than an automatic re-fetch. Stale series are still served normally. Returns "
+        "{'series': [...], 'total', 'returned', 'sources'}, capped at 'limit' (default 200)."
     ),
 )
-async def timeseries_source_stale(source: str | None = None) -> TimeSeriesRefList:
+async def timeseries_source_stale(
+    source: str | None = None,
+    limit: Annotated[int, Field(
+        description=f"Most series to return, 1-{LIST_MAX}. 'total' counts every match.")] = LIST_LIMIT,
+) -> TimeSeriesRefList:
     async def handler(client: TimeSeriesSourceClient) -> Any:
-        return await client.list_stale(source=source)
+        return _bounded(await client.list_stale(source=source), None, limit)
 
     return await _call_timeseries_source(handler)
 

@@ -79,3 +79,10 @@ class TimeSeriesRefList(TimeSeriesSourceBaseModel):
     """
 
     series: List[TimeSeriesRef] = Field(default_factory=list)
+    # A listing is capped for the models that read it: Clio-Infra alone is
+    # 11,042 series, 3.3 MB. ``total`` counts every match before the cap, so a
+    # truncated listing is visible as one; ``sources`` counts every series
+    # listed by source, so a call with no arguments still says what exists.
+    total: Optional[int] = None
+    returned: Optional[int] = None
+    sources: Dict[str, int] = Field(default_factory=dict)

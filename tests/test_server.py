@@ -661,6 +661,57 @@ async def test_timeseries_source_stale_returns_flagged_series(monkeypatch):
     assert result.series[0].stale is True
 
 
+class ManySeriesClient(RecordingTimeSeriesSourceClient):
+    """Clio-Infra-sized: enough series that an uncapped listing floods the reader."""
+
+    def __init__(self, n: int = 450) -> None:
+        super().__init__()
+        self.refs = ([self._ref(source="clio", native_id=f"clio/wage/c{i:03d}") for i in range(n)]
+                     + [self._ref(source="voteview", native_id="voteview/median_gap/house")])
+
+    async def list_series(self, source: Any = None) -> Any:
+        self.calls.append(("list_series", {"source": source}))
+        return [r for r in self.refs if source in (None, r.source)]
+
+    async def list_stale(self, source: Any = None) -> Any:
+        self.calls.append(("list_stale", {"source": source}))
+        return [r for r in self.refs if source in (None, r.source)]
+
+
+async def test_a_listing_is_capped_and_says_how_much_it_left_out(monkeypatch):
+    _patch_timeseries_source(monkeypatch, ManySeriesClient())
+    result = await server.timeseries_source_list()
+    assert (result.returned, result.total) == (server.LIST_LIMIT, 451)
+    assert len(result.series) == server.LIST_LIMIT
+
+
+async def test_a_bare_listing_still_says_which_sources_exist(monkeypatch):
+    """The call the description recommends must answer "what is stored" cheaply."""
+    _patch_timeseries_source(monkeypatch, ManySeriesClient())
+    result = await server.timeseries_source_list(limit=1)
+    assert result.sources == {"clio": 450, "voteview": 1}
+
+
+async def test_a_prefix_narrows_to_one_indicator(monkeypatch):
+    _patch_timeseries_source(monkeypatch, ManySeriesClient())
+    result = await server.timeseries_source_list(prefix="clio/wage/c01")
+    assert result.total == 10                               # c010..c019
+    assert all(r.native_id.startswith("clio/wage/c01") for r in result.series)
+
+
+async def test_the_limit_is_held_between_one_and_the_ceiling(monkeypatch):
+    _patch_timeseries_source(monkeypatch, ManySeriesClient(n=1500))
+    assert (await server.timeseries_source_list(limit=10**6)).returned == server.LIST_MAX
+    assert (await server.timeseries_source_list(limit=0)).returned == 1
+
+
+async def test_the_stale_listing_is_capped_too(monkeypatch):
+    """A year after loading, all 11,042 Clio series fall due on the same day."""
+    _patch_timeseries_source(monkeypatch, ManySeriesClient())
+    result = await server.timeseries_source_stale()
+    assert (result.returned, result.total) == (server.LIST_LIMIT, 451)
+
+
 async def test_dataset_facets_needs_a_concept_only_when_it_changes_the_answer():
     """The registry is keyed by (dataset_id, concept) because neither is unique
     alone, but the facet vocabulary is usually shared across a dataset's
