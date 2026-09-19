@@ -30,6 +30,10 @@ from environment import get_meida_db_url
 TABLE_NAME = "series_catalog"
 
 
+class DescriptionLossError(RuntimeError):
+    """A load would overwrite stored descriptions with nothing."""
+
+
 def read_catalog(directory: Path, source: str) -> Iterator[dict[str, Any]]:
     """Yield every entry across one source's per-group catalog files."""
     for path in sorted(directory.glob(f"{source}_series_*.yaml")):
@@ -122,12 +126,20 @@ def load(
     *,
     prune: bool = True,
     now: datetime | None = None,
+    allow_description_loss: bool = False,
 ) -> dict[str, int]:
     """Upsert one source's catalog, returning counts written and removed.
 
     *source* is both the namespace written to the rows and the scope of the
     prune, so passing the wrong one deletes another source's entries wholesale.
     It also selects the files: ``<source>_series_*.yaml``.
+
+    Refuses to overwrite a stored ``description`` with nothing. A fresh export
+    writes the group files with no descriptions -- they are merged in from a
+    sidecar by ``descriptions.apply_to_catalog`` -- and the upsert replaces the
+    column wholesale, so loading an unmerged export silently blanked all 2,526
+    CDC descriptions on 2026-09-13. Pass ``allow_description_loss=True`` only
+    when clearing them is the point.
     """
     now = now or datetime.now(timezone.utc)
     rows = [_row(entry, source, now) for entry in read_catalog(directory, source)]
@@ -139,6 +151,20 @@ def load(
     engine = sa.create_engine(db_url or get_meida_db_url())
     table = sa.Table(TABLE_NAME, sa.MetaData(), autoload_with=engine)
     with engine.begin() as conn:
+        if not allow_description_loss:
+            described = {sid for (sid,) in conn.execute(
+                sa.select(table.c.series_id).where(
+                    table.c.source == source, table.c.description.isnot(None)))}
+            at_risk = [r["series_id"] for r in rows
+                       if not r["description"] and r["series_id"] in described]
+            if at_risk:
+                engine.dispose()
+                raise DescriptionLossError(
+                    f"loading {source!r} would erase {len(at_risk)} stored "
+                    f"descriptions (e.g. {at_risk[0]}) -- the export carries none "
+                    f"for them. Merge the sidecar first: "
+                    f"db_import.descriptions.apply_to_catalog({str(directory)!r}, "
+                    f"{source!r}). Nothing was written.")
         stmt = pg_insert(table).values(rows)
         conn.execute(stmt.on_conflict_do_update(
             constraint="uq_sc_source_series",

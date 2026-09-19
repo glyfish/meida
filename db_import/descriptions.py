@@ -5,11 +5,11 @@ The catalog's ``title`` is formulaic -- ``suicide (sex=male, age=15-19, crude)``
 collected it. The document store embeds free text, so a sentence or two of real
 prose is what makes semantic search work.
 
-**One call per bucket, not per series.** 2,682 series collapse into ~38
+**One call per bucket, not per series.** 2,526 series collapse into 37
 ``(group, concept, facet-shape, unit)`` buckets: within a bucket the series
 differ only in which value each facet takes, so one description describes them
-all, and the per-series facet values are already in the entry. That is ~38
-requests rather than 2,682.
+all, and the per-series facet values are already in the entry. That is 37
+requests rather than 2,526.
 
 **Descriptions live in a sidecar.** ``descriptions.yaml`` is keyed by bucket and
 merged in at export time, so regenerating the catalog needs no API key and

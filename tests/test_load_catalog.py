@@ -173,3 +173,67 @@ def test_monthly_and_quarterly_bounds_survive_the_load(tmp_path, db):
     assert spans["cdc/q"] == ("2023-01-01", "2023-10-01")
     assert spans["cdc/m"] == ("2015-01-01", "2015-12-01")
     assert spans["cdc/y"] == ("2019-01-01", "2021-01-01")
+
+
+# --- description loss guard ---------------------------------------------------
+#
+# A fresh export has no descriptions; they are merged in from a sidecar. The
+# upsert replaces the column wholesale, so loading an unmerged export once
+# blanked every CDC description with no error. The loader now refuses.
+
+def _write_described(dir_: Path, series: dict[str, str | None]) -> None:
+    dir_.mkdir(parents=True, exist_ok=True)
+    (dir_ / "cdc_series_g.yaml").write_text(yaml.safe_dump({
+        "group": "g",
+        "series": [{"series_id": s, "title": s, "facets": {},
+                    **({"description": d} if d else {})} for s, d in series.items()],
+    }))
+
+
+def _descriptions(url: str) -> dict[str, str | None]:
+    engine = sa.create_engine(url)
+    with engine.begin() as c:
+        out = {r[0]: r[1] for r in c.execute(sa.text(
+            "SELECT series_id, description FROM series_catalog"))}
+    engine.dispose()
+    return out
+
+
+def test_an_unmerged_export_cannot_erase_stored_descriptions(tmp_path, db):
+    _write_described(tmp_path, {"cdc/a": "Alpha.", "cdc/b": "Beta."})
+    L.load(tmp_path, "cdc", db_url=db)
+
+    _write_described(tmp_path, {"cdc/a": None, "cdc/b": None})   # the fresh export
+    with pytest.raises(L.DescriptionLossError, match="would erase 2 stored"):
+        L.load(tmp_path, "cdc", db_url=db)
+    assert _descriptions(db) == {"cdc/a": "Alpha.", "cdc/b": "Beta."}   # nothing written
+
+
+def test_losing_even_one_description_is_refused(tmp_path, db):
+    _write_described(tmp_path, {"cdc/a": "Alpha.", "cdc/b": "Beta."})
+    L.load(tmp_path, "cdc", db_url=db)
+    _write_described(tmp_path, {"cdc/a": "Alpha.", "cdc/b": None})
+    with pytest.raises(L.DescriptionLossError, match="would erase 1 stored"):
+        L.load(tmp_path, "cdc", db_url=db)
+
+
+def test_the_first_load_needs_no_descriptions(tmp_path, db):
+    """Nothing stored yet, so there is nothing to lose."""
+    _write_described(tmp_path, {"cdc/a": None})
+    assert L.load(tmp_path, "cdc", db_url=db)["written"] == 1
+
+
+def test_replacing_a_description_with_another_is_allowed(tmp_path, db):
+    _write_described(tmp_path, {"cdc/a": "Old."})
+    L.load(tmp_path, "cdc", db_url=db)
+    _write_described(tmp_path, {"cdc/a": "New."})
+    L.load(tmp_path, "cdc", db_url=db)
+    assert _descriptions(db) == {"cdc/a": "New."}
+
+
+def test_clearing_descriptions_on_purpose_is_possible(tmp_path, db):
+    _write_described(tmp_path, {"cdc/a": "Alpha."})
+    L.load(tmp_path, "cdc", db_url=db)
+    _write_described(tmp_path, {"cdc/a": None})
+    L.load(tmp_path, "cdc", db_url=db, allow_description_loss=True)
+    assert _descriptions(db) == {"cdc/a": None}
