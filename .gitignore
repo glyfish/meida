@@ -33,3 +33,4 @@ notebooks/bis/data/
 # Exported CDC series catalog (regenerable; consumed by the yada project)
 notebooks/voteview/data/
 notebooks/cdc/data/
+notebooks/clio/data/

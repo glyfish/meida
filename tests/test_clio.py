@@ -1,0 +1,176 @@
+"""Tests for the Clio-Infra download and inventory (``notebooks/clio/utils``).
+
+No network: the index and page snippets are hand-built in the site's own
+markup, and the workbooks are assembled in memory from the four XML parts an
+``.xlsx`` needs.
+"""
+from __future__ import annotations
+
+import zipfile
+from pathlib import Path
+
+import pytest
+
+from notebook_modules import load
+
+fetch = load("clio/utils", "fetch")
+xlsx = load("clio/utils", "xlsx")
+inventory = load("clio/utils", "inventory")
+
+
+# --- the index ----------------------------------------------------------------
+
+def _item(slug, name, file, badge):
+    return (f'<p class="list-group-item"><a href="../Indicators/{slug}.html">{name}</a>'
+            f'<span class="badge"><a href="../data/{file}"><font color="FFFFFF">'
+            f'{badge}</font></a></span></p>')
+
+
+def _index(*parts):
+    return "<html>" + "\n".join(parts) + "</html>"
+
+
+def _category(name):
+    return f'<a href="#" class="list-group-item active">\n  {name}\n</a>'
+
+
+def test_each_indicator_takes_the_nearest_category_above_it():
+    page = _index(_category("Prices and Wages"),
+                  _item("LabourersRealWage", "Labourers Real Wage",
+                        "LabourersRealWage_Compact.xlsx", " 1820 [5053] 2008"),
+                  _category("Demography"),
+                  _item("Height", "Height", "Height_Compact.xlsx", " 1550 [1234] 2000"))
+    got = fetch.parse_index(page)
+    assert [(i["slug"], i["category"]) for i in got] == [
+        ("LabourersRealWage", "Prices and Wages"), ("Height", "Demography")]
+
+
+def test_the_badge_gives_span_and_published_count():
+    page = _index(_category("Prices and Wages"),
+                  _item("LabourersRealWage", "Labourers Real Wage",
+                        "LabourersRealWage_Compact.xlsx", " 1820 [5053] 2008"))
+    ind = fetch.parse_index(page)[0]
+    assert (ind["published_start"], ind["published_count"], ind["published_end"]) == (1820, 5053, 2008)
+
+
+def test_the_file_name_is_taken_as_published_not_derived_from_the_page():
+    """The page and the file disagree in punctuation; guessing would break."""
+    page = _index(_category("Demography"),
+                  _item("LifeExpectancyatBirthTotal", "Life Expectancy at Birth (Total)",
+                        "LifeExpectancyatBirth(Total)_Compact.xlsx", " 1750 [9] 2000"))
+    ind = fetch.parse_index(page)[0]
+    assert ind["slug"] == "LifeExpectancyatBirthTotal"
+    assert ind["file"] == "LifeExpectancyatBirth(Total)_Compact.xlsx"
+
+
+def test_an_indicator_listed_twice_is_kept_once():
+    item = _item("Height", "Height", "Height_Compact.xlsx", " 1550 [1] 2000")
+    page = _index(_category("Demography"), item, _category("Human Capital"), item)
+    assert len(fetch.parse_index(page)) == 1
+
+
+def test_an_index_that_no_longer_parses_is_an_error_not_an_empty_list():
+    with pytest.raises(fetch.ClioFetchError, match="zero indicators"):
+        fetch.parse_index("<html>redesigned</html>")
+
+
+def test_indicator_page_panels_become_a_dict():
+    page = ('<h3 class="panel-title">Variable(s)</h3>\n</div>\n'
+            '<div class="panel-body">\n  Daily wage &amp; basket\n</div>'
+            '<h3 class="panel-title">Time period</h3></div><div class="panel-body">1820-2000</div>')
+    assert fetch.parse_panels(page) == {"Variable(s)": "Daily wage & basket",
+                                        "Time period": "1820-2000"}
+
+
+# --- the workbook reader ------------------------------------------------------
+
+def _workbook(path: Path, sheets: dict[str, list[list[object]]]) -> Path:
+    """A minimal .xlsx: strings go through sharedStrings, numbers stay inline."""
+    strings: list[str] = []
+
+    def cell(col: str, row: int, value: object) -> str:
+        if isinstance(value, str):
+            if value not in strings:
+                strings.append(value)
+            return f'<c r="{col}{row}" t="s"><v>{strings.index(value)}</v></c>'
+        if value is None:
+            return ""
+        return f'<c r="{col}{row}"><v>{value}</v></c>'
+
+    with zipfile.ZipFile(path, "w") as z:
+        entries, rels = [], []
+        for n, (name, table) in enumerate(sheets.items(), start=1):
+            body = "".join(
+                f'<row r="{r}">' + "".join(cell("ABCDEFG"[c], r, v) for c, v in enumerate(vals))
+                + "</row>" for r, vals in enumerate(table, start=1))
+            z.writestr(f"xl/worksheets/sheet{n}.xml",
+                       f"<worksheet><sheetData>{body}</sheetData></worksheet>")
+            entries.append(f'<sheet name="{name}" sheetId="{n}" r:id="rId{n}"/>')
+            rels.append(f'<Relationship Id="rId{n}" Target="worksheets/sheet{n}.xml"/>')
+        z.writestr("xl/workbook.xml", f"<workbook><sheets>{''.join(entries)}</sheets></workbook>")
+        z.writestr("xl/_rels/workbook.xml.rels", f"<Relationships>{''.join(rels)}</Relationships>")
+        z.writestr("xl/sharedStrings.xml",
+                   "<sst>" + "".join(f"<si><t>{s}</t></si>" for s in strings) + "</sst>")
+    return path
+
+
+def test_sheets_are_found_by_name_not_position(tmp_path):
+    book = _workbook(tmp_path / "b.xlsx", {"Metadata": [["Description", "Value"]],
+                                           "Data Long Format": [["ccode", "value"], [56.0, 1.5]]})
+    assert xlsx.records(book, "Data Long Format") == [{"ccode": "56.0", "value": "1.5"}]
+
+
+def test_a_missing_sheet_names_the_ones_that_exist(tmp_path):
+    book = _workbook(tmp_path / "b.xlsx", {"Metadata": [["a"]]})
+    with pytest.raises(xlsx.XlsxError, match="Metadata"):
+        xlsx.rows(book, "Data Long Format")
+
+
+# --- measuring a workbook -----------------------------------------------------
+
+LONG_HEADER = ["ccode", "country.name", "year", "value"]
+
+
+def _long(tmp_path, rows):
+    return _workbook(tmp_path / "w.xlsx", {"Data Long Format": [LONG_HEADER, *rows]})
+
+
+def test_a_country_with_no_code_is_kept_by_name(tmp_path):
+    """861 real observations were once dropped this way -- Sudan, Canada, Macau."""
+    book = _long(tmp_path, [[124.0, "Canada", 1900.0, 1.0],
+                            [None, "Macau, China", 1900.0, 2.0],
+                            [None, "Macau, China", 1901.0, 3.0]])
+    m = inventory.measure(book)
+    assert m["countries"] == 2
+    assert m["observations"] == 3
+    assert m["rows_without_code"] == 2
+    assert m["unparsed_rows"] == 0
+
+
+def test_a_repeated_country_year_counts_once(tmp_path):
+    book = _long(tmp_path, [[56.0, "Belgium", 1820.0, 1.0], [56.0, "Belgium", 1820.0, 1.0]])
+    m = inventory.measure(book)
+    assert (m["observations"], m["duplicate_rows"]) == (1, 1)
+
+
+def test_a_zero_filled_panel_is_distinguishable_from_a_measured_one(tmp_path):
+    book = _long(tmp_path, [[c, f"c{c}", 1500.0, 1.0 if c == 1 else 0.0] for c in range(1, 11)])
+    m = inventory.measure(book)
+    assert m["zero_share"] == 0.9
+    assert m["distinct_values"] == 2
+
+
+def test_spacing_reports_the_usual_step_and_the_largest(tmp_path):
+    years = [1900, 1901, 1902, 1903, 1910]
+    book = _long(tmp_path, [[56.0, "Belgium", float(y), 1.0] for y in years])
+    m = inventory.measure(book)
+    assert m["modal_step"] == 1
+    assert m["share_at_modal_step"] == 0.75
+    assert m["largest_step"] == 7
+
+
+def test_the_united_states_is_reported_on_its_own(tmp_path):
+    book = _long(tmp_path, [[840.0, "United States", 1925.0, 1.0],
+                            [840.0, "United States", 2007.0, 2.0],
+                            [826.0, "United Kingdom", 1820.0, 3.0]])
+    assert inventory.measure(book)["us"] == {"observations": 2, "start": 1925, "end": 2007}
