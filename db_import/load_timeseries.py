@@ -82,19 +82,26 @@ def _diff(table: sa.Table, rows: list[dict[str, Any]],
     """
     keys = [(r["source"], r["native_id"], r["frequency"]) for r in rows]
     stored: dict[tuple[str, str, str], Any] = {}
+    labels: dict[tuple[str, str, str], tuple] = {}
     with engine.begin() as conn:
         for source in {k[0] for k in keys}:
-            for sid, nid, freq, obs in conn.execute(sa.select(
+            for sid, nid, freq, obs, title, units in conn.execute(sa.select(
                     table.c.source, table.c.native_id, table.c.frequency,
-                    table.c.observations).where(table.c.source == source)):
+                    table.c.observations, table.c.title, table.c.units).where(table.c.source == source)):
                 stored[(sid, nid, freq)] = obs
+                labels[(sid, nid, freq)] = (title, units)
 
-    new, changed, moved = [], [], 0
+    new, changed, moved, relabelled = [], [], 0, []
     for row, key in zip(rows, keys):
         before = stored.get(key)
         if before is None:
             new.append(row["native_id"])
             continue
+        # Observations are the revision signal, but a title or unit change is a
+        # change too -- units harvested for 8,687 Clio series once reported as
+        # "0 changed" because only observations were compared.
+        if labels[key] != (row["title"], row["units"]):
+            relabelled.append(row["native_id"])
         if isinstance(before, str):
             before = json.loads(before)
         after = row["observations"]
@@ -105,7 +112,7 @@ def _diff(table: sa.Table, rows: list[dict[str, Any]],
         differing = [d for d in set(was) | set(now_) if was.get(d) != now_.get(d)]
         changed.append((row["native_id"], len(differing)))
         moved += len(differing)
-    return {"new": new, "changed": changed, "observations_moved": moved}
+    return {"new": new, "changed": changed, "observations_moved": moved, "relabelled": relabelled}
 
 
 def load_file(path: Path, engine: sa.Engine, *,
@@ -118,7 +125,7 @@ def load_file(path: Path, engine: sa.Engine, *,
     table = sa.Table(TABLE_NAME, sa.MetaData(), autoload_with=engine)
     rows = [_row(rec, now) for rec in read_jsonl(path)]
     if not rows:
-        return {"series": 0, "new": [], "changed": [], "observations_moved": 0}
+        return {"series": 0, "new": [], "changed": [], "observations_moved": 0, "relabelled": []}
 
     changes = _diff(table, rows, engine)
 

@@ -311,19 +311,31 @@ def test_building_ties_each_paper_to_its_indicator_through_the_workbook(tmp_path
     (data / "datasets.json").write_text(json.dumps({
         "HomicideRates": {"name": "Homicide Rates", "doi": "10.34894/F2XDR7"},
         "SocialSpending": {"name": "Social Spending", "doi": "10.34894/SS"},
-        "GDPperCapita": {"name": "GDP per Capita", "doi": "10.34894/GDP"}}))
+        "GDPperCapita": {"name": "GDP per Capita", "doi": "10.34894/GDP"},
+        "WealthTop10percentshare": {"name": "Wealth Top10 percent share", "doi": "10.34894/W"}}))
     _deposit(raw, "doi-10-60", "Homicide Rates", {"h.docx": ["1. Title", "Homicide", "4. Version", "2"]})
     _deposit(raw, "doi-10-69", "Social Transfers", {"s.docx": ["1. Title", "Social Spending and the Welfare State"]})
     _deposit(raw, "doi-10-68", "GDP per Capita", {
         "old.docx": ["1. Title", "First Update", "3. Production date", "January 2013.", "4. Version", "na"],
         "new.docx": ["1. Title", "The long view", "3. Production date", "January 2020.", "4. Version", "2"]})
     d = raw / "doi-10-99"; d.mkdir()
-    _book(d / "y-historical.xlsx", [["Homicide Rates"], ["u"], HEADER])      # a workbook, no paper
+    _book(d / "y-historical.xlsx", [["Wealth Top 10 percent share"], ["share of wealth"], HEADER])
 
     report = documentation.build(data)
     written = yaml.safe_load((data / "documentation.yaml").read_text())
     assert written["homicide_rates"]["doi"] == "10.34894/F2XDR7"
+    assert written["homicide_rates"]["workbook_unit"] == "a unit"
     assert written["social_spending"]["title"] == "Social Spending and the Welfare State"   # via the alias
     assert written["gdp_per_capita"]["title"] == "The long view"                           # latest edition
     assert written["gdp_per_capita"]["superseded"][0]["title"] == "First Update"
-    assert report["no_paper"] == ["doi-10-99"] and report["unmatched"] == []
+    # a single-file download still gets an entry: identity and unit, no paper
+    assert written["wealth_top10_percent_share"]["paper"] is None
+    assert written["wealth_top10_percent_share"]["workbook_unit"] == "share of wealth"
+    assert report["workbook_only"] == ["doi-10-99"] and report["unmatched"] == []
+
+
+def test_a_row_2_that_only_repeats_the_name_is_not_a_unit():
+    """"CO2 Emissions per Capita" in row 2 of that workbook is a restated title."""
+    read = [{"unit": "CO2  Emissions per capita"}]
+    assert documentation._workbook_unit(read, "CO2 Emissions per Capita") is None
+    assert documentation._workbook_unit([{"unit": "tonnes per person"}], "CO2 Emissions per Capita") == "tonnes per person"

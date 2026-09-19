@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 from notebook_modules import load
 
@@ -251,12 +252,25 @@ def test_kind_separates_measured_from_panels_and_reconstructions():
     assert k("Wage", {"category": "Prices and Wages", "zero_share": 0.0, "distinct_values": 4900}) == "measured"
 
 
-def test_units_are_harvested_from_filed_deposits_and_never_inferred(tmp_path):
-    hist = tmp_path / "hist"
-    deposit = hist / "raw" / "10.34894_UFVNXT"; deposit.mkdir(parents=True)
-    _workbook(deposit / "w-historical.xlsx", {"Data": [["Labourers Real Wage"], ["baskets a day buys"], ["h"]]})
-    (hist / "manifest.json").write_text('{"10.34894/UFVNXT": {"workbook": "w-historical.xlsx", "version": "1.1"}}')
-    units_file = tmp_path / "units.yaml"
-    assert units_mod.harvest(hist, units_file) == {"labourers_real_wage": "baskets a day buys"}
-    assert units_mod.load(units_file)["labourers_real_wage"]["source"].startswith("DataverseNL doi:10.34894/UFVNXT v1.1")
-    assert units_mod.harvest(hist, units_file) == {}          # nothing new the second time
+def test_row_2_is_preferred_and_the_paper_is_the_fallback(tmp_path):
+    """Where both exist they agree on 2 of 30; row 2 is usually the better label."""
+    docs = tmp_path / "documentation.yaml"
+    docs.write_text(yaml.safe_dump({
+        "polity2_index": {"workbook_unit": "autocracy-democracy on a -10 to 10 scale",
+                          "unit": "index", "unit_source": "unit_of_analysis", "doi": "10.34894/P"},
+        "social_spending": {"workbook_unit": None, "unit": "percentage of GDP",
+                            "unit_source": "unit_of_measurement", "doi": "10.34894/S"},
+        "height": {"workbook_unit": None, "unit": None, "doi": "10.34894/H"},
+    }))
+    out = tmp_path / "units.yaml"
+    assert units_mod.harvest(docs, out) == {"indicators": 3, "with_unit": 2, "from_workbook": 1}
+    got = units_mod.load(out)
+    assert (got["polity2_index"]["unit"], got["polity2_index"]["source"]) == (
+        "autocracy-democracy on a -10 to 10 scale", "workbook row 2")
+    assert got["polity2_index"]["paper_unit"] == "index"               # the other is kept, not lost
+    assert got["social_spending"]["source"] == "working paper, unit_of_measurement"
+    assert got["height"]["unit"] is None                               # nothing is inferred
+
+
+def test_without_the_documentation_there_are_no_units_rather_than_an_error(tmp_path):
+    assert units_mod.harvest(tmp_path / "absent.yaml", tmp_path / "u.yaml")["with_unit"] == 0

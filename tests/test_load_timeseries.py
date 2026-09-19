@@ -79,3 +79,17 @@ def test_the_chunks_cover_every_row_once():
     items = list(range(10))
     assert [x for batch in T._chunks(items, 3) for x in batch] == items
     assert [len(b) for b in T._chunks(items, 3)] == [3, 3, 3, 1]
+
+
+def test_a_unit_change_is_reported_even_when_no_observation_moved(tmp_path):
+    url = _engine(tmp_path)
+    engine = sa.create_engine(url)
+    first = _jsonl(tmp_path, 3)
+    T.load_file(first, engine)
+    lines = [json.loads(l) for l in first.read_text().splitlines()]
+    lines[0]["units"] = "cm"
+    first.write_text("".join(json.dumps(l) + "\n" for l in lines))
+    result = T.load_file(first, engine)
+    engine.dispose()
+    assert (result["changed"], result["observations_moved"]) == ([], 0)
+    assert result["relabelled"] == ["clio/x/0"]

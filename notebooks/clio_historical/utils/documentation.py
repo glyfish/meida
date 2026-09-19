@@ -165,15 +165,19 @@ def _slug(name: str) -> str:
 def build(data_dir: Path | None = None) -> dict[str, object]:
     """Extract every working paper under ``data/raw/`` into ``data/documentation.yaml``.
 
-    Keyed by indicator id -- ``labourers_real_wage`` -- the same keys as
-    ``notebooks/clio/units.yaml``. A paper is tied to its indicator and DOI
+    Keyed by indicator id -- ``labourers_real_wage`` -- the ids the Clio series
+    use, so ``notebooks/clio``'s unit harvest can read this file directly. A paper is tied to its indicator and DOI
     through the workbook in the same folder, whose title row names it; folder
     names (``doi-10-72``) carry nothing. Where one folder holds two copies of a
     paper, as a re-download leaves, they are compared: identical is one entry,
     different is reported and neither is guessed between.
 
-    Returns a report: what was written, which folders have a workbook but no
-    paper, and which could not be matched.
+    Every filed indicator gets an entry, paper or not: ``workbook_unit`` is the
+    workbook's row 2 in the layout that has one, and a single-file download has
+    ``paper: null`` but its identity and unit all the same.
+
+    Returns a report: papers written, folders with a workbook only, what could
+    not be matched, editions resolved, and indicators filed in two folders.
     """
     import yaml
     from . import accept, workbook
@@ -186,40 +190,51 @@ def build(data_dir: Path | None = None) -> dict[str, object]:
             by_title[workbook_title] = (slug, datasets[slug])
 
     entries: dict[str, dict] = {}
-    report = {"papers": 0, "no_paper": [], "unmatched": [], "editions": []}
+    report = {"papers": 0, "workbook_only": [], "unmatched": [], "editions": [], "duplicates": []}
     for folder in sorted(p for p in (data_dir / "raw").iterdir() if p.is_dir()):
         books = sorted(folder.glob("*.xlsx"))
         papers = sorted(folder.glob("*.docx"))
         if not books:
             continue
-        if not papers:
-            report["no_paper"].append(folder.name)
-            continue
         parsed = {paper.name: metadata(paper) for paper in papers}
+        read = [workbook.read(b) for b in books]
         # The workbook's title names the indicator; the third layout has none,
         # and then the paper's own title is asked instead.
-        titles = [workbook.read(books[0])["title"]] + [m.get("title") or "" for m in parsed.values()]
+        titles = [r["title"] for r in read] + [m.get("title") or "" for m in parsed.values()]
         match = next((by_title[t] for t in (" ".join(x.split()).casefold() for x in titles if x)
                       if t in by_title), None)
         if not match:
-            report["unmatched"].append((folder.name, titles[0] or titles[1:]))
+            report["unmatched"].append((folder.name, [t for t in titles if t][:2]))
             continue
         slug, dataset = match
-        # One deposit can carry two editions -- GDP per capita has the 2013
-        # Maddison update and the 2020 "long view", version 2. The latest
-        # edition is the entry; the others are kept, marked superseded.
-        ranked = sorted(parsed.items(), key=_edition, reverse=True)
-        name, chosen = ranked[0]
         key = _slug(dataset["name"])
-        entries[key] = {"indicator": dataset["name"], "clio_slug": slug, "doi": dataset["doi"],
-                        "folder": folder.name, "paper": name, **chosen}
-        older = [{"paper": n, "title": m.get("title"), "paper_version": m.get("paper_version"),
-                  "production_date": m.get("production_date")}
-                 for n, m in ranked[1:] if m != chosen]
-        if older:
-            entries[key]["superseded"] = older
-            report["editions"].append((folder.name, name, [o["paper"] for o in older]))
-        report["papers"] += 1
+        entry = {"indicator": dataset["name"], "clio_slug": slug, "doi": dataset["doi"],
+                 "folder": folder.name, "workbook": books[0].name,
+                 "workbook_unit": _workbook_unit(read, dataset["name"])}
+        if parsed:
+            # One deposit can carry two editions -- GDP per capita has the 2013
+            # Maddison update and the 2020 "long view", version 2. The latest
+            # edition is the entry; the others are kept, marked superseded.
+            ranked = sorted(parsed.items(), key=_edition, reverse=True)
+            name, chosen = ranked[0]
+            entry.update({"paper": name, **chosen})
+            older = [{"paper": n, "title": m.get("title"), "paper_version": m.get("paper_version"),
+                      "production_date": m.get("production_date")}
+                     for n, m in ranked[1:] if m != chosen]
+            if older:
+                entry["superseded"] = older
+                report["editions"].append((folder.name, name, [o["paper"] for o in older]))
+            report["papers"] += 1
+        else:
+            # A single-file download: no paper, but the workbook still names its
+            # indicator and, in the usual layout, its unit.
+            entry["paper"] = None
+            report["workbook_only"].append(folder.name)
+        if key in entries:
+            report["duplicates"].append((key, entries[key]["folder"], folder.name))
+            if entries[key].get("paper") and not entry.get("paper"):
+                continue                         # never let a bare workbook displace a paper
+        entries[key] = entry
 
     path = data_dir / DOCUMENTATION
     path.write_text(
@@ -233,12 +248,29 @@ def build(data_dir: Path | None = None) -> dict[str, object]:
     return report
 
 
+def _workbook_unit(read: list[dict], name: str) -> str | None:
+    """Row 2 of the usual layout -- unless it only repeats the indicator's name.
+
+    "CO2 Emissions per Capita" in row 2 of the CO2 per capita workbook is a
+    restated title, not a unit, and would read as one if taken on trust.
+    """
+    for book in read:
+        unit = (book.get("unit") or "").strip()
+        if unit and " ".join(unit.split()).casefold() != " ".join(name.split()).casefold():
+            return unit
+    return None
+
+
 #: Workbooks whose title row does not match the Clio index, each checked
 #: against the paper beside it, which names the indicator correctly.
 WORKBOOK_ALIASES = {
     "unifid democracy scores (uds)": "UnifiedDemocracyScoresUDS",     # a typo in the workbook
     "composite wellbeing index": "CompositeMeasureofWellbeing",      # paper: "Composite measure of wellbeing"
     "social transfers": "SocialSpending",                            # paper: "Social Spending and the Welfare State"
+    # workbook-only, no paper to check against -- but the abbreviations are exact
+    "global extreme poverty cost of basic needs": "GlobalExtremePovertyCostofBasicNeeds",   # (CBN)
+    "global extreme poverty dollar a day": "GlobalExtremePovertyDollaraDay",                # (DAD)
+    "wealth top 10 percent share": "WealthTop10percentshare",                               # "Top10"
 }
 
 
