@@ -1,11 +1,12 @@
 """Stored series from the DataverseNL deposits: Clio indicators at historical borders.
 
-Every deposit's workbook lists the same ~1,412 GeaCron border periods, but in
-all except five indicators those rows are empty: the deposit's data is its
-CShapes rows, and those are the main site's series, already stored as
-``clio``. What is genuinely new is small -- about 400 border-period series in
-three indicators: exchange rates to the pound, days lost in labour disputes,
-and labourers' real wages.
+Every deposit's workbook lists the GeaCron border periods -- 1,166 of them in
+74 of the 76, 1,412 in one and none in one -- but in all except four
+indicators those rows are empty: the deposit's data is its CShapes rows, and
+those are the main site's series, already stored as ``clio``. What is
+genuinely new is small -- 391 border-period series in three indicators:
+exchange rates to the pound, days lost in labour disputes, and labourers'
+real wages.
 
 So a series here is **one polity within one border period**, holding only the
 values inside that period: ``clio_historical/labourers_real_wage/
@@ -35,6 +36,10 @@ import yaml
 
 from . import accept, workbook, xlsx
 
+class MainSiteError(RuntimeError):
+    """The main site's long-format sheet is not shaped as expected."""
+
+
 SOURCE = "clio_historical"
 TTL_DAYS = 3650
 CLIO_DATA = Path(__file__).resolve().parents[2] / "clio" / "data"
@@ -56,10 +61,17 @@ def snake(text: str) -> str:
 def _main_site(slug: str, inventory: dict) -> dict[str, dict[int, float]]:
     """The main site's series for one indicator, country -> {year: value}."""
     out: dict[str, dict[int, float]] = {}
-    for r in xlsx.records(CLIO_DATA / "raw" / inventory[slug]["file"], "Data Long Format"):
+    records = xlsx.records(CLIO_DATA / "raw" / inventory[slug]["file"], "Data Long Format")
+    # Check the columns once, loudly. Swallowing a KeyError per row meant that
+    # renaming one of them upstream would empty the comparison and label all
+    # 395 series "new" -- a wrong answer that raises nothing.
+    missing = {"country.name", "year", "value"} - set(records[0] if records else ())
+    if missing:
+        raise MainSiteError(f"{slug}: long-format sheet is missing {sorted(missing)}")
+    for r in records:
         try:
             out.setdefault((r["country.name"] or "").strip(), {})[int(float(r["year"]))] = float(r["value"])
-        except (KeyError, TypeError, ValueError):
+        except (TypeError, ValueError):           # a blank or non-numeric cell
             continue
     return out
 
@@ -80,7 +92,8 @@ def relate(values: dict[int, float], name: str,
     ``extends``    it agrees on every year both have, and this adds years
     ``successor``  another country carries them all -- Ottoman to Turkey
     ``differs``    the same-named country has overlapping years that disagree
-    ``new``        no main-site country has any of these years to compare
+    ``new``        the same-named country shares no year with these, and no
+                   other country carries them all
 
     "Every value" alone was too strict: France's 1660-1679 exchange rates match
     the main site year for year, but the main site lacks some of those years,
@@ -94,13 +107,16 @@ def relate(values: dict[int, float], name: str,
     shared, agree = compare(main.get(name, {}))
     if shared and agree == shared:
         return name, "same" if shared == len(values) else "extends"
-    for country, series in main.items():
+    if shared:
+        # The same-named country disagreeing is the finding this source exists
+        # for -- the Netherlands with Belgium. Scanning for a successor first
+        # let any other country that happened to match in full bury it.
+        return name, "differs"
+    for country in sorted(main):                  # sorted: not the sheet's row order
         if country != name:
-            s, a = compare(series)
+            s, a = compare(main[country])
             if s == len(values) and a == s:
                 return country, "successor"
-    if shared:
-        return name, "differs"
     return None, "new"
 
 
@@ -108,7 +124,8 @@ def build_all(data_dir: Path = accept.DATA_DIR) -> tuple[list[dict[str, Any]], d
     data_dir = Path(data_dir)
     docs = yaml.safe_load((data_dir / "documentation.yaml").read_text())
     inventory = json.loads((CLIO_DATA / "inventory.json").read_text())
-    records, excluded, ids = [], [], set()
+    records, excluded, repeated = [], [], []
+    ids: dict[str, dict[int, str]] = {}
     for key, entry in sorted(docs.items()):
         path = data_dir / "raw" / entry["folder"] / entry["workbook"]
         book = workbook.read(path)
@@ -128,8 +145,14 @@ def build_all(data_dir: Path = accept.DATA_DIR) -> tuple[list[dict[str, Any]], d
             inside = sorted(y for y in p["values"] if p["border_start"] <= y <= p["border_end"])
             native_id = f"{SOURCE}/{key}/{snake(p['name'])}_{p['border_start']}_{p['border_end']}"
             if native_id in ids:                      # two rows, same name and period
+                # Identical rows are a repeat of one period, not two series:
+                # three pairs were stored twice under ids differing only by a
+                # GeaCron code. Keep the first; suffix only a real disagreement.
+                if ids[native_id] == {y: p["texts"][y] for y in inside}:
+                    repeated.append((key, p["code"], p["name"]))
+                    continue
                 native_id += f"_g{p['code'].split('/')[-1]}"
-            ids.add(native_id)
+            ids[native_id] = {y: p["texts"][y] for y in inside}
             start, end = f"{inside[0]:04d}-01-01", f"{inside[-1]:04d}-01-01"
             modern, relation = relate({y: p["values"][y] for y in inside}, p["name"], main)
             records.append({
@@ -154,5 +177,5 @@ def build_all(data_dir: Path = accept.DATA_DIR) -> tuple[list[dict[str, Any]], d
                 },
                 "observations": [{"date": f"{y:04d}-01-01", "value": p["texts"][y]} for y in inside],
             })
-    return records, {"series": len(records), "excluded": excluded,
+    return records, {"series": len(records), "excluded": excluded, "repeated": repeated,
                      "observations": sum(r["observation_count"] for r in records)}

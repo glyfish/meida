@@ -143,10 +143,16 @@ def break_gaps(years: numpy.ndarray, values: numpy.ndarray,
     Clio's annual series have holes -- real wages alone have 722 gaps longer than
     a year -- and a line plot would bridge them. On the series' own step
     (1 annual, 10 decadal), a missing year breaks the line instead.
+
+    The step is the indicator's, not the country's, so observations land off it:
+    the livestock indicators are decadal until 2000 and annual after it, and
+    Estonia's eleven goat observations plotted as two on a bare decadal grid.
+    Union the observed years in, and an off-grid one is drawn where it falls
+    rather than dropped -- 12,110 observations across 1,423 series.
     """
     if len(years) < 2:
         return years, values
-    grid = numpy.arange(int(years[0]), int(years[-1]) + 1, every)
+    grid = numpy.union1d(numpy.arange(int(years[0]), int(years[-1]) + 1, every), years)
     known = dict(zip(years.tolist(), values.tolist()))
     return grid, numpy.array([known.get(int(y), numpy.nan) for y in grid])
 

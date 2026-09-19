@@ -24,6 +24,7 @@ quotes, of which 1,978 country-years are repeats.
 """
 from __future__ import annotations
 
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -36,15 +37,40 @@ class WorkbookError(RuntimeError):
     """The sheet does not have the title / unit / header layout."""
 
 
-def _year(text: str | None) -> int | None:
+#: Excel counts days from 1899-12-30, so a date-formatted cell reads as a
+#: five-figure "year". Four polity rows -- Australia, Austria, France,
+#: Greenland -- carry ``end year`` that way in every one of the 76 workbooks,
+#: and 7305 became a border period ending in the year 7305, which no filter
+#: could be wrong about loudly.
+_EXCEL_EPOCH = date(1899, 12, 30)
+
+
+def _number(text: str | None) -> int | None:
+    """A whole number from a cell -- a code, or a year before _year sees it."""
     try:
         return int(float(text)) if text not in (None, "") else None
     except ValueError:
         return None
 
 
-#: Three layouts in the deposits, told apart by what sits above the header row:
-#: title and unit (most), title only (sheet "Sheet1"), or nothing at all.
+def _year(text: str | None) -> int | None:
+    """A border year, converting a date-formatted cell back to its year.
+
+    Only for `start year` and `end year`: a country code of 826 is a country
+    code, and would read as 1902 if it went through here.
+    """
+    number = _number(text)
+    if number is None or 1000 <= number <= 2100:
+        return number
+    if 1 <= number < 100_000:                     # a date serial, not a year
+        return (_EXCEL_EPOCH + timedelta(days=number)).year
+    raise WorkbookError(f"implausible year {text!r}")
+
+
+#: What sits above the header row. Every deposit uses the first: title on row
+#: 1, unit on row 2, header on row 3 -- though eleven leave the unit blank, and
+#: Excel omits an empty row entirely, which is why reading rows in document
+#: order once made those look like a layout of their own.
 LAYOUTS = {2: "title, unit, header", 1: "title, header", 0: "header"}
 
 
@@ -77,11 +103,11 @@ def read(path: Path) -> dict[str, Any]:
             if text not in (None, ""):
                 values[year] = float(text)
                 texts[year] = text.strip()      # as written -- a stored value is a string
-        ccode = _year(row.get(cols["ccode"]))
+        ccode = _number(row.get(cols["ccode"]))
         polities.append({
             "code": code,
             "scheme": code.split("/")[0],
-            "numeric": _year(row.get(cols["Webmapper numeric code"])),
+            "numeric": _number(row.get(cols["Webmapper numeric code"])),
             "ccode": ccode,
             "name": (row.get(cols["country name"]) or "").strip(),
             "border_start": _year(row.get(cols["start year"])),

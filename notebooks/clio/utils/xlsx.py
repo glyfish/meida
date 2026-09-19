@@ -60,7 +60,11 @@ def sheet_names_from(workbook_xml: str) -> list[str]:
 
 
 def rows(path: Path, sheet: str) -> list[dict[str, str]]:
-    """Every row of *sheet* as ``{column letter: text}``, empty cells omitted."""
+    """Every row of *sheet* as ``{column letter: text}``, empty cells omitted.
+
+    Indexed by the sheet's own row numbers: a row Excel left out comes back as
+    an empty dict, so position in the list is position in the file.
+    """
     try:
         z = zipfile.ZipFile(path)
     except zipfile.BadZipFile as exc:
@@ -68,8 +72,16 @@ def rows(path: Path, sheet: str) -> list[dict[str, str]]:
     with z:
         shared = _shared_strings(z)
         xml = z.read(_sheet_file(z, sheet)).decode()
-    out = []
-    for row in re.findall(r"<row\b[^>]*>(.*?)</row>", xml, re.S):
+    # Keyed by the row's own number: Excel omits an empty row entirely, so
+    # eleven of the deposits jump from row 1 to row 3. Appending in document
+    # order closed that gap and shifted every row up, which is how a unit on
+    # row 2 could be read as the title on row 1.
+    numbered: dict[int, dict[str, str]] = {}
+    previous = 0
+    for attrs_row, row in re.findall(r"<row\b([^>]*)>(.*?)</row>", xml, re.S):
+        found = re.search(r'\br="(\d+)"', attrs_row)
+        number = int(found.group(1)) if found else previous + 1
+        previous = number
         cells: dict[str, str] = {}
         for attrs, body in _CELL.findall(row):
             col = re.search(r'\br="([A-Z]+)', attrs).group(1)
@@ -80,8 +92,10 @@ def rows(path: Path, sheet: str) -> list[dict[str, str]]:
                 cells[col] = html.unescape("".join(_TEXT.findall(body or "")))
             elif value:
                 cells[col] = html.unescape(value.group(1))
-        out.append(cells)
-    return out
+        numbered[number] = cells
+    if not numbered:
+        return []
+    return [numbered.get(i, {}) for i in range(1, max(numbered) + 1)]
 
 
 def records(path: Path, sheet: str) -> list[dict[str, str]]:

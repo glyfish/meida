@@ -93,3 +93,45 @@ def test_a_unit_change_is_reported_even_when_no_observation_moved(tmp_path):
     engine.dispose()
     assert (result["changed"], result["observations_moved"]) == ([], 0)
     assert result["relabelled"] == ["clio/x/0"]
+
+
+def test_a_series_the_file_no_longer_carries_is_pruned(tmp_path):
+    """A rebuild that renames an id left the old row behind, out of the catalog
+    but still served: seven clio_historical series outlived their ids."""
+    url = _engine(tmp_path)
+    engine = sa.create_engine(url)
+    T.load_file(_jsonl(tmp_path, 3), engine)
+    fresh = tmp_path / "again.jsonl"
+    fresh.write_text(json.dumps({
+        "source": "clio", "native_id": "clio/x/0", "title": "x 0", "frequency": "Annual",
+        "observations": [{"date": "1900-01-01", "value": "1.0"}],
+        "observation_start": "1900-01-01", "observation_end": "1900-01-01"}) + "\n")
+
+    result = T.load_file(fresh, engine)
+
+    assert sorted(result["pruned"]) == ["clio/x/1", "clio/x/2"]
+    table = sa.Table(T.TABLE_NAME, sa.MetaData(), autoload_with=engine)
+    with engine.begin() as conn:
+        assert [r[0] for r in conn.execute(sa.select(table.c.native_id))] == ["clio/x/0"]
+    engine.dispose()
+
+
+def test_pruning_is_skipped_when_one_source_spans_two_files(tmp_path):
+    """Each file would otherwise delete the other's series."""
+    url = _engine(tmp_path)
+    directory = tmp_path / "ts"
+    directory.mkdir()
+    for name, nid in (("a.jsonl", "test/a"), ("b.jsonl", "test/b")):
+        (directory / name).write_text(json.dumps({
+            "source": "test", "native_id": nid, "title": nid, "frequency": "Annual",
+            "observations": [{"date": "2000-01-01", "value": "1.0"}],
+            "observation_start": "2000-01-01", "observation_end": "2000-01-01"}) + "\n")
+
+    out = T.load_all(directory, db_url=url)
+
+    assert out["prune_skipped"] == {"test": ["a.jsonl", "b.jsonl"]}
+    engine = sa.create_engine(url)
+    table = sa.Table(T.TABLE_NAME, sa.MetaData(), autoload_with=engine)
+    with engine.begin() as conn:
+        assert sorted(r[0] for r in conn.execute(sa.select(table.c.native_id))) == ["test/a", "test/b"]
+    engine.dispose()

@@ -1,7 +1,8 @@
-"""Read the ``.docx`` working paper each DataverseNL deposit carries.
+"""Read the working paper each DataverseNL deposit carries.
 
-A fixed template of numbered sections -- ``1. Title`` through ``16. Sources``
--- and the only place two things are written down at all:
+A fixed template of numbered sections -- ``1. Title`` through ``16. Sources``,
+and in most papers a section 17 (the paper itself) and sometimes an 18 -- and
+the only place two things are written down at all:
 
 * ``7. Unit of analysis`` -- "number of subsistence baskets"
 * ``13. Data quality`` -- a four-tier grading (central statistical agencies,
@@ -11,12 +12,19 @@ A fixed template of numbered sections -- ``1. Title`` through ``16. Sources``
 A ``.docx`` is a zip; the text is in ``word/document.xml`` as ``<w:t>`` runs
 inside ``<w:p>`` paragraphs. The run pattern must not match ``<w:tab/>``,
 which shares the prefix -- a first attempt did, and leaked raw XML.
+
+Twenty-four of the seventy-six deposits carry the paper as legacy Word 97
+``.doc`` instead, which is not a zip. Globbing ``*.docx`` passed over all of
+them and recorded the deposit as having no paper at all. ``textutil`` (macOS,
+no dependency to add) converts them, and the numbered template survives the
+conversion intact.
 """
 from __future__ import annotations
 
 import html
 import json
 import re
+import subprocess
 import zipfile
 from pathlib import Path
 
@@ -25,12 +33,40 @@ _RUN = re.compile(r"<w:t(?:\s[^>]*)?>(.*?)</w:t>", re.S)
 _SECTION = re.compile(r"^(\d{1,2}[a-z]?)\.\s+(.+?)\s*$")
 
 
+class PaperError(RuntimeError):
+    """The working paper could not be read."""
+
+
+def _clean(text: str) -> str:
+    """Strip the template's form-field delimiters, ``[[[[value]]]]``.
+
+    Word writes them into the file, and they survive both the ``.docx`` runs
+    and the ``.doc`` conversion, so seven indicators' units read as
+    ``[[[[Percentage]]]]``.
+    """
+    return re.sub(r"\[{2,}|\]{2,}", "", text).strip()
+
+
+def _legacy_paragraphs(path: Path) -> list[str]:
+    """A Word 97 ``.doc`` through ``textutil``, one paragraph per line."""
+    try:
+        done = subprocess.run(["textutil", "-stdout", "-convert", "txt", str(path)],
+                              capture_output=True, check=True)
+    except (OSError, subprocess.CalledProcessError) as exc:      # not macOS, or not a .doc
+        raise PaperError(f"{path}: cannot convert a legacy .doc -- {exc}") from exc
+    lines = (_clean(line) for line in done.stdout.decode("utf-8", "replace").splitlines())
+    return [line for line in lines if line]
+
+
 def paragraphs(path: Path) -> list[str]:
+    """Every non-empty paragraph, from a ``.docx`` or a legacy ``.doc``."""
+    if path.suffix.casefold() == ".doc":
+        return _legacy_paragraphs(path)
     with zipfile.ZipFile(path) as z:
         xml = z.read("word/document.xml").decode("utf-8", "replace")
     out = []
     for body in _PARAGRAPH.findall(xml):
-        text = html.unescape("".join(_RUN.findall(body))).strip()
+        text = _clean(html.unescape("".join(_RUN.findall(body))))
         if text:
             out.append(text)
     return out
@@ -57,7 +93,7 @@ def sections(path: Path) -> dict[str, str]:
 
 # --- the template, field by field ---------------------------------------------
 #
-# 53 papers read. Eight headings appear in all of them; the rest vary in wording
+# 75 papers read. Nine headings appear in all of them; the rest vary in wording
 # ("Keywords (5)" / "Keywords", "Data collector" / "Data collectors"), and
 # section 17, "Text", is the full working paper -- whose own chapters are
 # numbered too ("2. INCOME INEQUALITY IN THE POST-1945 PERIOD"). So a numbered
@@ -90,8 +126,22 @@ FIELDS: dict[str, tuple[str, ...]] = {
 _HEADING_TO_FIELD = {name: field for field, names in FIELDS.items() for name in names}
 
 
-def _field(heading: str) -> str | None:
-    return _HEADING_TO_FIELD.get(" ".join(heading.split()).casefold())
+def _field(heading: str) -> tuple[str | None, str]:
+    """The field this heading names, and whatever trailed it on the same line.
+
+    Two ILO papers write the grade into the heading itself -- "13. Data
+    quality: Central statistical agencies which afford the ILO with their
+    data". An exact lookup missed those, so the section was never opened and
+    the heading landed in the body of section 12.
+    """
+    text = " ".join(heading.split())
+    field = _HEADING_TO_FIELD.get(text.casefold())
+    if field:
+        return field, ""
+    name, colon, rest = text.partition(":")
+    if colon:
+        return _HEADING_TO_FIELD.get(" ".join(name.split()).casefold()), rest.strip()
+    return None, ""
 
 
 def metadata(path: Path) -> dict[str, object]:
@@ -108,11 +158,13 @@ def metadata(path: Path) -> dict[str, object]:
     headings = []
     for text in paragraphs(path):
         m = _SECTION.match(text)
-        field = _field(m.group(2)) if m and len(m.group(2)) < 80 else None
+        field, trailing = _field(m.group(2)) if m and len(m.group(2)) < 80 else (None, "")
         if field:
             current = field
             headings.append(m.group(2).strip())
             out.setdefault(field, [])
+            if trailing:                          # the heading carried its own text
+                out[field].append(trailing)
         elif current:
             out[current].append(text.lstrip("-–• ").strip())
     fields: dict[str, object] = {k: "\n".join(v).strip() or None for k, v in out.items()}
@@ -131,7 +183,7 @@ def metadata(path: Path) -> dict[str, object]:
 
 
 #: What "Unit of analysis" says when it names the thing observed rather than how
-#: it is measured -- 19 of 49 papers write "Country" there.
+#: it is measured -- 41 of 75 papers write "Country" there.
 _OBSERVED = {"country", "countries", "country-year", "country-years", "nation"}
 
 
@@ -190,10 +242,14 @@ def build(data_dir: Path | None = None) -> dict[str, object]:
             by_title[workbook_title] = (slug, datasets[slug])
 
     entries: dict[str, dict] = {}
-    report = {"papers": 0, "workbook_only": [], "unmatched": [], "editions": [], "duplicates": []}
+    report = {"papers": 0, "workbook_only": [], "unmatched": [], "editions": [],
+              "duplicates": [], "extra_workbooks": [], "unreadable": []}
     for folder in sorted(p for p in (data_dir / "raw").iterdir() if p.is_dir()):
         books = sorted(folder.glob("*.xlsx"))
-        papers = sorted(folder.glob("*.docx"))
+        # ``.doc`` as well as ``.docx``: 24 deposits carry the legacy format,
+        # and globbing only ``*.docx`` recorded every one as having no paper.
+        papers = sorted(folder.glob("*.docx")) + sorted(folder.glob("*.doc"))
+        report["unreadable"] += [str(f.relative_to(data_dir)) for f in sorted(folder.glob("*.pdf"))]
         if not books:
             continue
         parsed = {paper.name: metadata(paper) for paper in papers}
@@ -208,9 +264,22 @@ def build(data_dir: Path | None = None) -> dict[str, object]:
             continue
         slug, dataset = match
         key = _slug(dataset["name"])
+        # Three folders hold two workbooks -- a re-download saved beside the
+        # original -- and they are not copies: doi-10-68's differ in layout,
+        # unit and value count. Sorted order took "...-1.xlsx" and then the
+        # unit was harvested from whichever file had one. Prefer the workbook
+        # whose own title names the indicator, then the plain name, and take
+        # the unit from that one file.
+        titled = [pair for pair in zip(books, read)
+                  if " ".join((pair[1]["title"] or "").split()).casefold() in by_title]
+        book, book_read = min(titled or list(zip(books, read)),
+                              key=lambda pair: (len(pair[0].name), pair[0].name))
+        extras = [b.name for b in books if b != book]
+        if extras:
+            report["extra_workbooks"].append((folder.name, book.name, extras))
         entry = {"indicator": dataset["name"], "clio_slug": slug, "doi": dataset["doi"],
-                 "folder": folder.name, "workbook": books[0].name,
-                 "workbook_unit": _workbook_unit(read, dataset["name"])}
+                 "folder": folder.name, "workbook": book.name,
+                 "workbook_unit": _workbook_unit([book_read], dataset["name"])}
         if parsed:
             # One deposit can carry two editions -- GDP per capita has the 2013
             # Maddison update and the 2020 "long view", version 2. The latest

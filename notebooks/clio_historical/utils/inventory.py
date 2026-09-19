@@ -7,9 +7,9 @@ working paper provides, and how the stored series stand to the main site.
 The schemes are counted apart because they mean different things. **GeaCron**
 rows are historical border periods -- the reason this source exists -- and
 **CShapes** rows are post-1946 states whose series reach back before 1946, the
-main site's data in another layout. Every workbook lists ~1,412 GeaCron
-periods, and counting them separately is what shows that in all but five
-indicators they are empty.
+main site's data in another layout. Every workbook lists the same 1,166
+GeaCron periods bar two -- one lists 1,412, one none -- and counting them
+apart is what shows that in all but four indicators they are empty.
 """
 from __future__ import annotations
 
@@ -28,12 +28,17 @@ INVENTORY = "inventory.json"
 #: lists only these has not said which applies.
 _GRADES = {"central statistical agencies", "historical reconstructions", "estimates", "conjectures"}
 
+#: The template's own lead-in to that menu. It is not an assessment, and
+#: counting it as one made GDP per capita -- which picks nothing -- read as
+#: though it had.
+_TEMPLATE = "indication of the quality of the data based on the following categories:"
+
 
 def quality_stated(section: str | None) -> bool:
     """Whether a paper's data-quality section says more than the template's menu."""
     for line in (section or "").splitlines():
         text = line.strip().lstrip("ivx").lstrip(".").strip().rstrip(".").casefold()
-        if text and text not in _GRADES:
+        if text and text not in _GRADES and text.rstrip(":") != _TEMPLATE.rstrip(":"):
             return True
     return False
 

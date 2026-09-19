@@ -6,6 +6,7 @@ markup, and the workbooks are assembled in memory from the four XML parts an
 """
 from __future__ import annotations
 
+import sys
 import zipfile
 from pathlib import Path
 
@@ -17,6 +18,9 @@ from notebook_modules import load
 fetch = load("clio/utils", "fetch")
 xlsx = load("clio/utils", "xlsx")
 inventory = load("clio/utils", "inventory")
+# the package itself holds the notebooks' plotting helpers; loading any module
+# above registers it, so reach it by name rather than executing it a second time
+plots = sys.modules["clio_utils"]
 
 
 # --- the index ----------------------------------------------------------------
@@ -274,3 +278,64 @@ def test_row_2_is_preferred_and_the_paper_is_the_fallback(tmp_path):
 
 def test_without_the_documentation_there_are_no_units_rather_than_an_error(tmp_path):
     assert units_mod.harvest(tmp_path / "absent.yaml", tmp_path / "u.yaml")["with_unit"] == 0
+
+
+# --- the notebooks' plotting helpers -------------------------------------------
+
+@pytest.mark.parametrize("frequency,expected", [
+    ("Annual", 1), ("Decadal", 10), ("Every 5 years", 5), ("", 1), (None, 1),
+])
+def test_the_step_comes_from_the_frequency_label(frequency, expected):
+    assert plots.step({"frequency": frequency}) == expected
+
+
+def _arrays(*years):
+    import numpy
+    return numpy.array(years), numpy.array([float(y) for y in years])
+
+
+def test_a_missing_year_breaks_the_line_rather_than_bridging_it():
+    import numpy
+    grid, values = plots.break_gaps(*_arrays(1900, 1901, 1903))
+    assert grid.tolist() == [1900, 1901, 1902, 1903]
+    assert numpy.isnan(values[2]) and values[3] == 1903
+
+
+def test_an_observation_off_the_step_grid_is_kept():
+    """Algeria's income inequality is 1910, 1929, 1990 under a Decadal label --
+    on a bare decadal grid 1929 was dropped, and a three-point series drawn as
+    two."""
+    import numpy
+    grid, values = plots.break_gaps(*_arrays(1910, 1929, 1990), every=10)
+    assert 1929 in grid.tolist()
+    assert not numpy.isnan(values[grid.tolist().index(1929)])
+
+
+def test_annual_observations_under_a_decadal_label_all_survive():
+    """The livestock indicators are decadal to 2000 and annual after it, so
+    Estonia's eleven goat observations plotted as two."""
+    import numpy
+    years = list(range(2000, 2011))
+    grid, values = plots.break_gaps(*_arrays(*years), every=10)
+    assert grid.tolist() == years
+    assert not numpy.isnan(values).any()
+
+
+def test_a_row_excel_left_out_comes_back_empty(tmp_path):
+    """Eleven deposits jump from row 1 to row 3. Appending in document order
+    closed the gap and shifted every row up a place."""
+    path = tmp_path / "gap.xlsx"
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr("xl/worksheets/sheet1.xml",
+                   '<worksheet><sheetData>'
+                   '<row r="1"><c r="A1" t="inlineStr"><is><t>Title</t></is></c></row>'
+                   '<row r="3"><c r="A3" t="inlineStr"><is><t>Header</t></is></c></row>'
+                   '</sheetData></worksheet>')
+        z.writestr("xl/workbook.xml",
+                   '<workbook><sheets><sheet name="Data" sheetId="1" r:id="rId1"/></sheets></workbook>')
+        z.writestr("xl/_rels/workbook.xml.rels",
+                   '<Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>')
+
+    table = xlsx.rows(path, "Data")
+
+    assert [r.get("A") for r in table] == ["Title", None, "Header"]

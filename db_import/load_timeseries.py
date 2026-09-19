@@ -116,16 +116,24 @@ def _diff(table: sa.Table, rows: list[dict[str, Any]],
 
 
 def load_file(path: Path, engine: sa.Engine, *,
-              now: datetime | None = None) -> dict[str, Any]:
-    """Upsert every series in one ``.jsonl`` file.
+              now: datetime | None = None, prune: bool = True) -> dict[str, Any]:
+    """Upsert every series in one ``.jsonl`` file, and drop the ones it no longer has.
 
     Returns the series count plus what changed -- see :func:`_diff`.
+
+    *prune* deletes stored series of this file's sources that the file itself
+    no longer carries. Without it a rebuild that renames an id leaves the old
+    row behind, still served by ``timeseries_source_data`` and no longer in the
+    catalog: seven clio_historical series outlived their ids that way. It
+    assumes one file per source, which :func:`load_all` checks before asking
+    for it.
     """
     now = now or datetime.now(tz=timezone.utc)
     table = sa.Table(TABLE_NAME, sa.MetaData(), autoload_with=engine)
     rows = [_row(rec, now) for rec in read_jsonl(path)]
     if not rows:
-        return {"series": 0, "new": [], "changed": [], "observations_moved": 0, "relabelled": []}
+        return {"series": 0, "new": [], "changed": [], "observations_moved": 0,
+                "relabelled": [], "pruned": []}
 
     changes = _diff(table, rows, engine)
 
@@ -144,7 +152,21 @@ def load_file(path: Path, engine: sa.Engine, *,
                               "expires_at", "updated_at")
                 },
             ))
-    return {"series": len(rows), **changes}
+    removed: list[str] = []
+    if prune:
+        keep = {(r["source"], r["native_id"]) for r in rows}
+        with engine.begin() as conn:
+            for source in sorted({r["source"] for r in rows}):
+                # The set difference is taken here rather than as NOT IN (...),
+                # which would bind every id in one statement.
+                stale = [nid for (nid,) in conn.execute(
+                    sa.select(table.c.native_id).where(table.c.source == source))
+                         if (source, nid) not in keep]
+                for batch in _chunks(stale):
+                    conn.execute(sa.delete(table).where(
+                        table.c.source == source, table.c.native_id.in_(batch)))
+                removed += stale
+    return {"series": len(rows), "pruned": removed, **changes}
 
 
 def load_all(directory: Path, db_url: str | None = None) -> dict[str, Any]:
@@ -154,9 +176,21 @@ def load_all(directory: Path, db_url: str | None = None) -> dict[str, Any]:
     ``notebooks/<source>/data/timeseries``, and a default pointing at one of
     them is how the wrong source gets loaded.
     """
+    paths = sorted(directory.glob("*.jsonl"))
+    # Pruning is per source, so a source split across two files would have each
+    # file delete the other's series. Check before letting that happen.
+    files_by_source: dict[str, list[str]] = {}
+    for path in paths:
+        for source in {rec["source"] for rec in read_jsonl(path)}:
+            files_by_source.setdefault(source, []).append(path.name)
+    split = {s: f for s, f in files_by_source.items() if len(f) > 1}
+
     engine = sa.create_engine(db_url or get_meida_db_url())
     try:
-        return {p.name: load_file(p, engine) for p in sorted(directory.glob("*.jsonl"))}
+        out = {p.name: load_file(p, engine, prune=not split) for p in paths}
+        if split:
+            out["prune_skipped"] = split
+        return out
     finally:
         engine.dispose()
 
@@ -165,10 +199,15 @@ if __name__ == "__main__":
     import sys
 
     for name, result in load_all(Path(sys.argv[1])).items():
+        if name == "prune_skipped":
+            print(f"prune skipped, a source spans several files: {result}")
+            continue
         print(f"{name}: {result['series']} series")
         if result["new"]:
             print(f"  new: {len(result['new'])}")
         for native_id, n in result["changed"]:
             print(f"  changed: {native_id} ({n} observations)")
+        if result.get("pruned"):
+            print(f"  pruned: {len(result['pruned'])}")
         if not result["new"] and not result["changed"]:
             print("  unchanged")

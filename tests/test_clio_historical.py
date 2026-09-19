@@ -113,6 +113,66 @@ def test_all_three_deposit_layouts_are_read(tmp_path, above, layout, title, unit
     assert book["polities"][0]["values"] == {1820: 1.5}
 
 
+# --- years, layouts and the papers' oddities ----------------------------------
+
+def test_a_date_formatted_end_year_is_read_as_its_year(tmp_path):
+    """Four rows in every workbook carry `end year` as an Excel date serial:
+    7305 is 1919-12-31, and it became a border period ending in the year 7305."""
+    book = workbook.read(_historical(
+        tmp_path, ["geacron/82", 82, None, "Australia", 1840, 7305, 1.0]))
+    (p,) = book["polities"]
+    assert (p["border_start"], p["border_end"]) == (1840, 1919)
+
+
+def test_an_impossible_year_is_refused(tmp_path):
+    with pytest.raises(workbook.WorkbookError, match="implausible year"):
+        workbook.read(_historical(
+            tmp_path, ["geacron/1", 1, None, "Nowhere", 1820, 10_000_000, 1.0]))
+
+
+def test_an_absent_row_does_not_shift_the_unit_into_the_title(tmp_path):
+    """Ten deposits leave row 2 empty, and Excel omits the row entirely."""
+    path = tmp_path / "gap-historical.xlsx"
+    with zipfile.ZipFile(path, "w") as z:
+        head = ("".join(f'<c r="{_col(i)}3" t="s"><v>{i}</v></c>' for i in range(len(HEADER))))
+        z.writestr("xl/worksheets/sheet1.xml",
+                   '<worksheet><sheetData>'
+                   f'<row r="1"><c r="A1" t="s"><v>{len(HEADER)}</v></c></row>'
+                   f'<row r="3">{head}</row>'
+                   '</sheetData></worksheet>')
+        z.writestr("xl/workbook.xml",
+                   '<workbook><sheets><sheet name="Data" sheetId="1" r:id="rId1"/></sheets></workbook>')
+        z.writestr("xl/_rels/workbook.xml.rels",
+                   '<Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>')
+        z.writestr("xl/sharedStrings.xml", "<sst>"
+                   + "".join(f"<si><t>{h}</t></si>" for h in HEADER)
+                   + "<si><t>Real Wage</t></si></sst>")
+
+    book = workbook.read(path)
+
+    assert (book["title"], book["unit"]) == ("Real Wage", "")
+
+
+def test_a_heading_that_carries_its_own_text_still_opens_its_section(tmp_path):
+    """Two ILO papers write "13. Data quality: Central statistical agencies…",
+    and the whole section was swallowed into the one above it."""
+    fields = documentation.metadata(_paper(
+        tmp_path,
+        "12. Methodologies used for data collection and processing", "From the ILO.",
+        "13. Data quality: Central statistical agencies which afford the ILO with their data"))
+
+    assert fields["data_quality"] == "Central statistical agencies which afford the ILO with their data"
+    assert "Data quality" not in (fields["methodology"] or "")
+
+
+def test_a_form_field_delimiter_is_not_part_of_the_value(tmp_path):
+    """Word writes [[[[value]]]] into the file; seven units read with them."""
+    fields = documentation.metadata(_paper(
+        tmp_path, "7b. Unit of measurement", "[[[[Percentage]]]]"))
+
+    assert fields["unit_of_measurement"] == "Percentage"
+
+
 # --- the inventory ------------------------------------------------------------
 
 @pytest.mark.parametrize("section,stated", [
@@ -121,6 +181,9 @@ def test_all_three_deposit_layouts_are_read(tmp_path, above, layout, title, unit
     ("i. Central statistical agencies.\nii. Historical reconstructions\niii. Estimates\niv. Conjectures", False),
     ("Central statistical agencies\nEstimates\nBased on national censuses after 1870.", True),
     ("Good", True),
+    # the template's own lead-in to the menu is not an assessment either
+    ("Indication of the quality of the data based on the following categories:\n"
+     "i. Central statistical agencies\nii. Estimates", False),
 ])
 def test_the_template_menu_alone_does_not_state_a_quality(section, stated):
     """Half the papers keep the four grades as printed and never pick one."""
