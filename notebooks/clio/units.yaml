@@ -1,0 +1,6 @@
+# Units for the Clio-Infra indicators. The main-site workbooks state none;
+# each entry says where its unit came from. Filled by utils.units.harvest()
+# from DataverseNL deposits -- nothing here is inferred.
+labourers_real_wage:
+  unit: Number of daily subsistence baskets that a daily wage buys
+  source: DataverseNL doi:10.34894/UFVNXT v1.1, workbook row 2

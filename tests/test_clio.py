@@ -174,3 +174,89 @@ def test_the_united_states_is_reported_on_its_own(tmp_path):
                             [840.0, "United States", 2007.0, 2.0],
                             [826.0, "United Kingdom", 1820.0, 3.0]])
     assert inventory.measure(book)["us"] == {"observations": 2, "start": 1925, "end": 2007}
+
+
+# --- building series ----------------------------------------------------------
+
+clio_series = load("clio/utils", "clio_series")
+catalog = load("clio/utils", "catalog")
+units_mod = load("clio/utils", "units")
+
+INV_ENTRY = {"name": "Labourers  Real Wage", "category": "Prices and Wages",
+             "file": "w.xlsx", "modal_step": 1, "zero_share": 0.0, "distinct_values": 500,
+             "handle": "10622/QK8VRF", "definition": "Daily wage over a subsistence basket"}
+
+
+def _build(tmp_path, rows, codes=None, unit=None):
+    raw = tmp_path / "raw"; raw.mkdir()
+    _workbook(raw / "w.xlsx", {"Data Long Format": [LONG_HEADER, *rows]})
+    return clio_series.series_for("LabourersRealWage", INV_ENTRY, tmp_path, codes or {}, unit)
+
+
+def test_ids_come_from_display_names_not_page_slugs():
+    assert clio_series.snake("GDP per Capita") == "gdp_per_capita"
+    assert clio_series.snake("Macau, China") == "macau_china"
+    assert clio_series.indicator_id({"name": "Labourers  Real Wage"}) == "labourers_real_wage"
+
+
+def test_frequency_follows_the_usual_step():
+    assert [clio_series.frequency(s) for s in (1, 10, 50)] == ["Annual", "Decadal", "Every 50 years"]
+
+
+def test_one_series_per_country_with_values_kept_as_written(tmp_path):
+    series, _ = _build(tmp_path, [[826.0, "United Kingdom", 1820.0, "16.62734117"],
+                                  [826.0, "United Kingdom", 1821.0, "9.307143E-5"]])
+    (s,) = series
+    assert s["native_id"] == "clio/labourers_real_wage/united_kingdom"
+    assert s["title"] == "Labourers Real Wage — United Kingdom"
+    assert [o["value"] for o in s["observations"]] == ["16.62734117", "9.307143E-5"]
+    assert s["metadata"]["clio"]["ccode"] == [826]
+
+
+def test_a_blank_code_takes_the_code_its_name_carries_elsewhere(tmp_path):
+    series, collisions = _build(tmp_path, [[None, "Sudan", 1950.0, "3.0"]], codes={"Sudan": 729})
+    assert series[0]["metadata"]["clio"]["ccode"] == [729]
+    assert collisions == []
+
+
+def test_on_a_clash_the_coded_row_wins_and_the_clash_is_reported(tmp_path):
+    """Canada's uncoded 1946 real wage is the United States' number."""
+    series, collisions = _build(tmp_path, [[124.0, "Canada", 1946.0, "40.99"],
+                                           [None, "Canada", 1946.0, "66.73"]],
+                                codes={"Canada": 124})
+    assert [o["value"] for o in series[0]["observations"]] == ["40.99"]
+    assert collisions == [("LabourersRealWage", "Canada", 1946, "66.73", "40.99")]
+
+
+def test_a_territory_never_coded_anywhere_is_kept_by_name(tmp_path):
+    series, _ = _build(tmp_path, [[None, "Macau, China", 1900.0, "2.0"]])
+    assert series[0]["native_id"] == "clio/labourers_real_wage/macau_china"
+    assert series[0]["metadata"]["clio"]["ccode"] == [None]
+
+
+def test_the_catalog_entry_carries_facets_for_filtering_out_what_was_not_measured(tmp_path):
+    series, _ = _build(tmp_path, [[826.0, "United Kingdom", 1820.0, "16.6"]], unit="baskets")
+    entry = catalog.catalog_entry(series[0])
+    assert entry["facets"] == {"indicator": "labourers_real_wage", "country": "united_kingdom",
+                               "category": "prices_and_wages", "kind": "measured", "ccode": 826}
+    assert entry["retrieval"] == {"tool": "timeseries_source_data", "source": "clio",
+                                  "native_id": "clio/labourers_real_wage/united_kingdom"}
+    assert (entry["unit"], entry["description"]) == ("baskets", "Daily wage over a subsistence basket")
+
+
+def test_kind_separates_measured_from_panels_and_reconstructions():
+    k = inventory.kind
+    assert k("X", {"category": "Agriculture"}) == "reconstruction"
+    assert k("Conflicts", {"category": "Institutions", "zero_share": 0.97, "distinct_values": 2}) == "panel"
+    assert k("Wage", {"category": "Prices and Wages", "zero_share": 0.0, "distinct_values": 4900}) == "measured"
+
+
+def test_units_are_harvested_from_filed_deposits_and_never_inferred(tmp_path):
+    hist = tmp_path / "hist"
+    deposit = hist / "raw" / "10.34894_UFVNXT"; deposit.mkdir(parents=True)
+    _workbook(deposit / "w-historical.xlsx", {"Data": [["Labourers Real Wage"], ["baskets a day buys"], ["h"]]})
+    (hist / "manifest.json").write_text('{"10.34894/UFVNXT": {"workbook": "w-historical.xlsx", "version": "1.1"}}')
+    units_file = tmp_path / "units.yaml"
+    assert units_mod.harvest(hist, units_file) == {"labourers_real_wage": "baskets a day buys"}
+    assert units_mod.load(units_file)["labourers_real_wage"]["source"].startswith("DataverseNL doi:10.34894/UFVNXT v1.1")
+    assert units_mod.harvest(hist, units_file) == {}          # nothing new the second time

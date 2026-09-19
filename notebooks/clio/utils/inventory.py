@@ -150,3 +150,25 @@ def build(data_dir: Path = DATA_DIR) -> dict[str, dict[str, Any]]:
 
     (data_dir / INVENTORY).write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")
     return out
+
+
+#: Indicators built by Kees Klein Goldewijk's HYDE land-use model -- every
+#: country at 1500, 1600, 1700, then every decade.
+RECONSTRUCTED = {"Agriculture"}
+RECONSTRUCTED_SLUGS = {"Biodiversitynaturalness"}
+
+
+def kind(slug: str, entry: dict[str, Any]) -> str:
+    """``measured``, ``panel`` or ``reconstruction`` -- what a row of it means.
+
+    A **panel** is filled for every country: mostly zeros (Armed Conflicts is
+    0/1 since 1500, mining is 58-90% zeros) or coded on a scale of a few values
+    (the Polity components). A **reconstruction** is a model's estimate at
+    benchmark years. Both give "coverage" that was never measured, so the kind
+    travels with every series built from them.
+    """
+    if entry["category"] in RECONSTRUCTED or slug in RECONSTRUCTED_SLUGS:
+        return "reconstruction"
+    if (entry.get("zero_share") or 0) > 0.5 or (entry.get("distinct_values") or 99) <= 25:
+        return "panel"
+    return "measured"
