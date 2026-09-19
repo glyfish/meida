@@ -169,3 +169,68 @@ def test_a_folder_that_is_not_a_dataverse_download_is_refused(tmp_path):
 def test_a_malformed_doi_is_refused(tmp_path):
     with pytest.raises(accept.AcceptError, match="not a DOI"):
         accept.doi_dir("UFVNXT")
+
+
+# --- which dataset holds which indicator --------------------------------------
+
+datasets = load("clio_historical/utils", "datasets")
+
+
+def _datasets_json(data_dir: Path, **by_name: str) -> None:
+    data_dir.mkdir(parents=True, exist_ok=True)
+    (data_dir / "datasets.json").write_text(json.dumps(
+        {name.replace(" ", ""): {"name": name, "doi": doi} for name, doi in by_name.items()}))
+
+
+def test_a_workbook_title_identifies_its_dataset_despite_spacing_and_case(tmp_path):
+    _datasets_json(tmp_path, **{"Labourers  Real Wage": "10.34894/UFVNXT"})
+    assert accept.identify("labourers real wage", tmp_path) == "10.34894/UFVNXT"
+
+
+def test_an_unknown_title_is_refused_rather_than_matched_to_the_nearest(tmp_path):
+    _datasets_json(tmp_path, **{"Labourers Real Wage": "10.34894/UFVNXT"})
+    with pytest.raises(accept.AcceptError, match="matches 0"):
+        accept.identify("Labourers Nominal Wage", tmp_path)
+
+
+def test_accepting_finds_the_doi_from_the_title(tmp_path):
+    folder = _download(tmp_path)
+    _datasets_json(tmp_path / "data", **{"Labourers Real Wage": "10.34894/UFVNXT"})
+    entry = accept.accept(folder, version="1.1", data_dir=tmp_path / "data")
+    assert (entry["doi"], entry["title"]) == ("10.34894/UFVNXT", "Labourers Real Wage")
+
+
+def test_a_doi_that_contradicts_the_workbook_is_refused(tmp_path):
+    """The wrong folder must not be filed under the dataset someone typed."""
+    folder = _download(tmp_path)
+    _datasets_json(tmp_path / "data", **{"Labourers Real Wage": "10.34894/UFVNXT"})
+    with pytest.raises(accept.AcceptError, match="not 10.34894/H4HNSX"):
+        accept.accept(folder, version="1.1", doi="10.34894/H4HNSX", data_dir=tmp_path / "data")
+    assert not (tmp_path / "data" / "raw").exists()
+
+
+def test_the_doi_comes_from_the_handle_redirect_alone(monkeypatch):
+    class Redirect:
+        def open(self, request, timeout):
+            assert request.get_method() == "HEAD"
+            raise datasets.urllib.error.HTTPError(
+                request.full_url, 302, "Found", {"Location": "https://doi.org/10.34894/UFVNXT"}, None)
+    monkeypatch.setattr(datasets.urllib.request, "build_opener", lambda *a: Redirect())
+    assert datasets.resolve("10622/QK8VRF") == "10.34894/UFVNXT"
+
+
+def test_building_the_list_keeps_dois_already_resolved(tmp_path, monkeypatch):
+    clio = tmp_path / "clio"; clio.mkdir()
+    (clio / "inventory.json").write_text(json.dumps({
+        "Wage": {"name": "Wage", "category": "Prices", "handle": "10622/A", "start": 1820, "end": 2000,
+                 "countries_by_decade": {"1820": 5, "1950": 9}},
+        "Votes": {"name": "Votes", "category": "Institutions", "handle": "10622/B", "start": 1950,
+                  "end": 2000, "countries_by_decade": {"1950": 9}}}))
+    calls = []
+    monkeypatch.setattr(datasets, "resolve", lambda h: calls.append(h) or f"10.34894/{h[-1]}")
+    monkeypatch.setattr(datasets, "PAUSE", 0)
+    out = datasets.build(tmp_path / "data", clio)
+    assert out["Wage"]["page"].endswith("persistentId=doi:10.34894/A")
+    assert (out["Wage"]["decades_before_1946"], out["Votes"]["decades_before_1946"]) == (1, 0)
+    datasets.build(tmp_path / "data", clio)
+    assert sorted(calls) == ["10622/A", "10622/B"]         # each once: the second build resolved nothing
