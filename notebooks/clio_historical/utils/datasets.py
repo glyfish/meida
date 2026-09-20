@@ -76,8 +76,10 @@ def build(data_dir: Path = DATA_DIR, clio_data: Path = CLIO_DATA, *,
             "handle": ind["handle"],
             "page": PAGE_URL.format(doi=entry["doi"]),
             "start": ind["start"], "end": ind["end"],
-            # decades with any data before the border change -- where GeaCron adds something
-            "decades_before_1946": sum(1 for d in decades if d < BORDER_CHANGE - 6),
+            # Decades wholly before the border change -- where GeaCron adds
+            # something. The 1940s bucket is excluded because it straddles it:
+            # 1940-1945 are historical borders, 1946-1949 are not.
+            "decades_before_1946": sum(1 for d in decades if d + 10 <= BORDER_CHANGE),
         }
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")

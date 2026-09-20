@@ -169,7 +169,11 @@ def build_all(data_dir: Path = accept.DATA_DIR) -> tuple[list[dict[str, Any]], d
                         "polity": [p["name"]], "geacron": [p["code"]],
                         "border_start": [p["border_start"]], "border_end": [p["border_end"]],
                         "modern_country": [modern], "relation": [relation],
-                        "doi": [entry["doi"]], "paper_version": [entry.get("paper_version")],
+                        "doi": [entry["doi"]],
+                        # the normalised number, not the paper's own spelling:
+                        # "1st version" / "1" / "Version 1.0" are one version,
+                        # and the raw text is unqueryable as a facet
+                        "paper_version": [entry.get("version_number")],
                         "downloaded": [downloaded],
                         "observation_start_int": [int(start.replace("-", ""))],
                         "observation_end_int": [int(end.replace("-", ""))],

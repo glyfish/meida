@@ -59,6 +59,14 @@ def doi_dir(doi: str) -> str:
     return doi.replace("/", "_")
 
 
+def _known(title: str, data_dir: Path) -> bool:
+    """Whether this title names a dataset in ``datasets.json``."""
+    try:
+        return bool(identify(title, data_dir))
+    except AcceptError:
+        return False
+
+
 def accept(folder: Path, *, version: str, doi: str | None = None, released: str | None = None,
            downloaded: str | None = None, data_dir: Path = DATA_DIR) -> dict[str, Any]:
     """Copy *folder* into the raw tree and record it. Returns the manifest entry.
@@ -74,10 +82,25 @@ def accept(folder: Path, *, version: str, doi: str | None = None, released: str 
     wrote it -- rather than today, so filing late does not misdate the copy.
     """
     folder = Path(folder).expanduser()
-    books = sorted(folder.glob("*-historical.xlsx"))
+    # Any workbook, not just "*-historical.xlsx": ten of the 76 deposits name
+    # theirs otherwise (Global_Hunger.xlsx, Wealth_Total.xlsx), and this glob
+    # refused every one of them as "not a DataverseNL download". Where a folder
+    # holds more than one -- a re-download saved beside the original -- the one
+    # whose title names a known dataset wins, as documentation.build() does.
+    books = sorted(folder.glob("*.xlsx"))
     if not books:
-        raise AcceptError(f"{folder}: no *-historical.xlsx -- is this a DataverseNL download?")
-    title = workbook.read(books[0])["title"]
+        raise AcceptError(f"{folder}: no .xlsx -- is this a DataverseNL download?")
+    titles = {}
+    for book in books:
+        try:
+            titles[book] = workbook.read(book)["title"]
+        except workbook.WorkbookError:
+            continue
+    if not titles:
+        raise AcceptError(f"{folder}: no workbook with a 'Webmapper code' header")
+    named = {b: t for b, t in titles.items() if _known(t, data_dir)}
+    book = min(named or titles, key=lambda b: (len(b.name), b.name))
+    title = titles[book]
     found = None
     try:
         found = identify(title, data_dir)
@@ -101,7 +124,7 @@ def accept(folder: Path, *, version: str, doi: str | None = None, released: str 
     stamp = downloaded or date.fromtimestamp(folder.stat().st_mtime).isoformat()
     entry = {"doi": doi, "title": title, "version": version, "released": released,
              "downloaded": stamp, "accepted": datetime.now().isoformat(timespec="seconds"),
-             "workbook": books[0].name, "files": files}
+             "workbook": book.name, "files": files}
     manifest_path = Path(data_dir) / MANIFEST
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     manifest[doi] = entry

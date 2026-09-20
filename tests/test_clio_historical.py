@@ -254,6 +254,39 @@ def test_accepting_copies_the_folder_and_records_doi_version_and_date(tmp_path):
     assert manifest["10.34894/UFVNXT"]["released"] == "2026-01-08"
 
 
+def test_a_workbook_not_named_historical_is_still_a_deposit(tmp_path):
+    """Ten of the 76 name theirs Global_Hunger.xlsx and the like, and the
+    *-historical.xlsx glob refused every one as "not a DataverseNL download"."""
+    folder = tmp_path / "Downloads" / "doi-10"
+    folder.mkdir(parents=True)
+    _book(folder / "Global_Hunger.xlsx",
+          [["Labourers Real Wage"], ["baskets"], HEADER,
+           ["geacron/1", 1, None, "Aceh", 1820, 1822, 1.5]])
+    _datasets_json(tmp_path / "data", **{"Labourers Real Wage": "10.34894/UFVNXT"})
+
+    entry = accept.accept(folder, version="1.1", data_dir=tmp_path / "data")
+
+    assert entry["doi"] == "10.34894/UFVNXT"
+    assert entry["workbook"] == "Global_Hunger.xlsx"
+
+
+def test_the_workbook_that_names_a_dataset_wins_over_a_re_download(tmp_path):
+    """Three folders hold two workbooks, and they are not copies."""
+    folder = tmp_path / "Downloads" / "doi-68"
+    folder.mkdir(parents=True)
+    _book(folder / "GDP-historical.xlsx",
+          [["Labourers Real Wage"], ["baskets"], HEADER,
+           ["geacron/1", 1, None, "Aceh", 1820, 1822, 1.5]])
+    _book(folder / "GDP-historical-1.xlsx",
+          [["Something Else Entirely"], ["other"], HEADER,
+           ["geacron/1", 1, None, "Aceh", 1820, 1822, 9.9]])
+    _datasets_json(tmp_path / "data", **{"Labourers Real Wage": "10.34894/UFVNXT"})
+
+    entry = accept.accept(folder, version="1.1", data_dir=tmp_path / "data")
+
+    assert entry["workbook"] == "GDP-historical.xlsx"
+
+
 def test_the_download_folder_is_left_where_it_was(tmp_path):
     folder = _download(tmp_path)
     accept.accept(folder, doi="10.34894/UFVNXT", version="1.1", data_dir=tmp_path / "data")
@@ -271,7 +304,7 @@ def test_the_download_date_defaults_to_when_the_browser_wrote_the_folder(tmp_pat
 
 def test_a_folder_that_is_not_a_dataverse_download_is_refused(tmp_path):
     (tmp_path / "empty").mkdir()
-    with pytest.raises(accept.AcceptError, match="historical.xlsx"):
+    with pytest.raises(accept.AcceptError, match=r"no \.xlsx"):
         accept.accept(tmp_path / "empty", doi="10.34894/X", version="1.1", data_dir=tmp_path / "data")
 
 
