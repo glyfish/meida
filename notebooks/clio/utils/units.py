@@ -7,10 +7,10 @@ records, per indicator, the workbook's row 2 and the working paper's unit. This
 reads that one file and nothing else: no manifest, no shared code.
 
 **Row 2 wins, the paper is the fallback.** Where both exist they agree word for
-word on 2 of 30. Row 2 is usually the more useful label -- "scale from 1
+word on 2 of 31. Row 2 is usually the more useful label -- "scale from 1
 (unlimited authority) to 7", "autocracy-democracy on a -10 to 10 scale" --
 where the paper says "dimensionless, multi-nominal scale" or "index". The paper
-covers what row 2 cannot: the two workbook layouts that have no row 2. Both are
+covers what row 2 cannot: the eleven deposits that leave row 2 blank. Both are
 kept in each entry so nothing is lost by the choice.
 
 Nothing is inferred: an indicator neither states stays without a unit.
