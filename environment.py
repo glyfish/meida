@@ -29,6 +29,7 @@ DEFAULT_BIS_BASE_URL = "https://stats.bis.org/api/v1"
 DEFAULT_MCP_URL = "http://localhost:8080/sse"
 DEFAULT_TIINGO_BASE_URL = "https://api.tiingo.com/tiingo"
 DEFAULT_CDC_BASE_URL = "https://data.cdc.gov"
+DEFAULT_FBI_BASE_URL = "https://api.usa.gov/crime/fbi/cde"
 DEFAULT_MEIDA_DB_URL = "postgresql+psycopg://meida@localhost/meida"
 
 # ``load_dotenv`` never overrides an already-set variable, so the shell and any
@@ -110,6 +111,44 @@ def get_cdc_api_key(required: bool = False) -> str | None:
 def get_cdc_base_url() -> str:
     """Return the base URL for CDC Socrata requests."""
     return os.getenv("CDC_BASE_URL", DEFAULT_CDC_BASE_URL)
+
+
+def get_anthropic_api_key(required: bool = True) -> str | None:
+    """Return the Anthropic API key, used to generate catalog descriptions.
+
+    Lives in ``.env`` with every other credential. It was previously read from
+    ``.keys/.anthropic_key``, yada's convention, which meida no longer follows:
+    one file, one loader, anchored on the repo rather than the working
+    directory.
+    """
+    if required:
+        return _get_env_var("ANTHROPIC_API_KEY")
+    return os.getenv("ANTHROPIC_API_KEY") or None
+
+
+def get_data_gov_key(required: bool = True) -> str | None:
+    """Return the api.data.gov key, shared across every service behind it.
+
+    One key covers the whole family -- the FBI Crime Data Explorer, NREL, the
+    regulations and federal-register APIs -- so it is named for the gateway,
+    not for whichever service reaches for it first. Self-service from
+    https://api.data.gov/signup/ and issued instantly, 1,000 requests an hour.
+    The shared ``DEMO_KEY`` allows about thirty an hour and then returns
+    ``OVER_RATE_LIMIT``: enough to probe an endpoint, not enough to build a
+    series.
+
+    Each service wants it spelled its own way -- the CDE API takes ``API_KEY``
+    capitalised and ignores the lowercase ``api_key`` others accept -- so the
+    caller passes it, this only finds it.
+    """
+    if required:
+        return _get_env_var("DATA_GOV_KEY")
+    return os.getenv("DATA_GOV_KEY") or None
+
+
+def get_fbi_base_url() -> str:
+    """Return the base URL for FBI Crime Data Explorer requests."""
+    return os.getenv("FBI_BASE_URL", DEFAULT_FBI_BASE_URL)
 
 
 def get_meida_db_url() -> str:

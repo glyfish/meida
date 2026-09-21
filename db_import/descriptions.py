@@ -25,6 +25,8 @@ from typing import Any, Iterable
 
 import yaml
 
+from environment import get_anthropic_api_key
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 KEY_PATH = REPO_ROOT / ".keys" / ".anthropic_key"
 #: Each source keeps its sidecar beside its catalog files.
@@ -60,17 +62,21 @@ class DescriptionError(RuntimeError):
 def ensure_api_key() -> None:
     """Put the Anthropic key in the environment, if it is not already there.
 
-    Mirrors yada's ``.keys/`` convention, but resolves the path from the repo
-    root rather than the working directory -- this module runs from
-    a notebook directory, where a relative ``.keys/...`` would not resolve.
+    From ``.env`` by way of :mod:`environment`, like every other credential.
+    ``.keys/.anthropic_key`` is yada's convention and is still read as a
+    fallback so an un-migrated checkout keeps working; it can go once the key
+    is in ``.env``.
     """
     if os.environ.get("ANTHROPIC_API_KEY"):
         return
-    if not KEY_PATH.exists():
+    key = get_anthropic_api_key(required=False)
+    if not key and KEY_PATH.exists():                # the pre-.env location
+        key = KEY_PATH.read_text().strip()
+    if not key:
         raise DescriptionError(
-            f"ANTHROPIC_API_KEY is not set and {KEY_PATH} does not exist"
+            f"ANTHROPIC_API_KEY is not in .env and {KEY_PATH} does not exist"
         )
-    os.environ["ANTHROPIC_API_KEY"] = KEY_PATH.read_text().strip()
+    os.environ["ANTHROPIC_API_KEY"] = key
 
 
 def bucket_key(group: str, entry: dict[str, Any]) -> str:
