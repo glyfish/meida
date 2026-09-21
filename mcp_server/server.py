@@ -28,8 +28,9 @@ from .responses.tiingo import (
 )
 from .responses.cdc import CdcCategoryList, CdcDatasetList, CdcTagList
 from .responses.fbi import (
-    EmploymentMeasure, FbiEmploymentSeries, FbiOffenseSeries, Measure, Offense, Unit,
-    from_employment_response, from_offense_response,
+    EmploymentMeasure, FbiArrestSeries, FbiEmploymentSeries, FbiOffenseSeries,
+    Measure, Offense, Unit,
+    from_arrest_response, from_employment_response, from_offense_response,
 )
 from .series_catalog import SeriesCatalogClient
 from .series_catalog_models import (
@@ -521,6 +522,48 @@ async def fbi_offenses(
         await _call_fbi(handler),
         offense=offense, scope=scope, measure=measure, unit=unit,
     )
+
+
+@server.tool(
+    name="fbi_arrests",
+    description=(
+        "Monthly persons ARRESTED by law enforcement, from the FBI Crime Data "
+        "Explorer. 'scope' takes the same three forms as fbi_offenses: 'national', a "
+        "two-letter state ('TX', 'DC'), or an agency ORI ('NY0303000'). There is no "
+        "'offense' argument — the FBI's arrest route serves ONE all-offence total per "
+        "geography and no age, sex, race or ethnicity split, so this cannot be "
+        "narrowed to homicide or robbery. 'unit' picks the count or the rate per "
+        "100,000. Verified back to 01-2018; earlier months return what the API has. "
+        "An arrest is NOT a clearance, NOT a charge that stuck and NOT a conviction: "
+        "one arrest can clear several offences and several arrests can attach to one, "
+        "so arrests and offences do not pair off. USE IT FOR THIS: a CDE clearance is "
+        "either a clearance by arrest or a clearance by exceptional means — offender "
+        "dead, victim uncooperative, extradition refused — and fbi_offenses reports "
+        "only their sum. Clearances rising while arrests do not is clearing by "
+        "exception, which is the distinction the summarized endpoint cannot show. "
+        "Bound it in AGGREGATE only: do not difference this against one offence's "
+        "clearances. Coverage and population come attached, and the 2021 SRS-to-NIBRS "
+        "break applies here too."
+    ),
+)
+async def fbi_arrests(
+    scope: Annotated[str, Field(
+        description="'national', a two-letter state, or an agency ORI.")] = "national",
+    unit: Annotated[Unit, Field(
+        description="'rate' is per 100,000 residents of the scope.")] = "count",
+    start: Annotated[str, Field(
+        description="'MM-YYYY'. A bare year is refused; arrests are monthly.")] = FBI_FROM_MONTH,
+    end: Annotated[str | None, Field(
+        description="'MM-YYYY'. Defaults to this month; the API serves what it has.")] = None,
+) -> FbiArrestSeries:
+    async def handler(client: FbiClient) -> Any:
+        return await client.get_arrests(
+            scope=scope, start=start, end=end or _fbi_this_month()
+        )
+
+    # As with offences, one request carries both the count and the rate, so
+    # 'unit' is a selection made here and never reaches the FBI.
+    return from_arrest_response(await _call_fbi(handler), scope=scope, unit=unit)
 
 
 @server.tool(

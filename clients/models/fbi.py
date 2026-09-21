@@ -2,8 +2,9 @@
 
 The CDE returns wide, chart-shaped payloads rather than series: a nested map of
 ``{block: {label: {period: value}}}`` where the period is ``MM-YYYY`` for
-offences and ``YYYY`` for employment, and the labels name a geography and a
-measure at once ("District of Columbia Offenses", "United States Clearances").
+offences and arrests and ``YYYY`` for employment, and the labels name a
+geography and a measure at once ("District of Columbia Offenses", "United
+States Clearances", "Texas Arrests").
 These models pivot that into observations, so a caller gets series rather than
 a chart.
 
@@ -48,8 +49,8 @@ class FbiSeries(FbiBaseModel):
     label: str = Field(description="The CDE's own label, e.g. 'Texas Offenses'.")
     scope: str = Field(description="'national', a two-letter state, or an ORI.")
     measure: str = Field(
-        description="'offenses', 'clearances', 'officers', 'civilians', "
-                    "'population' or 'coverage'.")
+        description="'offenses', 'clearances', 'arrests', 'officers', "
+                    "'civilians', 'population' or 'coverage'.")
     unit: Optional[str] = Field(default=None, description="'count', 'rate per 100,000', 'percent'.")
     observations: List[FbiObservation] = Field(default_factory=list)
 
@@ -69,6 +70,25 @@ class FbiOffenseResponse(FbiBaseModel):
     """
 
     offense: str
+    scope: str
+    series: List[FbiSeries] = Field(default_factory=list)
+    max_data_date: Optional[str] = None
+    last_refresh_date: Optional[str] = None
+
+
+class FbiArrestResponse(FbiBaseModel):
+    """What ``arrest/{scope}/all`` returns: persons arrested, monthly.
+
+    One series per geography and nothing else -- no offence, age, sex, race or
+    ethnicity split -- so the label is the only facet: "Texas Arrests". Counts
+    and rates arrive together, as they do for offences.
+
+    This is the counterpart to a clearance, not a synonym for it. A clearance
+    by arrest and a clearance by exceptional means are both clearances; only
+    the first puts a person in this series. Differencing the two bounds the
+    exceptional share, which ``summarized`` will not report.
+    """
+
     scope: str
     series: List[FbiSeries] = Field(default_factory=list)
     max_data_date: Optional[str] = None

@@ -57,6 +57,64 @@ the incident. A robbery with an assault is one offence before 2021 and two
 after. Coverage returning to 96% does not undo that, and no series in this API
 carries a flag for it. Treat any series spanning 2021 as spliced, not
 continuous.
+
+**Arrests are a second route, and the reason to want one is the clearance.**
+``summarized`` returns one combined clearance series and never splits it, but a
+clearance is two different events: a clearance *by arrest*, where someone was
+charged and referred for prosecution, and a clearance *by exceptional means*,
+where the department says it knows who did it but cannot arrest -- offender
+dead, victim uncooperative, extradition refused. A department under pressure
+can move the second without moving the first, and the combined series shows
+that as improvement. ``arrest/{scope}/all`` gives the arrest counts alongside,
+so clearances minus arrests bounds the exceptional share from outside without
+incident-level data. It bounds it **in aggregate only**: see the limitation
+below.
+
+The arrest route was established by probing, like the rest of this module:
+
+- The shape is ``arrest/{scope}/all?from=MM-YYYY&to=MM-YYYY&type=counts``. The
+  scope fragments are exactly :meth:`FbiClient.route`'s -- ``national``, a
+  state, an ORI -- so nothing about scoping changes.
+- **The third path segment is an offence ID, not a "type".** Anything the API
+  does not recognise there is a 400 naming its valid-offence documentation, and
+  :data:`OFFENSES` does **not** transfer: ``arrest/national/violent-crime`` is
+  refused. ``all`` is the only value confirmed to return data. ``offense``,
+  ``age``, ``sex``, ``race``, ``ethnicity`` and ``counts`` are all refused
+  there. Whether any per-offence arrest slug exists is unresolved -- the two
+  probes that would have settled it landed inside an upstream outage.
+- **``type`` is a required query parameter and ``counts`` is its only working
+  value**; ``rates``, ``age``, ``race``, ``sex`` and omitting it all answer 400
+  ``Invalid 'type'.`` in plain text. It is vestigial: the payload carries both
+  ``rates`` and ``actuals`` whatever is asked for.
+- Dates are ``MM-YYYY`` at every scope. ``from=2023`` is a 400, so this client
+  refuses a bare year before spending the request.
+
+Two traps beyond the three above, both worse than their ``summarized``
+equivalents:
+
+4. **The blocks are not nested.** ``summarized`` puts the numbers under
+   ``payload["offenses"]["actuals"]``; ``arrest`` puts ``actuals`` and ``rates``
+   at the top level with no wrapper. Code that copies the ``summarized`` reader
+   finds nothing and returns an empty series rather than failing.
+5. **The requested scope is listed last, not first.** ``summarized`` leads with
+   the widest comparison; ``arrest/agency/NY0303000`` returns ``rates`` keyed
+   ``New York``, ``United States``, ``New York City Police Department`` -- the
+   agency last. Neither first nor last is reliable, so this client keeps the
+   labels that appear in ``actuals``, which carries the requested scope alone at
+   every grain. An agency's own coverage is ``null``, so its state's coverage is
+   kept to stand in for it, exactly as for offences.
+
+**The limitation that decides what this can answer.** Every payload carries one
+series per geography -- a single all-offence arrest total. There is no per
+offence, age, sex, race or ethnicity breakdown anywhere on this route. So total
+clearances against total arrests is a real bound on the exceptional share; a
+*homicide* clearance against a homicide arrest is not available, because the
+homicide arrest count is not served.
+
+History is verified back to ``01-2018`` (36 unbroken months of Texas from
+January 2018). The earliest month is unestablished -- the full-span probe was
+never answered -- so an early ``start`` is a request for whatever the API has,
+not a claim that it has it.
 """
 from __future__ import annotations
 
@@ -68,6 +126,7 @@ import httpx
 from environment import get_data_gov_key, get_fbi_base_url
 from .models.fbi import (
     FbiAgency,
+    FbiArrestResponse,
     FbiEmploymentResponse,
     FbiObservation,
     FbiOffenseResponse,
@@ -86,6 +145,18 @@ OFFENSES = (
 #: "Please enter a from year greater than 1984" rather than clamping.
 EMPLOYMENT_FROM = 1985
 
+#: The whole arrest vocabulary. The third path segment is an offence ID and
+#: ``all`` is the only value that returns data -- the :data:`OFFENSES` slugs are
+#: refused there. ``type`` is required and ``counts`` is its only working value,
+#: though the payload carries rates either way.
+ARREST_OFFENSE = "all"
+ARREST_TYPE = "counts"
+
+#: The earliest month the arrest route is known to serve. Not a floor the API
+#: enforces -- it is simply as far back as a probe got an answer -- so it is
+#: documentation, not validation.
+ARREST_VERIFIED_FROM = "01-2018"
+
 
 class FbiAPIError(RuntimeError):
     """Raised when the CDE API returns an error response."""
@@ -94,10 +165,26 @@ class FbiAPIError(RuntimeError):
 def _measure(label: str) -> str:
     """The measure a CDE label names: 'Texas Clearances' -> 'clearances'."""
     lowered = label.casefold()
-    for measure in ("clearances", "offenses", "officers", "civilians"):
+    for measure in ("clearances", "offenses", "arrests", "officers", "civilians"):
         if measure in lowered:
             return measure
     return "value"
+
+
+def _month(name: str, period: str) -> str:
+    """Check a ``MM-YYYY`` argument before it is spent on a request.
+
+    The annual form is the natural mistake -- employment takes ``YYYY`` -- and
+    the API answers it with 400 "From year and month date is not valid,
+    expected format MM-YYYY" rather than reading it as January. Refusing here
+    costs nothing; letting it through costs one of a thousand hourly calls and
+    returns an error the caller has to parse.
+    """
+    month, _, year = period.partition("-")
+    if not (len(month) == 2 and month.isdigit() and 1 <= int(month) <= 12
+            and len(year) == 4 and year.isdigit()):
+        raise FbiAPIError(f"{name}={period!r} is not MM-YYYY; arrests are monthly")
+    return period
 
 
 def _chronological(period: str) -> tuple[str, str]:
@@ -253,6 +340,81 @@ class FbiClient:
                       and not any(s.label.startswith(c) for c in comparisons)]
         return FbiOffenseResponse(
             offense=offense, scope=scope, series=series,
+            max_data_date=(properties.get("max_data_date") or {}).get("UCR"),
+            last_refresh_date=(properties.get("last_refresh_date") or {}).get("UCR"),
+        )
+
+    async def get_arrests(
+        self,
+        *,
+        scope: Optional[str] = None,
+        state: Optional[str] = None,
+        ori: Optional[str] = None,
+        include_comparisons: bool = False,
+        start: str = "01-1985",
+        end: str = "12-2024",
+    ) -> FbiArrestResponse:
+        """Monthly persons arrested for the nation, a state or an agency.
+
+        Scoping is :meth:`get_offenses`': give *ori* for one agency, *state*
+        for a state, neither for the nation, and *scope* for whichever of the
+        three a catalog entry names. Dates are ``MM-YYYY``, checked here
+        because a bare year is a 400 rather than a January.
+
+        There is no offence argument. The path's offence segment takes ``all``
+        and nothing else that answers, so what comes back is one all-offence
+        arrest total per geography -- no offence, age, sex, race or ethnicity
+        split exists on this route.
+
+        **Why the total is still worth having.** ``summarized`` reports one
+        combined clearance series, and a clearance is either an arrest or an
+        exceptional-means clearance -- offender dead, victim uncooperative,
+        extradition refused -- which the FBI does not separate here. Arrests
+        beside clearances bound the exceptional share from outside: a scope
+        whose clearances rise while its arrests do not is clearing by
+        exception. The bound is an aggregate one, since the arrest total is not
+        served per offence.
+
+        The wider geographies ride along as they do for offences, but listed
+        *last* rather than first, so they are dropped by matching the labels in
+        ``actuals`` -- which carries the requested scope alone -- rather than by
+        position. *include_comparisons* keeps them.
+        """
+        if sum(x is not None for x in (scope, state, ori)) > 1:
+            raise FbiAPIError("give one of scope, state or ori")
+        chosen = scope or ori or state or "national"
+        fragment, scope = self.route(chosen)
+        ori = chosen if fragment.startswith("agency/") else None
+        state = chosen if fragment.startswith("state/") else None
+        payload = await self._get(
+            f"arrest/{fragment}/{ARREST_OFFENSE}",
+            {"from": _month("start", start), "to": _month("end", end),
+             "type": ARREST_TYPE},
+        )
+        actuals = payload.get("actuals") or {}
+        tooltips = payload.get("tooltips") or {}
+        populations = payload.get("populations") or {}
+        properties = payload.get("cde_properties") or {}
+        series = (
+            _series(actuals, scope, "count")
+            + _series(payload.get("rates") or {}, scope, "rate per 100,000")
+            + _series(populations.get("population") or {}, scope, "people")
+            + _series(tooltips.get("Percent of Population Coverage") or {},
+                      scope, "percent")
+        )
+        if not include_comparisons and (ori or state):
+            # ``actuals`` holds the requested scope alone at every grain, which
+            # makes its labels the list to keep -- position cannot be used here,
+            # because the agency is last in ``rates`` and the state is first.
+            # Population and coverage are filtered against the nation only: an
+            # agency publishes no coverage of its own, so its state's has to
+            # survive to stand in for it, and the label says whose it is.
+            keep = set(actuals)
+            series = [s for s in series
+                      if (s.label in keep if s.measure == "arrests" and keep
+                          else not s.label.startswith("United States"))]
+        return FbiArrestResponse(
+            scope=scope, series=series,
             max_data_date=(properties.get("max_data_date") or {}).get("UCR"),
             last_refresh_date=(properties.get("last_refresh_date") or {}).get("UCR"),
         )
