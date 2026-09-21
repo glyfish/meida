@@ -1,11 +1,13 @@
 from __future__ import annotations
+from datetime import date as _date
 from typing import Annotated, Any, Awaitable, Callable, Mapping
 from lib.logger import get_logger
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
 
-from clients import BisClient, BlsClient, CdcClient, FredClient, TiingoClient
+from clients import BisClient, BlsClient, CdcClient, FbiClient, FredClient, TiingoClient
+from clients.fbi import EMPLOYMENT_FROM
 
 from . import cdc_query
 from clients.models.bis import BisDataResponse
@@ -25,6 +27,10 @@ from .responses.tiingo import (
     TiingoPriceSeries, TiingoSeriesInfo, from_tiingo_meta, from_tiingo_price_series,
 )
 from .responses.cdc import CdcCategoryList, CdcDatasetList, CdcTagList
+from .responses.fbi import (
+    EmploymentMeasure, FbiEmploymentSeries, FbiOffenseSeries, Measure, Offense, Unit,
+    from_employment_response, from_offense_response,
+)
 from .series_catalog import SeriesCatalogClient
 from .series_catalog_models import (
     CatalogConcept, CatalogConceptList, CatalogEntry, CatalogSearchResult,
@@ -85,6 +91,17 @@ async def _call_bis(handler: Callable[[BisClient], Awaitable[Any]]) -> Any:
     from, so serialization is FastMCP's job rather than this helper's.
     """
     async with BisClient() as client:
+        return await handler(client)
+
+
+async def _call_fbi(handler: Callable[[FbiClient], Awaitable[Any]]) -> Any:
+    """Create an FbiClient and invoke the handler.
+
+    As with BIS, the payload comes back unflattened and the tool maps it to
+    meida's own response model, which is what FastMCP builds the output schema
+    from.
+    """
+    async with FbiClient() as client:
         return await handler(client)
 
 
@@ -444,6 +461,94 @@ async def bis_series_data(
         )
 
     return await _call_bis(handler)
+
+
+#: Both FBI families begin in 1985. The employment floor is the client's own,
+#: because the ``pe`` endpoint refuses an earlier year with a 400 rather than
+#: clamping to what it has.
+FBI_FROM_MONTH = "01-1985"
+FBI_FROM_YEAR = EMPLOYMENT_FROM
+
+
+def _fbi_this_month() -> str:
+    """The default end of an FBI window: the current month, as ``MM-YYYY``.
+
+    Written into the default instead of a fixed date, which is how a tool
+    quietly stops returning its last two years. The API serves up to its own
+    vintage, which the response reports as ``max_data_date``; the final month
+    is usually still filling, and the coverage notice says so.
+    """
+    today = _date.today()
+    return f"{today.month:02d}-{today.year}"
+
+
+@server.tool(
+    name="fbi_offenses",
+    description=(
+        "Monthly offences known to law enforcement, or clearances of them, from the "
+        "FBI Crime Data Explorer (1985 onwards). 'scope' takes one of three forms: "
+        "'national', a two-letter state ('TX', 'DC'), or an agency ORI ('CA0194200'). "
+        "'offense' is one of violent-crime, homicide, rape, robbery, aggravated-assault, "
+        "property-crime, burglary, larceny, motor-vehicle-theft, arson — violent-crime "
+        "and property-crime are TOTALS of their components, so never add them to the "
+        "parts, and arson is outside both. One series comes back, chosen by 'measure' "
+        "and 'unit', with the population and reporting-coverage series attached as "
+        "context. Coverage is normally 96-98% and falls to about 74% in 2021, when the "
+        "FBI retired the Summary Reporting System for NIBRS; NIBRS also counts every "
+        "offence in an incident where SRS counted only the most serious, so a series "
+        "spanning 2021 is spliced, not continuous."
+    ),
+)
+async def fbi_offenses(
+    offense: Offense,
+    scope: Annotated[str, Field(
+        description="'national', a two-letter state, or an agency ORI.")] = "national",
+    measure: Measure = "offenses",
+    unit: Annotated[Unit, Field(
+        description="'rate' is per 100,000 residents of the scope.")] = "count",
+    start: Annotated[str, Field(description="'MM-YYYY'; 1985 is the earliest.")] = FBI_FROM_MONTH,
+    end: Annotated[str | None, Field(
+        description="'MM-YYYY'. Defaults to this month; the API serves what it has.")] = None,
+) -> FbiOffenseSeries:
+    async def handler(client: FbiClient) -> Any:
+        return await client.get_offenses(
+            offense, scope=scope, start=start, end=end or _fbi_this_month()
+        )
+
+    # Measure and unit never reach the API: one request carries offences and
+    # clearances, as counts and as rates, and the selection happens here.
+    return from_offense_response(
+        await _call_fbi(handler),
+        offense=offense, scope=scope, measure=measure, unit=unit,
+    )
+
+
+@server.tool(
+    name="fbi_employment",
+    description=(
+        "Annual sworn officers or civilian employees at ONE law-enforcement agency, "
+        "from the FBI Crime Data Explorer (1985 onwards). 'ori' is the agency "
+        "identifier ('CA0194200'); employment exists at agency grain ONLY — the "
+        "national and state endpoints answer with nulls — so a staffing panel is built "
+        "agency by agency, pairing this with fbi_offenses at the same ORI. Male and "
+        "female are reported separately and are summed into one series. Counts only: "
+        "the API's own per-1,000 rates divide by a participated population that is "
+        "sometimes zero. Filing is voluntary, so years are missing; 'notices' names them."
+    ),
+)
+async def fbi_employment(
+    ori: Annotated[str, Field(description="Agency identifier, e.g. 'CA0194200'.")],
+    measure: Annotated[EmploymentMeasure, Field(
+        description="Sworn officers, or civilian employees.")] = "officers",
+    start: Annotated[int, Field(description="Year; 1985 is the earliest the API accepts.")] = FBI_FROM_YEAR,
+    end: Annotated[int | None, Field(description="Year. Defaults to this year.")] = None,
+) -> FbiEmploymentSeries:
+    async def handler(client: FbiClient) -> Any:
+        return await client.get_employment(
+            ori, start=start, end=end or _date.today().year
+        )
+
+    return from_employment_response(await _call_fbi(handler), ori=ori, measure=measure)
 
 
 @server.tool(

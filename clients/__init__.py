@@ -6,6 +6,7 @@ from .bls import BlsClient, BlsAPIError
 from .bis import BisClient, BisAPIError
 from .cdc import CdcClient, CdcAPIError
 from .wonder import WonderClient, WonderAPIError
+from .fbi import FbiClient, FbiAPIError
 
 __all__ = [
     "FredClient",
@@ -20,4 +21,6 @@ __all__ = [
     "CdcAPIError",
     "WonderClient",
     "WonderAPIError",
+    "FbiClient",
+    "FbiAPIError",
 ]
