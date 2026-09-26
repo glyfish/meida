@@ -8,13 +8,25 @@ States Clearances", "Texas Arrests").
 These models pivot that into observations, so a caller gets series rather than
 a chart.
 
-Two blocks are carried through rather than discarded, because both are needed
+Three blocks are carried through rather than discarded, because all are needed
 to use the numbers honestly:
 
 ``population``
-    The denominator, monthly. Rates are then recomputable instead of trusted --
-    which matters, since the employment endpoint's own rates divide by a
-    "participated population" that is sometimes zero.
+    The resident population of each geography, monthly -- a denominator the
+    caller can choose, but not the one the CDE's own offence and arrest rates
+    use.
+
+``participated_population``
+    The people living where agencies reported, monthly, under the unit
+    ``"participated people"``. This is what the offence and arrest rates
+    divide by, so they are recomputable instead of trusted. Coverage is
+    exactly this over ``population``, so nationally it is 95.5% of the
+    residents in January 2023 and 74.1% in February 2021; at agency scope it
+    equals ``population`` in every month the agency has one. Where it is 0 --
+    in every month at an agency with no resident population of its own, such
+    as the Metro Transit Police (``DCMTP0000``) -- the arrest route publishes
+    a rate of -1, which the MCP mappers return as null. The employment
+    endpoint's rates divide by one too, and there it is sometimes zero.
 
 ``coverage``
     The share of the population living where agencies reported, monthly. It
@@ -38,7 +50,8 @@ class FbiBaseModel(BaseModel):
 class FbiObservation(FbiBaseModel):
     """One period of one series."""
 
-    period: str = Field(description="'MM-YYYY' for offences, 'YYYY' for employment.")
+    period: str = Field(
+        description="'MM-YYYY' for offences and arrests, 'YYYY' for employment.")
     value: Optional[float] = Field(
         default=None, description="None where the agency or scope did not report.")
 
@@ -51,7 +64,10 @@ class FbiSeries(FbiBaseModel):
     measure: str = Field(
         description="'offenses', 'clearances', 'arrests', 'officers', "
                     "'civilians', 'population' or 'coverage'.")
-    unit: Optional[str] = Field(default=None, description="'count', 'rate per 100,000', 'percent'.")
+    unit: Optional[str] = Field(
+        default=None,
+        description="'count', 'rate per 100,000', 'percent', 'people' (population) or "
+                    "'participated people' (the population the rates divide by).")
     observations: List[FbiObservation] = Field(default_factory=list)
 
     @property
@@ -77,18 +93,25 @@ class FbiOffenseResponse(FbiBaseModel):
 
 
 class FbiArrestResponse(FbiBaseModel):
-    """What ``arrest/{scope}/all`` returns: persons arrested, monthly.
+    """What ``arrest/{scope}/{offense}`` returns: arrests, monthly.
 
-    One series per geography and nothing else -- no offence, age, sex, race or
-    ethnicity split -- so the label is the only facet: "Texas Arrests". Counts
-    and rates arrive together, as they do for offences.
+    One series per geography for the one offence asked for, counts and rates
+    together as for offences. The label names the geography only -- "Texas
+    Arrests" whether the code was murder or DUI -- so ``offense`` is the only
+    record of which offence this is.
 
-    This is the counterpart to a clearance, not a synonym for it. A clearance
-    by arrest and a clearance by exceptional means are both clearances; only
-    the first puts a person in this series. Differencing the two bounds the
-    exceptional share, which ``summarized`` will not report.
+    An arrest is not a clearance and does not pair with one. An arrest counts
+    one person arrested, cited or summoned on one occasion; a clearance counts
+    an offence closed. One arrest can clear several offences and several arrests
+    one, and most arrests are for offences with no clearance series at all, so
+    this cannot be differenced against an :class:`FbiOffenseResponse`'s
+    clearances, in total or for the same offence.
     """
 
+    offense: str = Field(
+        default="all",
+        description="The UCR arrest code requested: 'all' or a code such as '11'. "
+                    "Never in the payload's labels, so carried from the request.")
     scope: str
     series: List[FbiSeries] = Field(default_factory=list)
     max_data_date: Optional[str] = None

@@ -7,7 +7,7 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
 
 from clients import BisClient, BlsClient, CdcClient, FbiClient, FredClient, TiingoClient
-from clients.fbi import EMPLOYMENT_FROM
+from clients.fbi import ARREST_OFFENSES, EMPLOYMENT_FROM
 
 from . import cdc_query
 from clients.models.bis import BisDataResponse
@@ -28,8 +28,8 @@ from .responses.tiingo import (
 )
 from .responses.cdc import CdcCategoryList, CdcDatasetList, CdcTagList
 from .responses.fbi import (
-    EmploymentMeasure, FbiArrestSeries, FbiEmploymentSeries, FbiOffenseSeries,
-    Measure, Offense, Unit,
+    ArrestOffense, EmploymentMeasure, FbiArrestSeries, FbiEmploymentSeries,
+    FbiOffenseSeries, Measure, Offense, Unit,
     from_arrest_response, from_employment_response, from_offense_response,
 )
 from .series_catalog import SeriesCatalogClient
@@ -493,11 +493,18 @@ def _fbi_this_month() -> str:
         "property-crime, burglary, larceny, motor-vehicle-theft, arson — violent-crime "
         "and property-crime are TOTALS of their components, so never add them to the "
         "parts, and arson is outside both. One series comes back, chosen by 'measure' "
-        "and 'unit', with the population and reporting-coverage series attached as "
-        "context. Coverage is normally 96-98% and falls to about 74% in 2021, when the "
+        "and 'unit', with the population, participated-population and reporting-coverage "
+        "series attached as context. A 'rate' is per 100,000 PARTICIPATED population "
+        "(people living where agencies reported), not per resident. Coverage is "
+        "normally 96-98% and falls to about 74% in 2021, when the "
         "FBI retired the Summary Reporting System for NIBRS; NIBRS also counts every "
         "offence in an incident where SRS counted only the most serious, so a series "
-        "spanning 2021 is spliced, not continuous."
+        "spanning 2021 is spliced, not continuous. A MONTH NOBODY FILED IS REPORTED "
+        "AS 0, not as null, and at agency scope the coverage percentage belongs to "
+        "the STATE, so it cannot show one agency going dark. Runs of those zeros are "
+        "detected against the level of the surrounding filings and returned as null; "
+        "'notices' names the spans and 'observation_start'/'observation_end' name the "
+        "filings rather than the window asked for. Do not treat a null as a zero."
     ),
 )
 async def fbi_offenses(
@@ -506,7 +513,11 @@ async def fbi_offenses(
         description="'national', a two-letter state, or an agency ORI.")] = "national",
     measure: Measure = "offenses",
     unit: Annotated[Unit, Field(
-        description="'rate' is per 100,000 residents of the scope.")] = "count",
+        description="'rate' is the CDE's own: per 100,000 people living where "
+                    "agencies reported (participated_population on the response), "
+                    "not per 100,000 residents. Where that population is 0 the "
+                    "rate is undefined, and a negative rate -- the arrest route "
+                    "publishes -1 there -- comes back null.")] = "count",
     start: Annotated[str, Field(description="'MM-YYYY'; 1985 is the earliest.")] = FBI_FROM_MONTH,
     end: Annotated[str | None, Field(
         description="'MM-YYYY'. Defaults to this month; the API serves what it has.")] = None,
@@ -524,46 +535,94 @@ async def fbi_offenses(
     )
 
 
+#: The arrest codes with their names, for the ``offense`` argument. Built from
+#: the client's table rather than restated, so the list the caller reads and the
+#: ``enum`` it is checked against cannot drift apart.
+_ARREST_OFFENSE_CODES = "; ".join(
+    f"{code} {name}" for code, name in ARREST_OFFENSES.items() if code != "all")
+
+
 @server.tool(
     name="fbi_arrests",
     description=(
-        "Monthly persons ARRESTED by law enforcement, from the FBI Crime Data "
-        "Explorer. 'scope' takes the same three forms as fbi_offenses: 'national', a "
-        "two-letter state ('TX', 'DC'), or an agency ORI ('NY0303000'). There is no "
-        "'offense' argument — the FBI's arrest route serves ONE all-offence total per "
-        "geography and no age, sex, race or ethnicity split, so this cannot be "
-        "narrowed to homicide or robbery. 'unit' picks the count or the rate per "
-        "100,000. Verified back to 01-2018; earlier months return what the API has. "
-        "An arrest is NOT a clearance, NOT a charge that stuck and NOT a conviction: "
-        "one arrest can clear several offences and several arrests can attach to one, "
-        "so arrests and offences do not pair off. USE IT FOR THIS: a CDE clearance is "
-        "either a clearance by arrest or a clearance by exceptional means — offender "
-        "dead, victim uncooperative, extradition refused — and fbi_offenses reports "
-        "only their sum. Clearances rising while arrests do not is clearing by "
-        "exception, which is the distinction the summarized endpoint cannot show. "
-        "Bound it in AGGREGATE only: do not difference this against one offence's "
-        "clearances. Coverage and population come attached, and the 2021 SRS-to-NIBRS "
-        "break applies here too."
+        "Monthly ARRESTS from the FBI Crime Data Explorer, for all offences together "
+        "or for one offence. An arrest here is one person arrested, cited or summoned "
+        "on one occasion, filed under a single offence. 'scope' takes the same three "
+        "forms as fbi_offenses: 'national', a two-letter state ('TX', 'DC'), or an "
+        "agency ORI ('NY0303000'). 'offense' is a UCR ARREST CODE, not an fbi_offenses "
+        "slug: 'all' (the default) or one of 47 codes, listed with their names on the "
+        "argument — e.g. 11 murder and nonnegligent homicide, 30 robbery, 55 simple "
+        "assault, 70 larceny-theft, 158 marijuana possession, 230 weapons, 260 DUI, "
+        "290 disorderly conduct. Each arrest is filed under one code; in the one window "
+        "checked, national 2023, the codes add up to 'all' bar 905 of 7,184,021 "
+        "arrests filed under 'Suspicion', which has no code. Some codes mislead: 50 "
+        "'Assault - Not Specified' is AGGRAVATED assault; 20 (the legacy rape "
+        "definition) holds every "
+        "2023 rape arrest and 23 none, so take both; 140, 150 and 170 are only the "
+        "unspecified remainder of prostitution, drug and gambling arrests — add "
+        "150-160 for all drug arrests. "
+        "There is NO violent-crime or property-crime code: violent crime is "
+        "11+20+23+30+50, property crime 60+70+90. 'unit' picks the count or the rate "
+        "per 100,000 PARTICIPATED population (people living where agencies reported), "
+        "not per resident. Verified back to 01-2018; earlier months return what the API "
+        "has. NATIONALLY, FOR ONE OFFENCE THE CDE SPELLS A MONTH WITH NO ARREST AS NULL "
+        "(at agency scope it has sent 0): where the scope's own participated population "
+        "is above zero that month the null comes back as 0, so a sum counts what the "
+        "FBI's totals count; months past max_data_date or with no participated "
+        "population stay null. "
+        "An arrest is NOT a clearance and CANNOT be differenced against fbi_offenses' "
+        "clearances, in total or for the same offence: a clearance counts an offence "
+        "closed and an arrest a person taken in, one arrest can clear several offences "
+        "and several arrests can clear one, most arrests are for offences with no "
+        "clearance series (drug, DUI, disorderly conduct, 'all other offenses'), and the "
+        "two routes carry their own coverage. Nor is an arrest a charge that stuck or a "
+        "conviction. Coverage and both populations come attached, and the 2021 SRS-to-NIBRS "
+        "break applies here too. A MONTH NOBODY FILED IS REPORTED AS 0, not as null, "
+        "and at agency scope the coverage percentage belongs to the STATE — Washington "
+        "filed no arrest between 01-1996 and 07-2021 under a District of Columbia "
+        "coverage of 100%. Runs of those zeros are detected against the level of the "
+        "surrounding filings and returned as null, with the spans named in 'notices'; "
+        "the last month of a window is often still filling and is flagged there too. "
+        "AT AGENCY SCOPE a run of blanks that reaches the END of the window is nulled "
+        "whatever its length and however quiet the series, because an agency's "
+        "participated population carries on after it stops filing and max_data_date is "
+        "the national vintage rather than the agency's last filing: observation_end "
+        "can therefore fall short of the requested end by as little as one month, and "
+        "a genuinely quiet final month is nulled with the rest. "
+        "Do not treat a null in the response as a zero."
     ),
 )
 async def fbi_arrests(
     scope: Annotated[str, Field(
         description="'national', a two-letter state, or an agency ORI.")] = "national",
     unit: Annotated[Unit, Field(
-        description="'rate' is per 100,000 residents of the scope.")] = "count",
+        description="'rate' is the CDE's own: per 100,000 people living where "
+                    "agencies reported (participated_population on the response), "
+                    "not per 100,000 residents. Where that population is 0 -- in "
+                    "every month at an agency with no residents of its own, such as "
+                    "a transit force -- the CDE's rate is -1, and it comes back "
+                    "null.")] = "count",
     start: Annotated[str, Field(
         description="'MM-YYYY'. A bare year is refused; arrests are monthly.")] = FBI_FROM_MONTH,
     end: Annotated[str | None, Field(
         description="'MM-YYYY'. Defaults to this month; the API serves what it has.")] = None,
+    # Last, so that a positional call written before offences existed --
+    # (scope, unit, start, end) -- still binds as it did.
+    offense: Annotated[ArrestOffense, Field(
+        description="A UCR arrest code, or 'all' for every offence together. The codes: "
+                    + _ARREST_OFFENSE_CODES + ".")] = "all",
 ) -> FbiArrestSeries:
     async def handler(client: FbiClient) -> Any:
         return await client.get_arrests(
-            scope=scope, start=start, end=end or _fbi_this_month()
+            offense, scope=scope, start=start, end=end or _fbi_this_month()
         )
 
     # As with offences, one request carries both the count and the rate, so
-    # 'unit' is a selection made here and never reaches the FBI.
-    return from_arrest_response(await _call_fbi(handler), scope=scope, unit=unit)
+    # 'unit' is a selection made here and never reaches the FBI. The offence
+    # does reach it, as the path's last segment.
+    return from_arrest_response(
+        await _call_fbi(handler), scope=scope, offense=offense, unit=unit,
+    )
 
 
 @server.tool(
@@ -576,7 +635,10 @@ async def fbi_arrests(
         "agency by agency, pairing this with fbi_offenses at the same ORI. Male and "
         "female are reported separately and are summed into one series. Counts only: "
         "the API's own per-1,000 rates divide by a participated population that is "
-        "sometimes zero. Filing is voluntary, so years are missing; 'notices' names them."
+        "sometimes zero. Filing is voluntary, so years are missing; 'notices' names "
+        "them, including the ones the API spells as 0 rather than as an absence — "
+        "those are returned as null, because a summed 0 reads as a department of "
+        "nobody. An agency that genuinely employs no civilians keeps its zeros."
     ),
 )
 async def fbi_employment(
