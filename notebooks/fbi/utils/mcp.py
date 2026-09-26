@@ -35,15 +35,31 @@ async def call_tool(name: str, arguments: dict[str, Any] | None = None) -> Any:
     list it, so the failure surfaces as "unknown tool" with nothing to say what
     to do about it. The server does not hot-reload, so that is the usual cause
     of a call that worked yesterday failing today, and it is worth naming.
+
+    A server started before an *argument* existed is worse, because it does not
+    fail at all: FastMCP drops an argument it does not know without an error.
+    ``fbi_arrests(offense="11")`` against a server that predates ``offense``
+    returns the all-offence total, ten million arrests where nine thousand
+    murders were asked for. So every argument is checked against the schema the
+    server advertises before the call is made.
     """
     async with MCPClient(config) as client:
-        available = {tool.name for tool in await client.list_tools()}
-        if name not in available:
+        tools = {tool.name: tool for tool in await client.list_tools()}
+        if name not in tools:
             raise StaleServerError(
-                f"{MCP_URL} serves {len(available)} tools and {name!r} is not among them. "
+                f"{MCP_URL} serves {len(tools)} tools and {name!r} is not among them. "
                 f"The server does not hot-reload: restart it (and the VS Code debug session "
                 f"running it) so the tools defined in mcp_server/server.py are registered. "
-                f"FBI tools present: {sorted(t for t in available if t.startswith('fbi_')) or 'none'}."
+                f"FBI tools present: {sorted(t for t in tools if t.startswith('fbi_')) or 'none'}."
+            )
+        accepted = set((tools[name].inputSchema or {}).get("properties", {}))
+        unknown = sorted(set(arguments or {}) - accepted)
+        if unknown:
+            raise StaleServerError(
+                f"{MCP_URL} serves {name!r} without the argument(s) {unknown}; it accepts "
+                f"{sorted(accepted)}. The server would drop them silently and answer as if they "
+                f"were never passed. It does not hot-reload: restart it (and the VS Code debug "
+                f"session running it) to pick up the current mcp_server/server.py."
             )
         result = await client.call_tool(name, arguments or {})
     structured = getattr(result, "structuredContent", None)
@@ -90,6 +106,14 @@ def unfiled(points: dict[str, float], run_floor: float = 25.0) -> set[str]:
     than *run_floor* between them, judged by the surrounding median. That keeps
     the genuine quiet months of a small department, where two consecutive zeros
     are ordinary.
+
+    This is the first version of the rule and it stays for ``mcp.ipynb``, which
+    walks the tools as a model sees them, over ``{period: value}`` dictionaries,
+    and needs one test to show the problem exists. For analysis it is
+    superseded by :mod:`utils.filing`, whose docstring says by what: this
+    carries the run test alone, weighs a run against one median for the whole
+    series rather than the local level, and has no notion of a month that is
+    unreadable for a reason other than being blank.
     """
     ordered = _in_order(points)
     values = [points[p] for p in ordered]
@@ -114,6 +138,9 @@ def rolling_12(points: dict[str, float], skip: set[str] | None = None) -> dict[s
     homicides in a month and eight in the next has not changed -- so every
     comparison here is made on a rolling year. A window containing a month
     nobody filed is left out rather than summed: the point of the rule above.
+
+    Superseded for analysis by :func:`utils.filing.trailing_sum`, which works
+    on arrays and takes its skip mask from the three tests rather than from one.
     """
     skip = unfiled(points) if skip is None else skip
     ordered = _in_order(points)
