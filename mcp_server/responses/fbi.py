@@ -804,6 +804,33 @@ def _unfiled(values: Sequence[Optional[float]], levels: Sequence[float], *,
     open. And the offence route, wherever the window ends before
     ``max_data_date`` and the CDE cannot have been padding: see
     :func:`_read_filings`.
+
+    So the three routes do not answer this the same way, and the difference is
+    worth having in one place because a caller comparing one agency's arrests
+    with its offences over the same window meets both answers:
+
+    ======================  ==============================================
+    series                  a trailing blank run at the end of the window
+    ======================  ==============================================
+    offences, clearances    the vintage decides: padding at or past
+                            ``max_data_date``, otherwise held to the mass
+                            test like any interior run. San Francisco's
+                            forty-five zero clearance months are why
+    arrests, ``all``        nulled at any length, at every scope: a
+                            department that files anything files arrests,
+                            so a blank run is never a quiet stretch
+    arrests, one code       nulled at any length at agency scope, held to
+                            the mass test nationally and by state, where a
+                            rare code's quiet tail is ordinary and real
+    employment              nulled at any length -- the annual response
+                            has its own sentence for a year with no return
+    ======================  ==============================================
+
+    Each of those was settled against live payloads rather than chosen, and
+    each is pinned by a test. What none of them can do is tell an agency that
+    stopped filing from one with a genuinely quiet stretch, because the coverage
+    an agency payload carries is its state's; the notices say so rather than
+    implying otherwise.
     """
     kept = set(filed)
     out: List[int] = []
