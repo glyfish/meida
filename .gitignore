@@ -36,3 +36,6 @@ notebooks/cdc/data/
 notebooks/clio/data/
 notebooks/clio_historical/data/
 notebooks/fbi/data/
+
+# Prediction-market corpora (regenerable from the public APIs)
+notebooks/prediction_markets/data/
