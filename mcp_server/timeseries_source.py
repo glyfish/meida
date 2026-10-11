@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 from typing import Any, Optional, Sequence
 
 import sqlalchemy as sa
+from mcp.server.mcpserver.exceptions import ToolError
 
 from environment import get_meida_db_url
 
@@ -36,8 +37,14 @@ from .timeseries_source_models import Observation, TimeSeriesRecord, TimeSeriesR
 TABLE_NAME = "time_series_source"
 
 
-class TimeSeriesSourceError(RuntimeError):
-    """Raised when the time-series source database cannot serve a request."""
+class TimeSeriesSourceError(ToolError, RuntimeError):
+    """Raised when the time-series source database cannot serve a request.
+
+    ``ToolError`` so the message survives: mcp 2.x drops the text of any
+    exception that is not one, leaving the caller a bare "Error executing
+    tool". ``RuntimeError`` is kept so existing handlers still catch it.
+    See ``CdcQueryError`` for the full account.
+    """
 
 
 def _observation_count(metadata: Any, observations: Sequence[Any]) -> int:

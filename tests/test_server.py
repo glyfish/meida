@@ -849,3 +849,42 @@ def test_annual_specs_do_not_carry_a_month_field():
 
     assert not [s.dataset_id for s in REGISTRY
                 if s.frequency == "annual" and s.month_field]
+
+
+# --- Domain errors must reach the caller ------------------------------------
+
+
+async def test_a_domain_error_carries_its_text_through_the_tool_boundary():
+    """The text is the whole value of these errors, and mcp 2.x can drop it.
+
+    mcp 2.x re-raises a ``ToolError`` as ``f"Error executing tool {name}: {exc}"``
+    and anything else as ``f"Error executing tool {name}"``, discarding the
+    message -- so an exception's base class decides whether the caller is told
+    which concepts are valid or told nothing at all. Under 1.x both paths kept
+    the text, which is how ``CdcQueryError(ValueError)`` passed for years and
+    then went quiet the day the pin moved. Asserting on the *text*, not the
+    type, is the point: the type is what regressed invisibly.
+    """
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    with pytest.raises(ToolError) as caught:
+        await server.server.call_tool("cdc_dataset_facets", {"dataset_id": "hksd-2xuw"})
+
+    message = str(caught.value)
+    assert "publishes different facets per concept" in message
+    assert "alcohol_binge" in message, "the valid concepts are what makes this actionable"
+
+
+def test_the_domain_errors_are_all_tool_errors():
+    """Each one also keeps its original base, so existing handlers still catch it."""
+    from mcp.server.mcpserver.exceptions import ToolError
+
+    from mcp_server.cdc_query import CdcQueryError
+    from mcp_server.series_catalog import SeriesCatalogError
+    from mcp_server.timeseries_source import TimeSeriesSourceError
+
+    assert issubclass(CdcQueryError, (ToolError, ValueError))
+    assert issubclass(CdcQueryError, ValueError)
+    for error in (SeriesCatalogError, TimeSeriesSourceError):
+        assert issubclass(error, ToolError)
+        assert issubclass(error, RuntimeError)

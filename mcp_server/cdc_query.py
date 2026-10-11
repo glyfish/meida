@@ -21,6 +21,8 @@ from __future__ import annotations
 
 from typing import Any, Literal, Mapping
 
+from mcp.server.mcpserver.exceptions import ToolError
+
 from .cdc_datasets import (
     MONTH_NUMBER, REGISTRY, STATES, STUB, VSRR, Spec, _eq, _select,
 )
@@ -84,8 +86,22 @@ Period = Literal[PERIODS]
 TIME_ALIAS = "year"
 
 
-class CdcQueryError(ValueError):
-    """A facet value that this dataset does not define."""
+class CdcQueryError(ToolError, ValueError):
+    """A facet value that this dataset does not define.
+
+    ``ToolError`` first, and not for taste: mcp 2.x decides by exception type
+    whether a message reaches the caller. ``ToolError`` is "the tool refused on
+    purpose" and is re-raised as ``f"Error executing tool {name}: {exc}"``;
+    everything else is a crash, re-raised as ``f"Error executing tool {name}"``
+    with the text dropped on the floor. Under mcp 1.x the text came through
+    either way, so this class was a plain ``ValueError`` and the whole point of
+    these errors -- naming the facets, concepts or datasets that *are* valid --
+    survived. Under 2.x it did not, and the caller got "Error executing tool
+    cdc_dataset_facets" and nothing to act on.
+
+    ``ValueError`` is kept so ``except ValueError`` and ``except
+    CdcQueryError`` both still catch it.
+    """
 
 
 def _reject(facet: str, value: str, valid: Mapping[str, Any] | list) -> None:
