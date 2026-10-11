@@ -138,10 +138,10 @@ async def show_tool_schema(tool_name: str, output: bool = False) -> dict[str, An
     print(f"{tool_name}\n  {tool.description}\n")
     print("  -- arguments --")
     _print_properties(tool.input_schema or {})
-    if output and tool.outputSchema:
+    if output and tool.output_schema:
         print("\n  -- returns --")
-        _print_properties(tool.outputSchema)
-        for name, definition in (tool.outputSchema.get("$defs") or {}).items():
+        _print_properties(tool.output_schema)
+        for name, definition in (tool.output_schema.get("$defs") or {}).items():
             print(f"\n  {name}:")
             _print_properties(definition)
     return tool.input_schema or {}

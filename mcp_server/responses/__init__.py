@@ -1,7 +1,7 @@
 """Meida's own MCP response models -- the shapes this server publishes.
 
-Every tool declares one of these as its return annotation, which is what FastMCP
-derives the tool's ``outputSchema`` from. Before this package existed, all tools
+Every tool declares one of these as its return annotation, which is what the
+server derives the tool's ``output_schema`` from. Before this package existed, all tools
 were annotated ``Mapping[str, Any]`` and advertised ``{"result": {"type":
 "object"}}`` -- a consumer was told an object came back and nothing else.
 
