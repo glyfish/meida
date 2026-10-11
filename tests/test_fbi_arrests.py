@@ -1315,7 +1315,7 @@ async def test_the_tool_defaults_to_all(monkeypatch):
 
 async def test_the_tool_schema_enumerates_the_codes_and_names_them():
     """A model reads the codes as an enum and their names in the description."""
-    offense = (await _arrest_tool()).inputSchema["properties"]["offense"]
+    offense = (await _arrest_tool()).input_schema["properties"]["offense"]
 
     assert offense["enum"] == list(ARREST_OFFENSES)
     assert offense["default"] == "all"
@@ -1326,7 +1326,7 @@ async def test_the_tool_schema_enumerates_the_codes_and_names_them():
 
 async def test_the_tool_refuses_an_unlisted_code_before_any_request(monkeypatch):
     """The enum is checked at the tool boundary, so no request is spent on it."""
-    from mcp.server.fastmcp.exceptions import ToolError
+    from mcp.server.mcpserver.exceptions import ToolError
 
     calls: list[str] = []
 
@@ -1381,7 +1381,7 @@ async def _arrest_texts() -> dict[str, str]:
         "code notes": " ".join(fbi_responses._ARREST_CODE_NOTES.values()),
         "tool description": tool.description,
         "tool arguments": " ".join(
-            p.get("description", "") for p in tool.inputSchema["properties"].values()),
+            p.get("description", "") for p in tool.input_schema["properties"].values()),
     }
 
 
@@ -1733,7 +1733,7 @@ async def test_no_tool_calls_a_rate_per_resident():
     tools = {t.name: t for t in await server.server.list_tools()}
 
     for name in ("fbi_offenses", "fbi_arrests"):
-        unit = tools[name].inputSchema["properties"]["unit"]["description"]
+        unit = tools[name].input_schema["properties"]["unit"]["description"]
         assert "residents of the scope" not in unit
         assert "people living where agencies reported" in unit
         assert "PARTICIPATED population" in tools[name].description
@@ -2147,7 +2147,7 @@ async def test_the_tools_say_what_a_rate_over_nobody_comes_back_as():
     tools = {t.name: t for t in await server.server.list_tools()}
 
     for name in ("fbi_offenses", "fbi_arrests"):
-        unit = tools[name].inputSchema["properties"]["unit"]["description"]
+        unit = tools[name].input_schema["properties"]["unit"]["description"]
         assert "-1" in unit and "null" in unit
     field = FbiArrestSeries.model_fields["participated_population"].description
     assert "-1" in field

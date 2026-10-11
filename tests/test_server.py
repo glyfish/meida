@@ -363,7 +363,7 @@ async def test_bls_all_surveys_and_survey_info(monkeypatch):
 
 
 async def test_bis_dataflows_wraps_list(monkeypatch):
-    """A bare list yields no structuredContent, so the tool wraps it."""
+    """A bare list yields no structured_content, so the tool wraps it."""
     fake = RecordingBisClient()
     _patch_bis(monkeypatch, fake)
 
@@ -469,7 +469,7 @@ def _patch_cdc(monkeypatch, fake: RecordingCdcClient) -> None:
 
 
 async def test_cdc_discover_wraps_list(monkeypatch):
-    """A bare list yields no structuredContent, so the tool wraps it."""
+    """A bare list yields no structured_content, so the tool wraps it."""
     fake = RecordingCdcClient()
     _patch_cdc(monkeypatch, fake)
 
@@ -624,7 +624,7 @@ WONDER_ID = "cdc/alcohol_induced/wonder/national/age_adjusted"
 
 
 async def test_timeseries_source_list_describes_the_ids_given(monkeypatch):
-    """A bare list yields no structuredContent, so the tool wraps it."""
+    """A bare list yields no structured_content, so the tool wraps it."""
     fake = RecordingTimeSeriesSourceClient()
     _patch_timeseries_source(monkeypatch, fake)
 
@@ -684,7 +684,7 @@ class ManySeriesClient(RecordingTimeSeriesSourceClient):
 
 
 async def _schema(tool: str) -> dict:
-    return next(t.inputSchema for t in await server.server.list_tools() if t.name == tool)
+    return next(t.input_schema for t in await server.server.list_tools() if t.name == tool)
 
 
 async def test_the_listing_tool_cannot_be_called_without_ids():

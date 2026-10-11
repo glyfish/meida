@@ -48,9 +48,9 @@ async def call_tool(tool_name: str, arguments: dict[str, Any] | None = None):
 
 
 def _unwrap(result: Any) -> Any:
-    """A tool's payload from its structuredContent, or a useful error."""
-    content = getattr(result, "structuredContent", None)
-    if content and not getattr(result, "isError", False):
+    """A tool's payload from its structured_content, or a useful error."""
+    content = getattr(result, "structured_content", None)
+    if content and not getattr(result, "is_error", False):
         return content["result"] if set(content) == {"result"} else content
     blocks = getattr(result, "content", None) or []
     detail = " ".join(getattr(b, "text", "") for b in blocks).strip()

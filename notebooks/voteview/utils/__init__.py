@@ -47,13 +47,13 @@ async def list_mcp_tools(prefix: str | tuple[str, ...] | None = None) -> None:
 
 
 def _unwrap(result: Any) -> Any:
-    """A tool's payload from its structuredContent, or a useful error.
+    """A tool's payload from its structured_content, or a useful error.
 
     FastMCP wraps a plain Mapping as ``{"result": ...}`` and leaves a pydantic
     model's fields at the top level; both shapes appear.
     """
-    content = getattr(result, "structuredContent", None)
-    if content and not getattr(result, "isError", False):
+    content = getattr(result, "structured_content", None)
+    if content and not getattr(result, "is_error", False):
         return content["result"] if set(content) == {"result"} else content
     blocks = getattr(result, "content", None) or []
     detail = " ".join(getattr(b, "text", "") for b in blocks).strip()
@@ -64,7 +64,7 @@ async def show_tool_schema(tool_name: str) -> dict[str, Any]:
     """Print a tool's parameters and its response shape. Returns the schema."""
     async with MCPClient(config) as client:
         tool = next(t for t in await client.list_tools() if t.name == tool_name)
-    schema = tool.inputSchema or {}
+    schema = tool.input_schema or {}
     required = set(schema.get("required") or [])
     print(f"{tool.name}\n  {tool.description}\n")
     for name, spec in (schema.get("properties") or {}).items():

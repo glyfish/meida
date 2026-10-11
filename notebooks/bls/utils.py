@@ -111,7 +111,7 @@ async def show_all_surveys(match: str | None = None) -> list[dict[str, Any]]:
     the whole catalog.
     """
     result = await call_tool("bls_all_surveys")
-    surveys = result.structuredContent["surveys"]  # type: ignore
+    surveys = result.structured_content["surveys"]  # type: ignore
     if match:
         needle = match.lower()
         hits = [s for s in surveys
@@ -200,10 +200,10 @@ async def popular_series(survey: str | None = None) -> list[str]:
     """Return the popular series IDs overall, or for a single survey."""
     args = {"survey": survey} if survey else {}
     result = await call_tool("bls_popular_series", args)
-    if not result or not result.structuredContent or "series" not in result.structuredContent:
+    if not result or not result.structured_content or "series" not in result.structured_content:
         print(f"No result for survey {survey}")
         return []
-    series = result.structuredContent["series"]  # type: ignore
+    series = result.structured_content["series"]  # type: ignore
     return [s["series_id"] for s in series]
 
 
@@ -910,7 +910,7 @@ async def fetch_series(
                 "calculations": calculations,
             },
         )
-        payload = result.structuredContent  # type: ignore
+        payload = result.structured_content  # type: ignore
         all_series.extend(payload["series"])
         print(f"Fetched {len(batch)} series (total {len(all_series)})")
 

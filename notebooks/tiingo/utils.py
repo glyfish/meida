@@ -76,20 +76,20 @@ async def list_mcp_tools(prefix: str | tuple[str, ...] | None = None) -> None:
 
 
 def _unwrap(result: Any) -> Any:
-    """Return a tool's payload from its MCP structuredContent, or raise.
+    """Return a tool's payload from its MCP structured_content, or raise.
 
-    FastMCP derives structuredContent from the tool's return annotation: a
+    FastMCP derives structured_content from the tool's return annotation: a
     plain Mapping is wrapped as ``{"result": ...}``, while a pydantic model puts
     its own fields at the top level. Handle both. On failure, surface the
     tool's error text (e.g. an unknown tool because the running server predates
     it -- restart the MCP server) rather than a bare None.
     """
-    content = getattr(result, "structuredContent", None)
-    if content and not getattr(result, "isError", False):
+    content = getattr(result, "structured_content", None)
+    if content and not getattr(result, "is_error", False):
         return content["result"] if set(content) == {"result"} else content
     blocks = getattr(result, "content", None) or []
     detail = " ".join(getattr(block, "text", "") for block in blocks).strip()
-    if getattr(result, "isError", False) or detail:
+    if getattr(result, "is_error", False) or detail:
         raise RuntimeError(f"MCP tool error: {detail or content!r}")
     raise RuntimeError(f"Unexpected MCP response: {content!r}")
 
@@ -155,14 +155,14 @@ async def show_tool_schema(tool_name: str, output: bool = True) -> dict[str, Any
     tool = tools[tool_name]
     print(f"{tool_name}\n  {tool.description}\n")
     print("  -- arguments --")
-    _print_properties(tool.inputSchema or {})
+    _print_properties(tool.input_schema or {})
     if output and tool.outputSchema:
         print("\n  -- returns --")
         _print_properties(tool.outputSchema)
         for name, definition in (tool.outputSchema.get("$defs") or {}).items():
             print(f"\n  {name}:")
             _print_properties(definition)
-    return tool.inputSchema or {}
+    return tool.input_schema or {}
 
 
 async def get_series_info(ticker: str) -> dict[str, Any]:

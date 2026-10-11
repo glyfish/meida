@@ -136,10 +136,10 @@ async def test_every_retrieval_argument_is_published_on_the_tool():
     tool = next(t for t in await server.server.list_tools() if t.name == "fbi_arrests")
     entry = _entry(code="260", scope="national", label="United States")
 
-    published = set(tool.inputSchema["properties"])
+    published = set(tool.input_schema["properties"])
     assert set(entry["retrieval"]) - {"tool"} <= published
     # and the offence really is one of the published values, not a slug
-    assert entry["retrieval"]["offense"] in tool.inputSchema["properties"]["offense"]["enum"]
+    assert entry["retrieval"]["offense"] in tool.input_schema["properties"]["offense"]["enum"]
 
 
 def test_the_span_is_the_filings_and_not_the_requested_window():

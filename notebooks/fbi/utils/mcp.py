@@ -52,7 +52,7 @@ async def call_tool(name: str, arguments: dict[str, Any] | None = None) -> Any:
                 f"running it) so the tools defined in mcp_server/server.py are registered. "
                 f"FBI tools present: {sorted(t for t in tools if t.startswith('fbi_')) or 'none'}."
             )
-        accepted = set((tools[name].inputSchema or {}).get("properties", {}))
+        accepted = set((tools[name].input_schema or {}).get("properties", {}))
         unknown = sorted(set(arguments or {}) - accepted)
         if unknown:
             raise StaleServerError(
@@ -62,7 +62,7 @@ async def call_tool(name: str, arguments: dict[str, Any] | None = None) -> Any:
                 f"session running it) to pick up the current mcp_server/server.py."
             )
         result = await client.call_tool(name, arguments or {})
-    structured = getattr(result, "structuredContent", None)
+    structured = getattr(result, "structured_content", None)
     if not structured:
         # A failed call still returns a result object, and returning it raw
         # gives "'CallToolResult' object has no attribute 'get'" three cells

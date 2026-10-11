@@ -80,7 +80,7 @@ async def children_of_categories(categories: list[Any]):
         category_name = category["name"]
         args = {"category_id": category_id}
         result = await call_tool("fred_category_children", args)
-        children = result.structuredContent['categories']  # type: ignore
+        children = result.structured_content['categories']  # type: ignore
         print(f"Category {category_id}, {category_name} has {len(children)} children")
 
 
@@ -94,7 +94,7 @@ async def explore_categories(root_id: int = 0, depth: int = 2):
             if level >= depth:
                 continue
             response = await client.call_tool("fred_category_children", {"category_id": category_id})
-            payload = response.structuredContent or {}
+            payload = response.structured_content or {}
             for child in payload.get("categories", []):
                 queue.append((child["id"], level + 1))
 
@@ -143,7 +143,7 @@ async def find_leaf_categories(
             response = await client.call_tool(
                 "fred_category_children", {"category_id": category_id}
             )
-            payload = response.structuredContent or {}
+            payload = response.structured_content or {}
             children = payload.get("categories", [])
 
             if not children:
@@ -213,7 +213,7 @@ async def export_finance_category_series(input_path: str, output_path: str, dela
                 "fred_category_series",
                 {"category_id": category_id},
             )
-            payload = response.structuredContent or {}
+            payload = response.structured_content or {}
 
             # `count` is FRED's total for the category; the response carries only
             # what this call returned, so the two differ when it is truncated.
@@ -245,16 +245,16 @@ async def export_finance_category_series(input_path: str, output_path: str, dela
 
 
 def unwrap(result: Any) -> dict[str, Any]:
-    """Return a tool call's payload from its MCP ``structuredContent``, or raise.
+    """Return a tool call's payload from its MCP ``structured_content``, or raise.
 
     On failure this surfaces the tool's own error text -- an unknown tool because
     the running server predates it, a FRED key that is not set -- instead of the
-    ``None`` a bare ``result.structuredContent[...]`` would blow up on one line
+    ``None`` a bare ``result.structured_content[...]`` would blow up on one line
     later.
     """
-    content = getattr(result, "structuredContent", None)
-    if content and not getattr(result, "isError", False):
-        # FastMCP derives structuredContent from the tool's return annotation: a
+    content = getattr(result, "structured_content", None)
+    if content and not getattr(result, "is_error", False):
+        # FastMCP derives structured_content from the tool's return annotation: a
         # pydantic model (which every FRED tool returns) puts its fields at the
         # top level, while a plain mapping is wrapped as {"result": ...}.
         return content["result"] if set(content) == {"result"} else content
@@ -291,7 +291,7 @@ async def show_tool_schema(tool_name: str, raw: bool = False) -> dict[str, Any]:
         tools = {tool.name: tool for tool in await client.list_tools()}
     if tool_name not in tools:
         raise RuntimeError(f"no tool {tool_name!r} on the server. Available: {sorted(tools)}")
-    schema = dict(tools[tool_name].inputSchema or {})
+    schema = dict(tools[tool_name].input_schema or {})
     if raw:
         print_json_vertical(schema)
         return schema

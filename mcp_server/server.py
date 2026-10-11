@@ -3,7 +3,7 @@ from datetime import date as _date
 from typing import Annotated, Any, Awaitable, Callable, Mapping
 from lib.logger import get_logger
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from pydantic import BaseModel, Field
 
 from clients import BisClient, BlsClient, CdcClient, FbiClient, FredClient, TiingoClient
@@ -42,15 +42,20 @@ from .timeseries_source_models import TimeSeriesRecord, TimeSeriesRefList
 
 logger = get_logger("meida.mcp")
 
-server = FastMCP(
+#: Where the SSE server binds. These were constructor arguments until mcp 2.0,
+#: which moved them to ``run()`` -- and ``Settings`` no longer carries any HTTP
+#: field at all, so there is nowhere else to put them. Omitting them from
+#: ``run()`` binds 127.0.0.1 without complaint, which looks like a working
+#: server until something tries to reach it from outside this machine.
+HOST, PORT = "0.0.0.0", 8080
+
+server = MCPServer(
     name="mcp-server",
     instructions=(
         "Curated economic, financial and public-health data: FRED (Federal Reserve), "
         "BLS, BIS, Tiingo end-of-day prices, CDC Socrata, and stored series from "
         "CDC WONDER and NVSR."
     ),
-    host="0.0.0.0",
-    port=8080,
 )
 
 
@@ -58,7 +63,7 @@ async def _call_fred(handler: Callable[[FredClient], Awaitable[Any]]) -> Any:
     """Create a FredClient and invoke the handler.
 
     Returns the navi payload unflattened; the tool maps it to meida's own
-    response model, which is what FastMCP builds the output schema from.
+    response model, which is what MCPServer builds the output schema from.
     """
     async with FredClient() as client:
         return await handler(client)
@@ -68,7 +73,7 @@ async def _call_tiingo(handler: Callable[[TiingoClient], Awaitable[Any]]) -> Any
     """Create a TiingoClient and invoke the handler.
 
     Returns the navi payload unflattened; the tool maps it to meida's own
-    response model, which is what FastMCP builds the output schema from.
+    response model, which is what MCPServer builds the output schema from.
     """
     async with TiingoClient() as client:
         return await handler(client)
@@ -78,7 +83,7 @@ async def _call_bls(handler: Callable[[BlsClient], Awaitable[Any]]) -> Any:
     """Create a BlsClient and invoke the handler.
 
     Returns the navi payload unflattened; the tool maps it to meida's own
-    response model, which is what FastMCP builds the output schema from.
+    response model, which is what MCPServer builds the output schema from.
     """
     async with BlsClient() as client:
         return await handler(client)
@@ -88,8 +93,8 @@ async def _call_bis(handler: Callable[[BisClient], Awaitable[Any]]) -> Any:
     """Create a BisClient and invoke the handler.
 
     The payload is returned unflattened -- each tool declares its response model
-    as its return annotation, which is what FastMCP builds the output schema
-    from, so serialization is FastMCP's job rather than this helper's.
+    as its return annotation, which is what MCPServer builds the output schema
+    from, so serialization is MCPServer's job rather than this helper's.
     """
     async with BisClient() as client:
         return await handler(client)
@@ -99,7 +104,7 @@ async def _call_fbi(handler: Callable[[FbiClient], Awaitable[Any]]) -> Any:
     """Create an FbiClient and invoke the handler.
 
     As with BIS, the payload comes back unflattened and the tool maps it to
-    meida's own response model, which is what FastMCP builds the output schema
+    meida's own response model, which is what MCPServer builds the output schema
     from.
     """
     async with FbiClient() as client:
@@ -110,8 +115,8 @@ async def _call_cdc(handler: Callable[[CdcClient], Awaitable[Any]]) -> Any:
     """Create a CdcClient and invoke the handler.
 
     The payload is returned unflattened -- each tool declares its response model
-    as its return annotation, which is what FastMCP builds the output schema
-    from, so serialization is FastMCP's job rather than this helper's.
+    as its return annotation, which is what MCPServer builds the output schema
+    from, so serialization is MCPServer's job rather than this helper's.
     """
     async with CdcClient() as client:
         return await handler(client)
@@ -149,7 +154,7 @@ async def _call_timeseries_source(
 
     Unlike the other helpers this one may get a *list* of models back, which it
     wraps in :class:`TimeSeriesRefList`: FastMCP derives a tool's output schema
-    from its return annotation, and a bare list yields no ``structuredContent``
+    from its return annotation, and a bare list yields no ``structured_content``
     at all.
     """
     async with TimeSeriesSourceClient() as client:
@@ -974,10 +979,15 @@ async def series_catalog_concepts(source: str | None = None) -> CatalogConceptLi
     return CatalogConceptList(concepts=[CatalogConcept(**r) for r in rows])
 
 
-def run() -> None:
-    """Start the MCP server over SSE transport."""
-    logger.info("Starting meida MCP server on port %s (transport=sse)", server.settings.port)
-    server.run(transport="sse")
+def run(host: str = HOST, port: int = PORT) -> None:
+    """Start the MCP server over SSE transport.
+
+    *host* and *port* are arguments rather than module constants read inside
+    because a second server on another port is how a notebook is executed
+    against the working tree without disturbing the one on 8080.
+    """
+    logger.info("Starting meida MCP server on %s:%s (transport=sse)", host, port)
+    server.run(transport="sse", host=host, port=port)
 
 
 if __name__ == "__main__":

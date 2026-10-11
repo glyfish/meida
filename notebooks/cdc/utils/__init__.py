@@ -51,20 +51,20 @@ async def list_mcp_tools(prefix: str | tuple[str, ...] | None = None) -> None:
 
 
 def _unwrap(result: Any) -> Any:
-    """Return a tool's payload from its MCP structuredContent, or raise.
+    """Return a tool's payload from its MCP structured_content, or raise.
 
     On failure, surfaces the tool's error text (e.g. an unknown tool because the
     running server predates it -- restart the MCP server) instead of a bare None.
     """
-    content = getattr(result, "structuredContent", None)
-    if content and not getattr(result, "isError", False):
-        # FastMCP derives structuredContent from the tool's return annotation:
+    content = getattr(result, "structured_content", None)
+    if content and not getattr(result, "is_error", False):
+        # FastMCP derives structured_content from the tool's return annotation:
         # a plain Mapping is wrapped as {"result": ...}, while a pydantic model
         # puts its own fields at the top level. Handle both.
         return content["result"] if set(content) == {"result"} else content
     blocks = getattr(result, "content", None) or []
     detail = " ".join(getattr(block, "text", "") for block in blocks).strip()
-    if getattr(result, "isError", False) or detail:
+    if getattr(result, "is_error", False) or detail:
         raise RuntimeError(f"MCP tool error: {detail or content!r}")
     raise RuntimeError(f"Unexpected MCP response: {content!r}")
 
@@ -425,7 +425,7 @@ async def show_tool_schema(tool_name: str) -> dict[str, Any]:
         raise RuntimeError(
             f"no tool {tool_name!r} on the server. Available: {sorted(tools)}"
         )
-    schema = tools[tool_name].inputSchema or {}
+    schema = tools[tool_name].input_schema or {}
     required = set(schema.get("required") or [])
     print(f"{tool_name}\n  {tools[tool_name].description}\n")
     for name, spec in (schema.get("properties") or {}).items():
