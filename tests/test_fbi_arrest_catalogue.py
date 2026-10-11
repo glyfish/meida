@@ -110,6 +110,19 @@ def test_the_entry_names_the_offence_the_payload_does_not():
     assert (entry["unit"], entry["frequency"]) == ("count", "Monthly")
 
 
+def test_the_text_is_written_under_both_names():
+    """`description` is what the loader and the catalog table read; `definition`
+    is what db_import's description generator reads as context for the family it
+    is describing. An entry carrying one and not the other loses its text at
+    whichever end reads the other -- which is how every FBI entry would have
+    reached Postgres with none, while clio's, written twice, arrive intact.
+    """
+    entry = _entry(code="50")
+
+    assert entry["description"] == entry["definition"]
+    assert "Aggravated assault" in entry["description"]
+
+
 def test_retrieval_minus_tool_is_what_fbi_arrests_takes():
     """The rule the whole catalogue turns on, checked against the tool's schema."""
     entry = _entry(code="260", scope="national", label="United States")

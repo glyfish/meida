@@ -324,6 +324,14 @@ def entries_from(payload, scope: str, agencies: dict[str, dict[str, Any]] | None
                        "offense": payload.offense, "measure": series.measure},
             "observation_start": _iso(start),
             "observation_end": _iso(end),
+            # Written twice under two names, as clio's exporter does. The
+            # loader and the catalog table know only `description`; the
+            # description generator in db_import reads `definition` as context
+            # for the family it is describing. An entry carrying one and not
+            # the other loses its text at whichever end reads the other name --
+            # which is how every FBI entry reached Postgres with none.
+            "description": f"{OFFENSE_NOTES.get(payload.offense, '')} "
+                           f"{MEASURE_NOTES[series.measure]}".strip(),
             "definition": f"{OFFENSE_NOTES.get(payload.offense, '')} "
                           f"{MEASURE_NOTES[series.measure]}".strip(),
             "coverage_mean_percent": round(sum(covered) / len(covered), 2) if covered else None,
@@ -379,6 +387,8 @@ def employment_entries(payload, record: dict[str, Any] | None) -> list[dict[str,
                        "state": (record or {}).get("state_abbr")},
             "observation_start": _iso(periods[0]),
             "observation_end": _iso(periods[-1]),
+            "description": f"{note} Counts, not the API's own per-1,000 rate, whose "
+                           f"population base is unreliable.",
             "definition": f"{note} Counts, not the API's own per-1,000 rate, whose "
                           f"population base is unreliable.",
             "nibrs_start_date": (record or {}).get("nibrs_start_date"),
@@ -520,6 +530,7 @@ def arrest_entries(payload, scope: str, code: str | None = None,
                    "offense_name": name, "measure": "arrests"},
         "observation_start": _iso(series.observation_start),
         "observation_end": _iso(series.observation_end),
+        "description": definition,
         "definition": definition,
         "coverage_mean_percent": series.coverage_mean_percent,
         "coverage_min_percent": series.coverage_min_percent,
